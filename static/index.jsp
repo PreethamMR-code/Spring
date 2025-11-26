@@ -16,7 +16,6 @@
         <div class="list-group">
             <a href="Matrimony.jsp" class="list-group-item list-group-item-action"> Matrimony form </a>
 
-
         </div>
     </div>
 </div>
