@@ -33,7 +33,7 @@ public class MatrimonyServlet extends HttpServlet {
         String maritalStatus = req.getParameter("maritalStatus");
         String heightStr = req.getParameter("height");
 
-        // Set all attributes (for JSP page)
+
         req.setAttribute("fullName", fullName);
         req.setAttribute("email", email);
         req.setAttribute("profileFor", profileFor);
@@ -45,7 +45,8 @@ public class MatrimonyServlet extends HttpServlet {
         req.setAttribute("height", heightStr);
 
         try {
-            // DB Connection
+            // connexting data base
+
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection con = DriverManager.getConnection(
                     "jdbc:mysql://localhost:3306/matrimony_db",
