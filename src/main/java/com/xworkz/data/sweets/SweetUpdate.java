@@ -98,6 +98,6 @@ public class SweetUpdate {
         catch(SQLException sqlException){
             sqlException.printStackTrace();
         }
-        System.out.println("Update Operation Complete");
+        System.out.println("Update Operation Completed");
     }
 }

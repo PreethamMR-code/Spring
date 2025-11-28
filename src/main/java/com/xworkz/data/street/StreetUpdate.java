@@ -95,6 +95,6 @@ import java.sql.Statement;
                     sqlException.printStackTrace();
                 }
 
-                System.out.println("Street Updation is done");
+                System.out.println("Street Update is done");
             }
         }
