@@ -107,5 +107,6 @@ public class Sports {
         catch (SQLException sqlException){
             sqlException.printStackTrace();
         }
+        System.out.println("insert is done");
     }
 }

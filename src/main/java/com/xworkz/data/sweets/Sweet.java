@@ -109,7 +109,7 @@ public class Sweet {
         catch (SQLException sqlException){
         sqlException.printStackTrace();
     }
-        System.out.println("after catch block");
+        System.out.println("insert is done");
 }
 
 

@@ -35,7 +35,7 @@ try {
 catch (SQLException sqlException){
     sqlException.printStackTrace();
 }
-        System.out.println("deleted");
+        System.out.println("delete is done");
 
     }
 }

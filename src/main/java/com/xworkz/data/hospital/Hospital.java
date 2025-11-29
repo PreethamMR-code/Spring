@@ -106,6 +106,6 @@ try {
 catch (SQLException sqlException){
     sqlException.printStackTrace();
 }
-        System.out.println("inserted");
+        System.out.println("insert id completed");
     }
 }

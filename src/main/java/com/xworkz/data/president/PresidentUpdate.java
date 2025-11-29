@@ -93,7 +93,7 @@ try {
 }catch (SQLException sqlException) {
     sqlException.printStackTrace();
 }
-        System.out.println("President Update Operation Completed ✔");
+        System.out.println("President Update Operation Completed");
     }
 }
 

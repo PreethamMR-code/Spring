@@ -94,7 +94,7 @@ public class HospitalUpdate {
                 sqlException.printStackTrace();
             }
 
-            System.out.println("Hospital Update Operation Completed ✔");
+            System.out.println("Hospital Update Operation Completed");
         }
     }
 

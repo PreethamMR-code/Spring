@@ -100,7 +100,7 @@ public class SportsUpdate {
                     sqlException.printStackTrace();
                 }
 
-        System.out.println("Sports Update Operation Completed ✔");
+        System.out.println("Sports Update Operation Completed ");
 
         }
 
