@@ -41,7 +41,8 @@
     </dependencies>
 
     <build>
-        <finalName>MatrimonyApp</finalName>
+        <finalName>JDBC connection and CRUD</finalName>
     </build>
+
 
 </project>
