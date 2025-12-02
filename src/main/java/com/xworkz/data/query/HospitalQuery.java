@@ -2,6 +2,7 @@ package com.xworkz.data.query;
 
 
 import com.xworkz.data.constants.DBConstant;
+import com.xworkz.data.contant.SweetEnum;
 
 import java.sql.Connection;
 
@@ -15,9 +16,9 @@ public class HospitalQuery {
 
 
         try(Connection connection = DriverManager.getConnection(
-                DBConstant.URL,
-                DBConstant.USERNAME,
-                DBConstant.PASSWORD);
+                SweetEnum.URl.getS(),
+                SweetEnum.USERNAME.getS(),
+                SweetEnum.PASSWORD.getS());
 
             Statement statement=connection.createStatement()){
 

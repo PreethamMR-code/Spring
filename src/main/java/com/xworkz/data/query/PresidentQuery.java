@@ -1,6 +1,7 @@
 package com.xworkz.data.query;
 
 import com.xworkz.data.constants.DBConstant;
+import com.xworkz.data.contant.SweetEnum;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -11,12 +12,13 @@ public class PresidentQuery {
 
     public static void main(String[] args) {
 
-        try(Connection connection =
-                    DriverManager.getConnection(DBConstant.URL,
-                            DBConstant.USERNAME,
-                            DBConstant.PASSWORD);
 
-        Statement statement = connection.createStatement()){
+        try(Connection connection = DriverManager.getConnection(
+                SweetEnum.URl.getS(),
+                SweetEnum.USERNAME.getS(),
+                SweetEnum.PASSWORD.getS());
+
+                 Statement statement = connection.createStatement()){
 
             System.out.println("=== 1. all rows ===");
             String sqlAll = "SELECT * FROM president";
