@@ -1,9 +1,6 @@
 package com.xworkz.data.sweets;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 public class SweetUpdate {
 
@@ -93,6 +90,22 @@ public class SweetUpdate {
             String sql15 = "update sweet set sweet_type='dry fruit special' where sweet_id=4";
             int row15 = statement.executeUpdate(sql15);
             System.out.println("row3:" + row15);
+
+
+//            using PreparedStatement so we can have parameter for adding values with same query
+
+
+            String sql16 = "update sweet set sweet_name=? where sweet_id=?;";
+            PreparedStatement preparedStatement=connection.prepareStatement(sql16);
+            preparedStatement.setString(1,"champakali");
+            preparedStatement.setString(2,"1");
+            int row16 = preparedStatement.executeUpdate();
+            System.out.println("name of sweet updated:"+row16);
+
+            preparedStatement.setString(1,"kaju katli");
+            preparedStatement.setString(2,"2");
+            int row17=preparedStatement.executeUpdate();
+            System.out.println("name of sweet updated in 2 row:"+row17);
 
         }
         catch(SQLException sqlException){

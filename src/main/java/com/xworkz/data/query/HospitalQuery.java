@@ -4,11 +4,7 @@ package com.xworkz.data.query;
 import com.xworkz.data.constants.DBConstant;
 import com.xworkz.data.contant.SweetEnum;
 
-import java.sql.Connection;
-
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 
 public class HospitalQuery {
 
