@@ -107,6 +107,11 @@ public class SweetUpdate {
             int row17=preparedStatement.executeUpdate();
             System.out.println("name of sweet updated in 2 row:"+row17);
 
+            preparedStatement.setString(1,"jamun");
+            preparedStatement.setString(2,"3");
+            int row18 = preparedStatement.executeUpdate();
+            System.out.println("name changed:"+row18);
+
         }
         catch(SQLException sqlException){
             sqlException.printStackTrace();
