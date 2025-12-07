@@ -26,6 +26,7 @@
         <div class="list-group">
             <a href="registration.jsp" class="list-group-item list-group-item-action"> Register here </a>
 
+            <a class="nav-link" href="FishSearch.jsp">Search</a>
 
         </div>
     </div>

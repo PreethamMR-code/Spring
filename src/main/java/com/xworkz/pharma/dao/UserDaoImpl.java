@@ -4,6 +4,7 @@ import com.xworkz.pharma.dto.UserDto;
 import lombok.SneakyThrows;
 
 import java.sql.*;
+import java.util.Optional;
 
 public class UserDaoImpl implements UserDao {
 
@@ -88,5 +89,42 @@ public class UserDaoImpl implements UserDao {
             e.printStackTrace();
             return false;
         }
+    }
+
+    @Override
+    @SneakyThrows
+    public Optional<UserDto> findByPhone(String phoneNo) {
+
+        String searchByPhone = "select * from users where phone=?";
+        System.out.println("search by phone:"+searchByPhone);
+
+        try(Connection connection = DriverManager.getConnection(URL,USER,PASS);
+            PreparedStatement statement = connection.prepareStatement(searchByPhone))
+        {
+            System.out.println("executing statement started...");
+            statement.setString(1,phoneNo);
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next())
+            {
+                System.out.println("result row found ...");
+
+                String firstname = resultSet.getString(1);
+                String lastname = resultSet.getString(2);
+                String email =  resultSet.getString(3);
+                String phone = resultSet.getString(4);
+                int age = resultSet.getInt(5);
+
+                UserDto userDto = new UserDto(firstname,lastname,email,phone,age);
+
+                System.out.println("USer DTO  from DB:"+userDto);
+                return Optional.of(userDto);
+            }
+        }
+
+        System.out.println("result set no rows found..");
+
+        return UserDao.super.findByPhone(phoneNo);
+
     }
 }
