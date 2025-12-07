@@ -1,5 +1,6 @@
 package com.xworkz.pharma.servlet;
 
+import com.xworkz.pharma.dto.SearchDTO;
 import com.xworkz.pharma.dto.UserDto;
 import com.xworkz.pharma.exception.InvalidException;
 import com.xworkz.pharma.service.UserServiceImpl;
@@ -12,6 +13,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Optional;
 
 
 @WebServlet(urlPatterns = "/UserServlet",loadOnStartup = 1)
@@ -63,5 +65,19 @@ public class UserServlet extends HttpServlet {
         System.out.println("do post end");
 
     }
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+       String phone = req.getParameter("phone");
+        SearchDTO searchDTO = new SearchDTO(phone);
+
+        Optional<UserDto> optionalUserDto = this.userService.findByPhone(searchDTO);
+
+        if(optionalUserDto.isPresent()){
+            req.setAttribute("message","search results not found");
+        }
+        req.getRequestDispatcher("Search.jsp").forward(req,resp);
     }
+}
 
