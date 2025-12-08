@@ -109,11 +109,12 @@ public class UserDaoImpl implements UserDao {
             {
                 System.out.println("result row found ...");
 
-                String firstname = resultSet.getString(1);
-                String lastname = resultSet.getString(2);
-                String email =  resultSet.getString(3);
-                String phone = resultSet.getString(4);
-                int age = resultSet.getInt(5);
+                String firstname = resultSet.getString("FirstName");
+                String lastname = resultSet.getString("LastName");
+                String email = resultSet.getString("Email");
+                String phone = resultSet.getString("Phone");
+                int age = resultSet.getInt("Age");
+
 
                 UserDto userDto = new UserDto(firstname,lastname,email,phone,age);
 

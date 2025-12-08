@@ -72,10 +72,18 @@ public class UserServlet extends HttpServlet {
        String phone = req.getParameter("phone");
         SearchDTO searchDTO = new SearchDTO(phone);
 
+
         Optional<UserDto> optionalUserDto = this.userService.findByPhone(searchDTO);
 
         if(optionalUserDto.isPresent()){
+
+          //  req.setAttribute("userDTO",optionalUserDto.get());
+            req.getSession().setAttribute("userDTO", optionalUserDto.get());
+
+            req.setAttribute("message","");
+        }else {
             req.setAttribute("message","search results not found");
+            req.setAttribute("userDTO",null);
         }
         req.getRequestDispatcher("Search.jsp").forward(req,resp);
     }

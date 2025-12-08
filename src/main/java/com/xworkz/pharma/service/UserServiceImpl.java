@@ -3,7 +3,6 @@ package com.xworkz.pharma.service;
 import com.xworkz.pharma.dao.UserDao;
 import com.xworkz.pharma.dao.UserDaoImpl;
 import com.xworkz.pharma.dto.SearchDTO;
-import com.xworkz.pharma.dto.SearchDTo;
 import com.xworkz.pharma.dto.UserDto;
 import com.xworkz.pharma.exception.InvalidException;
 
@@ -61,7 +60,7 @@ public class UserServiceImpl  implements UserService {
         }
 
     @Override
-    public Optional<UserDto> findByPhone(SearchDTo searchDTo) {
+    public Optional<UserDto> findByPhone(SearchDTO searchDTO) {
 
 
         String phone = searchDTO.getMobileNo();
@@ -76,10 +75,10 @@ public class UserServiceImpl  implements UserService {
         {
             System.out.println("phone is valid call dao..");
             Optional<UserDto> optionalUserDto = this.userDao.findByPhone(phone);
-            System.out.println("optional FISh DTO:"+optionalUserDto.isPresent());
+            System.out.println("optional User DTO:"+optionalUserDto.isPresent());
             return optionalUserDto;
         }
-        return UserService.super.findByPhone(searchDTo);
+        return UserService.super.findByPhone(searchDTO);
     }
 }
 
