@@ -52,7 +52,7 @@ public class UserServlet extends HttpServlet {
             req.setAttribute("age", age);
 
             RequestDispatcher rd = req.getRequestDispatcher("UserResult.jsp");
-            rd.forward(req,resp);
+            rd.forward(req , resp);
 //
             System.out.println("DTO:"+userDto);
 
