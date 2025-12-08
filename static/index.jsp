@@ -17,7 +17,6 @@
 
         <h1 class="mb-4 text-primary">Matrimony Project</h1>
 
-
         <div class="list-group">
             <a href="Matrimony.jsp" class="list-group-item list-group-item-action"> Matrimony form </a>
 
@@ -26,7 +25,13 @@
         <div class="list-group">
             <a href="registration.jsp" class="list-group-item list-group-item-action"> Register here </a>
 
-            <a class="nav-link" href="FishSearch.jsp">Search</a>
+
+<h1 class="mb-4 text-primary">Search </h1>
+
+        <div class="list-group">
+            <a href="Search.jsp" class="list-group-item list-group-item-action"> Search here </a>
+
+
 
         </div>
     </div>
