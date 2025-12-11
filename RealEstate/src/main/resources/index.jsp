@@ -26,6 +26,11 @@
         <div class="list-group">
             <a href="Search.jsp" class="list-group-item list-group-item-action"> Search here </a>
 
+<h1 class="mb-4 text-primary">Search  by property type</h1>
+
+        <div class="list-group">
+            <a href="RealEstateSearch.jsp" class="list-group-item list-group-item-action"> Search by property </a>
+
 
 
         </div>

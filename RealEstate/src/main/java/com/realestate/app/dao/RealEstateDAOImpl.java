@@ -4,6 +4,8 @@ import com.realestate.app.dto.RealEstateDTO;
 import lombok.SneakyThrows;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class RealEstateDAOImpl implements RealEstateDAO{
@@ -91,7 +93,7 @@ public class RealEstateDAOImpl implements RealEstateDAO{
 
 
         while(resultSet.next()){
-            System.out.println("Results are not found ..");
+            System.out.println("Results are found ..");
 
             String fullName = resultSet.getString("full_name");
             String email = resultSet.getString("email");
@@ -110,5 +112,41 @@ public class RealEstateDAOImpl implements RealEstateDAO{
         System.out.println("result set no rows found..");
 
         return RealEstateDAO.super.findByEmail(gmail);
+    }
+
+    @Override
+    @SneakyThrows
+    public List<RealEstateDTO> findByPropertyType(String propertyType) {
+
+        System.out.println("running findByPropertyType in RealEstateDAO :+"+propertyType);
+        String propertyTypeSQL="select * from real_estate_inquiry where property_type=?";
+
+        List<RealEstateDTO> realEstateDTOS = new ArrayList<>();
+
+        try(Connection connection = DriverManager.getConnection(URl,USER,PASS);
+            PreparedStatement preparedStatement =connection.prepareStatement(propertyTypeSQL))
+        {
+            preparedStatement.setString(1,propertyType);
+            ResultSet resultSet =preparedStatement.executeQuery();
+
+
+            while (resultSet.next())
+            {
+                String fullName = resultSet.getString("full_name");
+                String email = resultSet.getString("email");
+                String propertyTypeSearch = resultSet.getString("property_type");
+                double budget = resultSet.getDouble("budget");
+                String message = resultSet.getString("message");
+
+
+                RealEstateDTO realEstateDTO = new RealEstateDTO(fullName,email,propertyTypeSearch,budget,message);
+                realEstateDTOS.add(realEstateDTO);
+                System.out.println("REAL ESTATE DTO:" + realEstateDTO);
+
+            }
+        }
+        System.out.println("total fishDTOS from DAO after result set:"+realEstateDTOS.size());
+
+        return realEstateDTOS;
     }
 }

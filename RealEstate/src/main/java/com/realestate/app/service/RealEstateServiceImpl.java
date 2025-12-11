@@ -7,6 +7,8 @@ import com.realestate.app.dto.SearchDTO;
 import com.realestate.app.exception.RealEstateException;
 import com.sun.org.apache.regexp.internal.RE;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 public class RealEstateServiceImpl implements RealEstateService{
@@ -78,5 +80,21 @@ public class RealEstateServiceImpl implements RealEstateService{
 
         }
         return RealEstateService.super.findByGmail(searchDTO);
+    }
+
+    @Override
+    public List<RealEstateDTO> findByPropertyType(SearchDTO searchDTO) {
+
+        System.out.println("running find by property type:"+searchDTO);
+        String property = searchDTO.getPropertyType();
+        if(property != null && property.length()>3)
+        {
+            System.out.println("property type is valid");
+            List<RealEstateDTO> realEstateDTOS = this.realEstateDAO.findByPropertyType(property);
+            System.out.println("total real estate from DAO:"+realEstateDTOS.size());
+            return realEstateDTOS;
+        }
+        System.out.println("property not valid");
+        return Collections.emptyList();
     }
 }

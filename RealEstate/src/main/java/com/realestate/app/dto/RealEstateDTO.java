@@ -17,6 +17,4 @@ public class RealEstateDTO implements Serializable {
     private double budget;
     private String message;
 
-
-
 }

@@ -11,4 +11,10 @@ import java.io.Serializable;
 public class SearchDTO implements Serializable {
 
     private String emailID;
+    private String propertyType;
+
+    public SearchDTO(String mail) {
+        this.emailID = mail;
+
+    }
 }

@@ -12,6 +12,27 @@
 </head>
 <body class="bg-light">
 
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg bg-dark navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="index.jsp">RealEstate</a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <div class="navbar-nav">
+                <a class="nav-link" href="index.jsp">Home</a>
+                <a class="nav-link" href="Registration.jsp">Register</a>
+                <a class="nav-link" href="Search.jsp">Search by Email</a>
+                <a class="nav-link active" href="RealEstateSearch.jsp">Search by Property Type</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
     <div class="container py-5">
         <div class="row justify-content-center">
             <div class="col-md-6">
@@ -52,6 +73,7 @@
                             </div>
 
                             <div class="mb-3">
+
                                 <label class="form-label">Message / Requirements</label>
                                 <textarea name="message" id="message" class="form-control" rows="3"   placeholder="Describe your requirements...">${sessionScope.editDTO.message}</textarea>
                             </div>
