@@ -11,6 +11,8 @@ public interface RealEstateService {
 
     void validateAndSave(RealEstateDTO realEstateDTO) throws RealEstateException;
 
+    boolean update(RealEstateDTO realEstateDTO);
+
     default Optional<RealEstateDTO> findByGmail (SearchDTO searchDTO){
         return Optional.empty();
     }

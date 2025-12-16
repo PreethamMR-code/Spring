@@ -1,6 +1,7 @@
 package com.realestate.app.dao;
 
 import com.realestate.app.dto.RealEstateDTO;
+import com.realestate.app.dto.SearchDTO;
 import lombok.SneakyThrows;
 
 import java.sql.*;
@@ -75,6 +76,31 @@ public class RealEstateDAOImpl implements RealEstateDAO{
             e.printStackTrace();
             return false;
         }
+    }
+
+    @Override
+    @SneakyThrows
+    public boolean update(RealEstateDTO realEstateDTO) {
+
+        String updateSql ="UPDATE real_estate_inquiry SET full_name = ?, property_type = ?, budget = ?, message = ? WHERE email = ?";
+
+        try(Connection connection = DriverManager.getConnection(URl,USER,PASS);
+            PreparedStatement preparedStatement =connection.prepareStatement(updateSql))
+        {
+            preparedStatement.setString(1, realEstateDTO.getFullName());
+            preparedStatement.setString(2, realEstateDTO.getPropertyType());
+            preparedStatement.setDouble(3, realEstateDTO.getBudget());
+            preparedStatement.setString(4, realEstateDTO.getMessage());
+            preparedStatement.setString(5, realEstateDTO.getEmail());
+
+            int rows = preparedStatement.executeUpdate();
+            System.out.println("rows updated:"+rows);
+
+            return rows == 1;
+
+
+        }
+
     }
 
     @Override

@@ -60,6 +60,46 @@ public class RealEstateServiceImpl implements RealEstateService{
     }
 
     @Override
+    public boolean update(RealEstateDTO realEstateDTO ) {
+
+        boolean invalid = false;
+
+        if (realEstateDTO == null) {
+            return false;
+        }
+
+        if (realEstateDTO.getFullName() == null ||
+                realEstateDTO.getFullName().trim().length() < 4) {
+            invalid = true;
+        }
+
+        if (realEstateDTO.getEmail() == null ||
+                !realEstateDTO.getEmail().contains("@")) {
+            invalid = true;
+        }
+
+        if (realEstateDTO.getPropertyType() == null ||
+                realEstateDTO.getPropertyType().isEmpty()) {
+            invalid = true;
+        }
+
+        if (realEstateDTO.getBudget() <= 0) {
+            invalid = true;
+        }
+
+        if (realEstateDTO.getMessage() == null ||
+                realEstateDTO.getMessage().length() < 5) {
+            invalid = true;
+        }
+
+        if (invalid) {
+            return false;
+        }
+
+        return realEstateDAO.update(realEstateDTO);
+    }
+
+    @Override
     public Optional<RealEstateDTO> findByGmail(SearchDTO searchDTO) {
 
         String mail = searchDTO.getEmailID();

@@ -40,9 +40,19 @@
                 <div class="card shadow-lg">
                     <div class="card-header text-center bg-primary text-white">
                         <h3>Property Update Form</h3>
+                           ${sessionScope.editDto.fullName}
                     </div>
 
                     <div class="card-body">
+
+                    <c:if test="${not empty success}">
+                        <div class="alert alert-success mt-2">${success}</div>
+                    </c:if>
+
+                    <c:if test="${not empty error}">
+                        <div class="alert alert-danger mt-2">${error}</div>
+                    </c:if>
+
 
                         <form action="Update" method="POST">
 
@@ -50,6 +60,8 @@
                                 <label class="form-label">Full Name</label>
                                 <input type="text" id="fullName" name="fullName" class="form-control" placeholder="Enter your name" value="${sessionScope.editDTO.fullName}" required>
                             </div>
+
+
 
                             <div class="mb-3">
                                 <label class="form-label">Email Address</label>
@@ -78,7 +90,16 @@
                                 <textarea name="message" id="message" class="form-control" rows="3"   placeholder="Describe your requirements...">${sessionScope.editDTO.message}</textarea>
                             </div>
 
-                            <button type="submit" class="btn btn-primary w-100">Update</button>
+
+
+                     <!-- <a href= "Update?email=${sessionScope.editDTO.email}"
+                                   class="btn btn-sm btn-warning">
+                                    update...
+                                </a> -->
+
+
+
+                            <input type="submit" class="btn btn-primary w-100" value="Update">
 
                         </form>
 
