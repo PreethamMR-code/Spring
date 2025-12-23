@@ -33,7 +33,7 @@
 
             <div class="card shadow-lg">
                 <div class="card-header text-center bg-primary text-white">
-                    <h3>Add Your Restaurant</h3>
+                    <h3>update on Restaurant</h3>
                 </div>
 
                 <div class="card-body">
