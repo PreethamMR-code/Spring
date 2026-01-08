@@ -10,13 +10,13 @@ public class Runner {
 
         EventService eventService = new EventServiceImpl();
 
-//        EventDTO eventDTO =  new EventDTO();
-//        eventDTO.setId(1);
-//        eventDTO.setEventName("Republic day");
-//        eventDTO.setEventManager("Preetham M R");
-//        eventDTO.setEventTime("31122025");
-//
-//        eventService.validateAndSave(eventDTO);
+        EventDTO eventDTO =  new EventDTO();
+        eventDTO.setId(1);
+        eventDTO.setEventName("Republic day");
+        eventDTO.setEventManager("Preetham M R");
+        eventDTO.setEventTime("31122025");
+
+        eventService.validateAndSave(eventDTO);
 
         EventDTO eventDTO1 =eventService.getByID(1);
 
@@ -31,8 +31,8 @@ public class Runner {
         System.out.println(isUpdated+"Is Updated ");
 
 
-//        boolean isDeleted = eventService.deleteById(1);
-//        System.out.println(isDeleted+"data deleted");
+        boolean isDeleted = eventService.deleteById(1);
+        System.out.println(isDeleted+"data deleted");
 
     }
 
