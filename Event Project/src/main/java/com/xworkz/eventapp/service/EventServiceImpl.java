@@ -35,6 +35,7 @@ public class EventServiceImpl implements EventService {
         return eventDTO;
     }
 
+
     @Override
     public boolean updateById(int id, EventDTO eventDTO1) {
       if(id>=0){
