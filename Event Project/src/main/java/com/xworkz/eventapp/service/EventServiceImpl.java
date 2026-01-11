@@ -24,7 +24,7 @@ public class EventServiceImpl implements EventService {
         eventDAO.save(eventEntity);
         return true;
     }
-    
+
 
     @Override
     public EventDTO getByID(int id) {
