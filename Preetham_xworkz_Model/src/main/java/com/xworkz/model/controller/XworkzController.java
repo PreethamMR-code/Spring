@@ -8,6 +8,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import javax.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/")
@@ -47,17 +50,35 @@ public class XworkzController {
     }
 
     @PostMapping("login")
-    public String login(String email, String password, Model model) {
+    public String login(@RequestParam String email,@RequestParam String password, Model model, HttpSession session) {
 
         boolean valid = studentService.validateLogin(email, password);
 
         if (valid) {
+            session.setAttribute("studentEmail",email);
+            session.setAttribute("studentName",email);  //replace real name later
             return "dashboard";
         } else {
             model.addAttribute("error", "Invalid email or password");
             return "login";
         }
     }
+
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate();   // clear session
+        return "redirect:/login";
+    }
+
+    @GetMapping("/dashboard")
+    public String dashboard(HttpSession session) {
+        if (session.getAttribute("studentEmail") == null) {
+            return "redirect:/login";
+        }
+        return "dashboard";
+    }
+
+
 
 
 
