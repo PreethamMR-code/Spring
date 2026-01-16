@@ -28,11 +28,11 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4">
     <a class="navbar-brand d-flex align-items-center" href="<c:url value='/'/>">
         <img src="<c:url value='/assets/xworkz-logo.png'/>" class="me-2" alt="X-Workz Logo">
-        <span>X-Workz Training</span>
+        <span> Training</span>
     </a>
 
     <div class="collapse navbar-collapse">
-        <ul class="navbar-nav ms-auto">
+        <ul class="navbar-nav ms-auto align-items-center">
             <li class="nav-item">
                 <a class="nav-link" href="<c:url value='/'/>">Home</a>
             </li>
@@ -42,7 +42,13 @@
             <li class="nav-item">
                 <a class="nav-link" href="#">Profile</a>
             </li>
+            <li class="nav-item ms-3">
+                <a class="btn btn-outline-light btn-sm" href="<c:url value='/logout'/>">
+                    Logout
+                </a>
+            </li>
         </ul>
+
     </div>
 </nav>
 
