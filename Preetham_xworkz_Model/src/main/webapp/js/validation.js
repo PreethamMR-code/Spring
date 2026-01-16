@@ -1,104 +1,113 @@
-// ===== SIGNUP VALIDATION =====
-function validateSignupForm(event) {
-    const name    = document.getElementsByName('name')[0].value.trim();
-    const email   = document.getElementsByName('email')[0].value.trim();
-    const phone   = document.getElementsByName('phone')[0].value.trim();
-    const ageStr  = document.getElementsByName('age')[0].value.trim();
-    const gender  = document.querySelector('input[name="gender"]:checked');
-    const address = document.getElementsByName('address')[0].value.trim();
-    const pwd     = document.getElementById('password').value;
-    const cpwd    = document.getElementById('confirmPassword').value;
+function validateSignupForm(event){
 
-    // Name
-    if (!name) {
-        alert("Please enter your full name");
-        event.preventDefault();
-        return false;
+    // Clear old errors
+    document.querySelectorAll("small.text-danger").forEach(e => e.innerText = "");
+
+
+    let valid = true;
+
+    function validateName() {
+        const name = document.getElementsByName("name")[0].value.trim();
+        document.getElementById("nameError").innerText =
+            name ? "" : "Name is required";
     }
 
-    // Email (simple pattern)
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email || !emailRegex.test(email)) {
-        alert("Please enter a valid email address");
-        event.preventDefault();
-        return false;
+    function validateEmail() {
+        const email = document.getElementsByName("email")[0].value.trim();
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        document.getElementById("emailError").innerText =
+            regex.test(email) ? "" : "Enter a valid email";
     }
 
-    // Phone: digits and length >= 10
-    const phoneRegex = /^[0-9]{10,}$/;
-    if (!phone || !phoneRegex.test(phone)) {
-        alert("Please enter a valid mobile number (at least 10 digits)");
-        event.preventDefault();
-        return false;
+    function validatePhone() {
+        const phone = document.getElementsByName("phone")[0].value.trim();
+        document.getElementById("phoneError").innerText =
+            /^[6-9][0-9]{9}$/.test(phone)
+                ? ""
+                : "Mobile must start with 6–9 and be 10 digits";
     }
 
-    // Age: between 10 and 100
-    const age = parseInt(ageStr, 10);
-    if (isNaN(age) || age < 10 || age > 100) {
-        alert("Please enter a valid age between 10 and 100");
-        event.preventDefault();
-        return false;
+    function validateAge() {
+        const age = document.getElementsByName("age")[0].value;
+        document.getElementById("ageError").innerText =
+            age >= 18 ? "" : "Age must be 18 or above";
     }
 
-    // Gender
-    if (!gender) {
-        alert("Please select gender");
-        event.preventDefault();
-        return false;
+    function validateGender() {
+        const gender = document.querySelector('input[name="gender"]:checked');
+        document.getElementById("genderError").innerText =
+            gender ? "" : "Please select gender";
     }
 
-    // Address
-    if (!address || address.length < 5) {
-        alert("Please enter a valid address (minimum 5 characters)");
-        event.preventDefault();
-        return false;
+    function validateAddress() {
+        const address = document.getElementsByName("address")[0].value.trim();
+        document.getElementById("addressError").innerText =
+            address.length >= 5 ? "" : "Address must be at least 5 characters";
     }
 
-    // Password
-    if (!pwd || !cpwd) {
-        alert("Please enter password and confirm password");
-        event.preventDefault();
-        return false;
+    function validatePassword() {
+        const pwd = document.getElementById("password").value;
+        const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+        document.getElementById("passwordError").innerText =
+            regex.test(pwd)
+                ? ""
+                : "Must contain uppercase, lowercase, number & special character";
     }
 
-    if (pwd.length < 8) {
-        alert("Password must be at least 8 characters");
-        event.preventDefault();
-        return false;
+    function validateConfirmPassword() {
+        const pwd = document.getElementById("password").value;
+        const cpwd = document.getElementById("confirmPassword").value;
+        document.getElementById("confirmPasswordError").innerText =
+            pwd === cpwd ? "" : "Passwords do not match";
     }
 
-    if (pwd !== cpwd) {
-        alert("Password and Confirm Password must match");
+
+
+    if(!valid){
         event.preventDefault();
-        return false;
     }
 
-    return true;
+    return valid;
 }
 
-// ===== LOGIN VALIDATION =====
-function validateLoginForm(event) {
-    const email = document.getElementsByName('email')[0].value.trim();
-    const pwd   = document.getElementsByName('password')[0].value;
 
-    if (!email || !pwd) {
-        alert("Email and Password are required");
-        event.preventDefault();
-        return false;
-    }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        alert("Please enter a valid email address");
-        event.preventDefault();
-        return false;
-    }
 
-    if (pwd.length < 8) {
-        alert("Password must be at least 8 characters");
-        event.preventDefault();
-        return false;
-    }
+/// ===== LOGIN VALIDATION (INLINE) =====
+ function validateLoginForm(event) {
 
-    return true;
-}
+     // Clear previous errors
+     document.getElementById("loginEmailError").innerText = "";
+     document.getElementById("loginPasswordError").innerText = "";
+
+     let valid = true;
+
+     const email = document.getElementsByName("email")[0].value.trim();
+     const pwd   = document.getElementsByName("password")[0].value;
+
+     // Email validation
+     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+     if (!email) {
+         document.getElementById("loginEmailError").innerText = "Email is required";
+         valid = false;
+     } else if (!emailRegex.test(email)) {
+         document.getElementById("loginEmailError").innerText = "Enter a valid email address";
+         valid = false;
+     }
+
+     // Password validation
+     if (!pwd) {
+         document.getElementById("loginPasswordError").innerText = "Password is required";
+         valid = false;
+     } else if (pwd.length < 8) {
+         document.getElementById("loginPasswordError").innerText =
+             "Password must be at least 8 characters";
+         valid = false;
+     }
+
+     if (!valid) {
+         event.preventDefault();
+     }
+
+     return valid;
+ }
