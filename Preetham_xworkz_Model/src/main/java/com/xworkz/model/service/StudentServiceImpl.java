@@ -58,7 +58,7 @@ public class StudentServiceImpl implements StudentService {
             return false;
         }
 
-        if (dto.getName() == null || dto.getName().trim().isEmpty()){
+        if (dto.getName() == null || dto.getName().trim().isEmpty()) {
             return false;
         }
 
@@ -66,11 +66,13 @@ public class StudentServiceImpl implements StudentService {
             return false;
         }
 
-        if (dto.getPhone() == null || dto.getPhone().trim().length() < 10) {
+        // Phone must start with 6–9 and be 10 digits
+        if (dto.getPhone() == null || !dto.getPhone().matches("[6-9][0-9]{9}")) {
             return false;
         }
 
-        if (dto.getAge() == 0 || dto.getAge() < 10 || dto.getAge() > 100) {
+        // Age must be 18+
+        if (dto.getAge() < 18 || dto.getAge() > 100) {
             return false;
         }
 
@@ -100,11 +102,17 @@ public class StudentServiceImpl implements StudentService {
         dto.setConfirmPassword(null);   // do NOT store confirm password
 
         StudentEntity studentEntity = new StudentEntity();
-        BeanUtils.copyProperties(dto, studentEntity);
+        studentEntity.setName(dto.getName());
+        studentEntity.setEmail(dto.getEmail());
+        studentEntity.setPhone(dto.getPhone());
+        studentEntity.setAge(dto.getAge());
+        studentEntity.setGender(dto.getGender());
+        studentEntity.setAddress(dto.getAddress());
+        studentEntity.setPassword(dto.getPassword());   // encrypted password
 
         return studentDAO.save(studentEntity);
-
     }
+
 
     @Override
     public boolean validateLogin(String email, String password) {
