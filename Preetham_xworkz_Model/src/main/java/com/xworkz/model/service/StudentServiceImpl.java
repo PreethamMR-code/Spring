@@ -3,7 +3,7 @@ package com.xworkz.model.service;
 import com.xworkz.model.DTO.StudentDTO;
 import com.xworkz.model.entity.StudentEntity;
 import com.xworkz.model.repository.StudentDAO;
-import org.springframework.beans.BeanUtils;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -54,84 +54,30 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public boolean saveStudent(StudentDTO dto) {
 
-        if (dto == null) {
-            return false;
-        }
+        // ONLY business logic here
+        String encryptedPassword = encrypt(dto.getPassword());
 
-        if (dto.getName() == null || dto.getName().trim().isEmpty()) {
-            return false;
-        }
+        StudentEntity entity = new StudentEntity();
+        entity.setName(dto.getName());
+        entity.setEmail(dto.getEmail());
+        entity.setPhone(dto.getPhone());
+        entity.setAge(dto.getAge());
+        entity.setGender(dto.getGender());
+        entity.setAddress(dto.getAddress());
+        entity.setPassword(encryptedPassword);
 
-        if (dto.getEmail() == null || !dto.getEmail().contains("@")) {
-            return false;
-        }
-
-        // Phone must start with 6–9 and be 10 digits
-        if (dto.getPhone() == null || !dto.getPhone().matches("[6-9][0-9]{9}")) {
-            return false;
-        }
-
-        // Age must be 18+
-        if (dto.getAge() < 18 || dto.getAge() > 100) {
-            return false;
-        }
-
-        if (dto.getGender() == null || dto.getGender().trim().isEmpty()) {
-            return false;
-        }
-
-        if (dto.getAddress() == null || dto.getAddress().trim().isEmpty()) {
-            return false;
-        }
-
-        if (dto.getPassword() == null || dto.getPassword().length() < 8) {
-            return false;
-        }
-
-        // confirm password check (not stored)
-        if (dto.getConfirmPassword() == null ||
-                !dto.getPassword().equals(dto.getConfirmPassword())) {
-            return false;
-        }
-
-        // ===============================
-
-        // encrypt password before saving
-        String encryptedPwd = encrypt(dto.getPassword());
-        dto.setPassword(encryptedPwd);
-        dto.setConfirmPassword(null);   // do NOT store confirm password
-
-        StudentEntity studentEntity = new StudentEntity();
-        studentEntity.setName(dto.getName());
-        studentEntity.setEmail(dto.getEmail());
-        studentEntity.setPhone(dto.getPhone());
-        studentEntity.setAge(dto.getAge());
-        studentEntity.setGender(dto.getGender());
-        studentEntity.setAddress(dto.getAddress());
-        studentEntity.setPassword(dto.getPassword());   // encrypted password
-
-        return studentDAO.save(studentEntity);
+        return studentDAO.save(entity);
     }
-
 
     @Override
     public boolean validateLogin(String email, String password) {
-
-
-        if (email == null || !email.contains("@")) {
-            return false;
-        }
-        if (password == null || password.length() < 8) {
-            return false;
-        }
 
         StudentEntity entity = studentDAO.findByEmail(email);
         if (entity == null) {
             return false;
         }
 
-        // decrypt stored password and compare with raw input
-        String decryptedPwd = decrypt(entity.getPassword());
-        return decryptedPwd.equals(password);
+        String decryptedPassword = decrypt(entity.getPassword());
+        return decryptedPassword.equals(password);
     }
 }
