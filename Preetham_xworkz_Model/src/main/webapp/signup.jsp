@@ -22,17 +22,10 @@
 <!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
     <div class="container-fluid px-4">
-
         <a class="navbar-brand d-flex align-items-center" href="<c:url value='/'/>">
             <img src="<c:url value='/assets/xworkz-logo.png'/>" class="me-2" alt="X-Workz">
             <span class="fw-bold">X-Workz</span>
         </a>
-
-        <div class="ms-auto">
-            <a href="<c:url value='/login'/>" class="btn btn-outline-light me-2">Login</a>
-            <a href="<c:url value='/signup'/>" class="btn btn-warning">Sign Up</a>
-        </div>
-
     </div>
 </nav>
 
@@ -47,84 +40,104 @@
 <div class="card shadow p-4">
 <h4 class="text-center mb-3">Student Registration</h4>
 
-<form action="<c:url value='/signup'/>" method="post" onsubmit="return validateSignupForm(event)">
+<form action="<c:url value='/signup'/>"
+      method="post"
+      novalidate
+      oninput="validateSignupForm(event)"
+      onchange="validateSignupForm(event)"
+      onsubmit="return validateSignupForm(event)">
 
-<!-- Name -->
-<div class="mb-3">
-    <label class="form-label">Full Name</label>
-    <input type="text" name="name" class="form-control" value="${param.name}">
-    <small class="text-danger" id="nameError"><c:out value="${nameError}" /></small>
-</div>
-
-<!-- Email -->
-<div class="mb-3">
-    <label class="form-label">Email</label>
-    <input type="email" name="email" class="form-control" value="${param.email}">
-    <small class="text-danger" id="emailError"><c:out value="${emailError}" /></small>
-</div>
-
-<!-- Phone -->
-<div class="mb-3">
-    <label class="form-label">Mobile</label>
-    <input type="text" name="phone" class="form-control"
-           maxlength="10" value="${param.phone}">
-    <small class="text-danger" id="phoneError"><c:out value="${phoneError}" /></small>
-</div>
-
-<!-- Age -->
-<div class="mb-3">
-    <label class="form-label">Age</label>
-    <input type="number" name="age" class="form-control"
-           min="18" max="100" value="${param.age}">
-    <small class="text-danger" id="ageError"><c:out value="${ageError}" /></small>
-</div>
-
-<!-- Gender -->
-<div class="mb-3">
-    <label class="form-label d-block">Gender</label>
-
-    <div class="form-check form-check-inline">
-        <input class="form-check-input" type="radio" name="gender" value="M"
-               <c:if test="${param.gender == 'M'}">checked</c:if>>
-        <label class="form-check-label">Male</label>
+    <!-- Full Name -->
+    <div class="mb-3">
+        <label class="form-label">Full Name</label>
+        <input type="text" name="name" class="form-control">
+        <c:if test="${not empty nameError}">
+            <small class="text-danger d-block">${nameError}</small>
+        </c:if>
+        <small class="text-danger" id="nameError"></small>
     </div>
 
-    <div class="form-check form-check-inline">
-        <input class="form-check-input" type="radio" name="gender" value="F"
-               <c:if test="${param.gender == 'F'}">checked</c:if>>
-        <label class="form-check-label">Female</label>
+    <!-- Email -->
+    <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input type="email" name="email" class="form-control">
+        <c:if test="${not empty emailError}">
+            <small class="text-danger d-block">${emailError}</small>
+        </c:if>
+        <small class="text-danger" id="emailError"></small>
     </div>
 
-    <br>
-    <small class="text-danger" id="genderError"><c:out value="${genderError}" /></small>
-</div>
+    <!-- Mobile -->
+    <div class="mb-3">
+        <label class="form-label">Mobile</label>
+        <input type="text" name="phone" class="form-control" maxlength="10">
+        <c:if test="${not empty phoneError}">
+            <small class="text-danger d-block">${phoneError}</small>
+        </c:if>
+        <small class="text-danger" id="phoneError"></small>
+    </div>
 
-<!-- Address -->
-<div class="mb-3">
-    <label class="form-label">Address</label>
-    <textarea name="address" class="form-control" rows="3">${param.address}</textarea>
-    <small class="text-danger" id="addressError"><c:out value="${addressError}" /></small>
-</div>
+    <!-- Age -->
+    <div class="mb-3">
+        <label class="form-label">Age</label>
+        <input type="number" name="age" class="form-control" min="18" max="100">
+        <c:if test="${not empty ageError}">
+            <small class="text-danger d-block">${ageError}</small>
+        </c:if>
+        <small class="text-danger" id="ageError"></small>
+    </div>
 
-<!-- Password -->
-<div class="mb-3">
-    <label class="form-label">Password</label>
-    <input type="password" name="password" id="password" class="form-control">
-    <small class="text-danger" id="passwordError"><c:out value="${passwordError}" /></small>
-</div>
+    <!-- Gender -->
+    <div class="mb-3">
+        <label class="form-label d-block">Gender</label>
 
-<!-- Confirm Password -->
-<div class="mb-3">
-    <label class="form-label">Confirm Password</label>
-    <input type="password" name="confirmPassword" id="confirmPassword" class="form-control">
-    <small class="text-danger" id="confirmPasswordError">
-        <c:out value="${confirmPasswordError}" />
-    </small>
-</div>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="gender" value="M">
+            <label class="form-check-label">Male</label>
+        </div>
 
-<button type="submit" class="btn btn-warning w-100">
-    Create Account
-</button>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="gender" value="F">
+            <label class="form-check-label">Female</label>
+        </div>
+
+        <c:if test="${not empty genderError}">
+            <small class="text-danger d-block">${genderError}</small>
+        </c:if>
+        <small class="text-danger d-block" id="genderError"></small>
+    </div>
+
+    <!-- Address -->
+    <div class="mb-3">
+        <label class="form-label">Address</label>
+        <textarea name="address" class="form-control" rows="3"></textarea>
+        <c:if test="${not empty addressError}">
+            <small class="text-danger d-block">${addressError}</small>
+        </c:if>
+        <small class="text-danger" id="addressError"></small>
+    </div>
+
+    <!-- Password -->
+    <div class="mb-3">
+        <label class="form-label">Password</label>
+        <input type="password" name="password" id="password" class="form-control">
+        <c:if test="${not empty passwordError}">
+            <small class="text-danger d-block">${passwordError}</small>
+        </c:if>
+        <small class="text-danger" id="passwordError"></small>
+    </div>
+
+    <!-- Confirm Password -->
+    <div class="mb-3">
+        <label class="form-label">Confirm Password</label>
+        <input type="password" name="confirmPassword" id="confirmPassword" class="form-control">
+        <c:if test="${not empty confirmPasswordError}">
+            <small class="text-danger d-block">${confirmPasswordError}</small>
+        </c:if>
+        <small class="text-danger" id="confirmPasswordError"></small>
+    </div>
+
+    <button type="submit" class="btn btn-warning w-100">Create Account</button>
 
 </form>
 
@@ -138,8 +151,8 @@
 </div>
 </div>
 
-<script src="<c:url value='/js/validation.js'/>"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="<c:url value='/assets/js/validation.js'/>"></script>
 
 </body>
 </html>
