@@ -1,31 +1,27 @@
-<%@ page contentType="text/html; charset=UTF-8" %>
+<!DOCTYPE html>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page isELIgnored="false" %>
 
-<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <title>Student Signup</title>
 
-    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
           rel="stylesheet">
 
     <style>
-        body { padding-top: 70px; }
-        .navbar-brand img { height: 40px; }
+        body {
+            padding-top: 70px;
+        }
     </style>
 </head>
 
 <body class="bg-light">
 
-<!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
     <div class="container-fluid px-4">
-        <a class="navbar-brand d-flex align-items-center" href="<c:url value='/'/>">
-            <img src="<c:url value='/assets/xworkz-logo.png'/>" class="me-2" alt="X-Workz">
-            <span class="fw-bold">X-Workz</span>
-        </a>
+        <a class="navbar-brand" href="/">X-Workz</a>
     </div>
 </nav>
 
@@ -34,57 +30,51 @@
 <div class="col-md-5">
 
 <c:if test="${not empty error}">
-    <div class="alert alert-danger text-center">${error}</div>
+    <div class="alert alert-danger text-center">
+        ${error}
+    </div>
 </c:if>
 
 <div class="card shadow p-4">
-<h4 class="text-center mb-3">Student Registration</h4>
 
-<form action="<c:url value='/signup'/>"
-      method="post"
-      novalidate
-      oninput="validateSignupForm(event)"
-      onchange="validateSignupForm(event)"
-      onsubmit="return validateSignupForm(event)">
+    <div class="text-center mb-3">
+        <img src="https://x-workz.com/Logo.png" height="50">
+    </div>
 
-    <!-- Full Name -->
+    <h4 class="text-center fw-bold mb-4">Create Account</h4>
+
+<form action="signup" method="post">
+
+    <!-- Name -->
     <div class="mb-3">
         <label class="form-label">Full Name</label>
-        <input type="text" name="name" class="form-control">
-        <c:if test="${not empty nameError}">
-            <small class="text-danger d-block">${nameError}</small>
-        </c:if>
-        <small class="text-danger" id="nameError"></small>
+        <input type="text" name="name" class="form-control"
+               value="${param.name}">
+        <small class="text-danger">${nameError}</small>
     </div>
 
     <!-- Email -->
     <div class="mb-3">
         <label class="form-label">Email</label>
-        <input type="email" name="email" class="form-control">
-        <c:if test="${not empty emailError}">
-            <small class="text-danger d-block">${emailError}</small>
-        </c:if>
-        <small class="text-danger" id="emailError"></small>
+        <input type="email" name="email" class="form-control"
+               value="${param.email}">
+        <small class="text-danger">${emailError}</small>
     </div>
 
-    <!-- Mobile -->
+    <!-- Phone -->
     <div class="mb-3">
         <label class="form-label">Mobile</label>
-        <input type="text" name="phone" class="form-control" maxlength="10">
-        <c:if test="${not empty phoneError}">
-            <small class="text-danger d-block">${phoneError}</small>
-        </c:if>
-        <small class="text-danger" id="phoneError"></small>
+        <input type="text" name="phone" maxlength="10"
+               class="form-control" value="${param.phone}">
+        <small class="text-danger">${phoneError}</small>
     </div>
 
     <!-- Age -->
     <div class="mb-3">
         <label class="form-label">Age</label>
-        <input type="number" name="age" class="form-control" min="18" max="100">
-        <c:if test="${not empty ageError}">
-            <small class="text-danger d-block">${ageError}</small>
-        </c:if>
-        <small class="text-danger" id="ageError"></small>
+        <input type="number" name="age" class="form-control"
+               value="${param.age}">
+        <small class="text-danger">${ageError}</small>
     </div>
 
     <!-- Gender -->
@@ -92,58 +82,54 @@
         <label class="form-label d-block">Gender</label>
 
         <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" name="gender" value="M">
+            <input class="form-check-input" type="radio"
+                   name="gender" value="Male"
+                   ${param.gender == 'Male' ? 'checked' : ''}>
             <label class="form-check-label">Male</label>
         </div>
 
         <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" name="gender" value="F">
+            <input class="form-check-input" type="radio"
+                   name="gender" value="Female"
+                   ${param.gender == 'Female' ? 'checked' : ''}>
             <label class="form-check-label">Female</label>
         </div>
 
-        <c:if test="${not empty genderError}">
-            <small class="text-danger d-block">${genderError}</small>
-        </c:if>
-        <small class="text-danger d-block" id="genderError"></small>
+        <small class="text-danger d-block">${genderError}</small>
     </div>
 
     <!-- Address -->
     <div class="mb-3">
         <label class="form-label">Address</label>
-        <textarea name="address" class="form-control" rows="3"></textarea>
-        <c:if test="${not empty addressError}">
-            <small class="text-danger d-block">${addressError}</small>
-        </c:if>
-        <small class="text-danger" id="addressError"></small>
+        <textarea name="address" class="form-control"
+                  rows="3">${param.address}</textarea>
+        <small class="text-danger">${addressError}</small>
     </div>
 
     <!-- Password -->
     <div class="mb-3">
         <label class="form-label">Password</label>
-        <input type="password" name="password" id="password" class="form-control">
-        <c:if test="${not empty passwordError}">
-            <small class="text-danger d-block">${passwordError}</small>
-        </c:if>
-        <small class="text-danger" id="passwordError"></small>
+        <input type="password" name="password" class="form-control">
+        <small class="text-danger">${passwordError}</small>
     </div>
 
     <!-- Confirm Password -->
     <div class="mb-3">
         <label class="form-label">Confirm Password</label>
-        <input type="password" name="confirmPassword" id="confirmPassword" class="form-control">
-        <c:if test="${not empty confirmPasswordError}">
-            <small class="text-danger d-block">${confirmPasswordError}</small>
-        </c:if>
-        <small class="text-danger" id="confirmPasswordError"></small>
+        <input type="password" name="confirmPassword"
+               class="form-control">
+        <small class="text-danger">${confirmPasswordError}</small>
     </div>
 
-    <button type="submit" class="btn btn-warning w-100">Create Account</button>
+    <button type="submit" class="btn btn-warning w-100">
+        Create Account
+    </button>
 
 </form>
 
 <div class="text-center mt-3">
     Already registered?
-    <a href="<c:url value='/login'/>">Login</a>
+    <a href="login">Login</a>
 </div>
 
 </div>
@@ -151,8 +137,9 @@
 </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="<c:url value='/assets/js/validation.js'/>"></script>
+<footer class="bg-dark text-white text-center py-3 mt-5">
+    <small>&copy; 2026 X-Workz Training Institute</small>
+</footer>
 
 </body>
 </html>

@@ -87,12 +87,13 @@
         Login with OTP
     </div>
 
-    <form action="<c:url value='/login-otp'/>" method="post">
+    <form action="<c:url value='/verify-otp'/>" method="post">
 
         <div class="mb-3">
             <label class="form-label">Registered Email</label>
             <input type="email" name="email" class="form-control"
-                   value="${param.email}" readonly>
+                   value="${userEmail}" readonly>
+
         </div>
 
         <div class="mb-3">
