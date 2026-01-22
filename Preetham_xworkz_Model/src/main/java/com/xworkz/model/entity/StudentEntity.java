@@ -25,5 +25,12 @@ public class StudentEntity {
         private String address;
         private String password;
 
+        @Column(name = "login_count")
+        private int loginCount;
+
+        @Column(name = "otp")
+        private String otp;
+
+
 
 }

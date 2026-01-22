@@ -11,44 +11,40 @@ import javax.validation.constraints.*;
 @NoArgsConstructor
 public class StudentDTO {
 
-        @NotNull(message = "")
+        @NotBlank(message = "Name is required")
         @Size(min = 3, max = 20, message = "Name must be between 3 and 20 characters")
         private String name;
 
-        @NotNull(message = "")
+        @NotBlank(message = "Email is required")
         @Pattern(
                 regexp = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$",
                 message = "Enter a valid email address"
         )
         private String email;
 
-        @NotNull(message = "")
+        @NotBlank(message = "Phone number is required")
         @Pattern(
                 regexp = "^[6-9][0-9]{9}$",
-                message = "Phone must start with 6–9 and be 10 digits"
+                message = "Phone must start with 6-9 and be 10 digits"
         )
         private String phone;
 
-        @NotNull(message = "")
+        @NotNull(message = "Age is required")
         @Min(value = 18, message = "Age must be at least 18")
         @Max(value = 60, message = "Age must not exceed 60")
-        private Integer age;   // ✔ Wrapper type (important)
+        private Integer age;
 
-        @NotNull(message = "")
-        @Pattern(regexp = "[(Male|Female|Other)]", message = "Gender must be M or F")
+        @NotBlank(message = "Gender is required")
         private String gender;
 
-        @NotNull(message = "")
+        @NotBlank(message = "Address is required")
         @Size(min = 5, max = 100, message = "Address must be between 5 and 100 characters")
         private String address;
 
-        @NotNull(message = "")
-        @Size(min = 6, max = 15, message = "Password must be 6–15 characters")
+        @NotBlank(message = "Password is required")
+        @Size(min = 6, message = "Password must be at least 6 characters")
         private String password;
 
-        //  Not stored in DB
-        @NotNull(message = "")
+        @NotBlank(message = "Confirm password is required")
         private String confirmPassword;
-
-
 }
