@@ -13,7 +13,7 @@ public class StudentWebInit extends AbstractAnnotationConfigDispatcherServletIni
 
     @Override
     protected Class<?>[] getServletConfigClasses() {
-        return new Class[]{CoreConfiguration.class};
+        return new Class[]{CoreConfiguration.class , MailConfig.class};
     }
 
     @Override
