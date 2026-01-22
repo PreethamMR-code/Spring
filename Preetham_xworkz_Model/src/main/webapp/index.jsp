@@ -4,137 +4,73 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>X-Workz Training Institute</title>
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-          rel="stylesheet">
-
+    <title>X-Workz | Home</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body{
-            background:#f5f6fa;
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
-        .navbar-brand img{
-            height:50px;
+        main {
+            flex: 1;
         }
-        .hero{
-            min-height:85vh;
-            background: linear-gradient(to right,#000,#222);
-            color:white;
-            display:flex;
-            align-items:center;
+        .logo-img {
+            height: 45px;
+            width: auto;
         }
-        .hero h1{
-            font-size:3rem;
-            font-weight:700;
-        }
-        .hero p{
-            font-size:1.2rem;
-            color:#ddd;
-        }
-        .btn-main{
-            background:#ff4d00;
-            color:white;
-        }
-        .feature-card{
-            border:none;
-            border-radius:12px;
-            box-shadow:0 0 15px rgba(0,0,0,0.1);
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 100px 0;
+            text-align: center;
         }
     </style>
 </head>
+<body class="bg-light">
 
-<body>
-
-<!-- NAVBAR -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4 fixed-top">
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow px-4">
     <a class="navbar-brand d-flex align-items-center" href="<c:url value='/'/>">
-        <img src="<c:url value='/assets/xworkz-logo.png'/>" class="me-2" alt="X-Workz Logo">
+        <img src="https://x-workz.com/Logo.png" class="logo-img me-2" alt="X-Workz">
+        X-Workz Modules
     </a>
-
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-            data-bs-target="#navbarNav">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
     </button>
-
     <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav me-auto">
-            <li class="nav-item"><a class="nav-link active" href="<c:url value='/'/>">Home</a></li>
-            <li class="nav-item"><a class="nav-link" href="#">Courses</a></li>
-            <li class="nav-item"><a class="nav-link" href="#">Placements</a></li>
-            <li class="nav-item"><a class="nav-link" href="#">About</a></li>
-            <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+                <a class="nav-link active fw-semibold" href="">Home</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link fw-semibold" href="#">Courses</a>
+            </li>
         </ul>
-
-        <div class="d-flex">
-            <!-- submit to /login (POST) -->
-            <form action="<c:url value='/login'/>" method="post" class="me-2">
-                <button type="submit" class="btn btn-outline-light">Sign In</button>
-            </form>
-
-            <!-- submit to /signup (POST) -->
-            <form action="<c:url value='/signup'/>" method="post">
-                <button type="submit" class="btn btn-warning">Sign Up</button>
-            </form>
+        <div class="d-flex gap-2">
+            <a href="signIn" class="btn btn-outline-light rounded-pill px-3">Sign In</a>
+            <a href="signUp" class="btn btn-light text-primary rounded-pill px-3 fw-semibold">Sign Up</a>
         </div>
     </div>
 </nav>
 
-<!-- HERO -->
-<div class="hero">
-    <div class="container">
-        <div class="row">
-            <div class="col-md-6">
-                <h1>X-Workz Training Institute</h1>
-                <p class="mt-3">
-                    Industry-oriented training in Java, Spring, Web Technologies
-                    and Enterprise Application Development with placement support.
-                </p>
-
-                <div class="mt-4">
-                    <form action="<c:url value='/signup'/>" method="post" class="d-inline">
-                        <button type="submit" class="btn btn-main btn-lg me-3">Get Started</button>
-                    </form>
-
-                    <form action="<c:url value='/login'/>" method="post" class="d-inline">
-                        <button type="submit" class="btn btn-outline-light btn-lg">Login</button>
-                    </form>
-                </div>
+<main>
+    <div class="hero-section">
+        <div class="container">
+            <h1 class="display-4 fw-bold mb-4">Welcome to X-Workz Training Institute</h1>
+            <p class="lead mb-4">Learn, Grow, and Excel with Industry-Leading Courses</p>
+            <div class="d-flex gap-3 justify-content-center">
+                <a href="signUp" class="btn btn-light btn-lg px-5">Get Started</a>
+                <a href="signIn" class="btn btn-outline-light btn-lg px-5">Sign In</a>
             </div>
         </div>
     </div>
-</div>
+</main>
 
-<!-- FEATURES -->
-<div class="container py-5">
-    <h2 class="text-center fw-bold mb-5">Why X-Workz?</h2>
-
-    <div class="row g-4 text-center">
-        <div class="col-md-4">
-            <div class="card feature-card p-4">
-                <h5>Industry Experts</h5>
-                <p>Trainers with real corporate experience.</p>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card feature-card p-4">
-                <h5>Placement Support</h5>
-                <p>Interview training and job referrals.</p>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card feature-card p-4">
-                <h5>Real-Time Projects</h5>
-                <p>Work on enterprise-level applications.</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- FOOTER -->
-<footer class="bg-dark text-white text-center py-3">
-    © 2026 X-Workz Training Institute | Bengaluru
+<footer class="bg-primary text-white text-center py-3 mt-auto">
+    <p class="mb-0 fw-semibold">© 2026 X-Workz Training Institute</p>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
