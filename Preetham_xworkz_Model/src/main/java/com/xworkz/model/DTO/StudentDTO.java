@@ -5,46 +5,47 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class StudentDTO {
 
-        @NotBlank(message = "Name is required")
-        @Size(min = 3, max = 20, message = "Name must be between 3 and 20 characters")
+        private int id;
+
+        @Size(min = 3, max = 25, message = "Name must be between 3 and 25 characters")
         private String name;
 
-        @NotBlank(message = "Email is required")
-        @Pattern(
-                regexp = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$",
-                message = "Enter a valid email address"
-        )
+        @NotNull(message = "Email is required")
+        @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@gmail\\.com$", message = "Email must be a valid Gmail address")
         private String email;
 
-        @NotBlank(message = "Phone number is required")
-        @Pattern(
-                regexp = "^[6-9][0-9]{9}$",
-                message = "Phone must start with 6-9 and be 10 digits"
-        )
+        @NotNull(message = "Phone number is required")
+        @Pattern(regexp = "^[6-9][0-9]{9}$", message = "Phone number must start with 6-9 and contain 10 digits")
         private String phone;
 
         @NotNull(message = "Age is required")
         @Min(value = 18, message = "Age must be at least 18")
-        @Max(value = 60, message = "Age must not exceed 60")
+        @Max(value = 45, message = "Age must be less than 45")
         private Integer age;
 
-        @NotBlank(message = "Gender is required")
+        @NotNull(message = "Gender is required")
         private String gender;
 
-        @NotBlank(message = "Address is required")
-        @Size(min = 5, max = 100, message = "Address must be between 5 and 100 characters")
+        @NotNull(message = "Address is required")
+        @Size(min = 15, max = 80, message = "Address must be between 15 and 80 characters")
         private String address;
 
-        @NotBlank(message = "Password is required")
-        @Size(min = 6, message = "Password must be at least 6 characters")
+        @NotNull(message = "Password is required")
+        @Pattern(
+                regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
+                message = "Password must contain uppercase, lowercase, number and special character"
+        )
         private String password;
 
-        @NotBlank(message = "Confirm password is required")
+        @NotNull(message = "Confirm password is required")
         private String confirmPassword;
+
 }
