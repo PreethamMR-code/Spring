@@ -203,14 +203,20 @@ public class XworkzController {
 // ================= VERIFY OTP =================
 
 @PostMapping("signInWithOTP")
-public String validateOtpLogin(@RequestParam String email, @RequestParam String otp, Model model) {
+public String validateOtpLogin(@RequestParam String email,
+                               @RequestParam String otp,
+                               Model model) {
+
     model.addAttribute("email", email);
+
     boolean isValid = studentService.checkOptLogin(email, otp);
 
     if (isValid) {
+        System.out.println("OTP validated Successfully");
         return "signInUpdatePassword";
     } else {
-        model.addAttribute("wrongOTP", "Invalid OTP. Please try again.");
+        System.out.println("OTP validation failed");
+        model.addAttribute("wrongOTP", "Invalid OTP or Expired OTP. Please request a new one.");
         return "SignInWithOTP";
     }
 }
