@@ -50,7 +50,7 @@
             <h5 class="card-title text-center fs-2 fw-bold text-uppercase">Password Reset</h5>
             <br>
 
-            <form action="sendOTP" method="post">
+            <form id = "sendOtpForm" action="sendOTP" method="post">
                 <c:if test="${not empty msg}">
                     <p class="text-center mt-3 fw-bold text-success">${msg}</p>
                 </c:if>
@@ -66,21 +66,27 @@
                         <input type="email" class="form-control" id="email" name="email"
                                value="${email}" placeholder="Enter your email" required>
                         <button type="submit" class="btn btn-primary fw-semibold text-uppercase">
-                            Send OTP
+                           <span id = "otpActionBtn"> Send OTP </span>
                         </button>
                     </div>
                 </div>
             </form>
 
-            <form action="signInWithOTP" method="post">
+            <form id = "verifyOtpForm" action="signInWithOTP" method="post">
                 <input type="hidden" name="email" value="${email}"/>
 
                 <div class="mb-3">
                     <label for="otp" class="form-label fw-semibold">
-                        OTP <span class="text-danger">*</span>
+                        OTP
+                        <span class="text-danger">*</span>
                     </label>
                     <input type="text" class="form-control" id="otp" name="otp"
                            placeholder="Enter OTP" maxlength="6" required>
+
+                           <%-- to show timer --%>
+                           <small class="text-muted">
+                                   Time remaining: <span id="countdown" class="fw-bold text-danger">60</span> seconds
+                               </small>
                 </div>
 
                 <div class="d-grid mt-4">
@@ -100,6 +106,76 @@
 <footer class="bg-primary text-white text-center py-3 mt-auto">
     <p class="mb-0 fw-semibold">© 2026 X-Workz Training Institute</p>
 </footer>
+
+
+<script>
+
+    let timeLeft = 60;
+    let timerRunning = false;
+    const countdownElement = document.getElementById('countdown');
+    const otpInput = document.getElementById('otp');
+    const verifyForm = document.getElementById('verifyOtpForm');
+    const sendForm = document.getElementById('sendOtpForm');
+    const sendButton = sendForm.querySelector('button[type="submit"]');
+    const actionBtnText = document.getElementById('otpActionBtn');
+
+    // ONLY start timer if OTP was just sent (check server message)
+    <c:if test="${not empty msg}">
+        timerRunning = true;
+        startCountDown();
+    </c:if>
+
+    function startCountDown(){
+        const submitButton = verifyForm.querySelector('button[type="submit"]');
+
+
+    // Update countdown every second
+    const countdownTimer = setInterval(function() {
+            timeLeft--;
+            countdownElement.textContent = timeLeft;
+
+        // Change color as time runs out
+        if (timeLeft <= 10) {
+            countdownElement.classList.remove('text-success');
+            countdownElement.classList.add('text-danger', 'fw-bold');
+        }
+
+        // When time is up
+        if (timeLeft <= 0) {
+            clearInterval(countdownTimer);
+            endOtpSession();
+            }
+        },1000);
+    }
+
+    function endOtpSession(){
+        countdownElement.textContent = 'EXPIRED';
+            countdownElement.classList.add('text-danger', 'fw-bold');
+
+                        // Disable OTP form
+                        otpInput.disabled = true;
+                        verifyForm.querySelector('button[type="submit"]').disabled = true;
+
+                        // Disable send OTP form too
+                        submitButton.disabled = true;
+                        actionBtnText.textContent = "RESEND OTP";
+
+                        // Show timeout message
+                        alert('OTP has expired! Please request a new OTP.');
+
+            }
+
+                 // Block both forms during timeout
+                 verifyForm.addEventListener('submit', function(e) {
+                     if (timeLeft <= 0 || otpInput.disabled) {
+                         e.preventDefault();
+                         alert('OTP expired!');
+                         return false;
+                     }
+                 });
+
+     </script>
+
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
