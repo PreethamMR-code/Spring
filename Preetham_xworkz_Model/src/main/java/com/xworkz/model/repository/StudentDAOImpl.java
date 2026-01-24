@@ -8,6 +8,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
+import java.time.LocalDateTime;
 
 @Repository
 public class StudentDAOImpl implements StudentDAO {
@@ -17,7 +18,6 @@ public class StudentDAOImpl implements StudentDAO {
 
     @Override
     public boolean save(StudentEntity studentEntity) {
-
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         try {
             entityManager.getTransaction().begin();
@@ -25,22 +25,25 @@ public class StudentDAOImpl implements StudentDAO {
             entityManager.getTransaction().commit();
             return true;
         } catch (Exception e) {
+            if (entityManager.getTransaction().isActive()) {
+                entityManager.getTransaction().rollback();
+            }
+            e.printStackTrace();
             return false;
         } finally {
             entityManager.close();
         }
-
     }
 
     @Override
-    public StudentEntity findByEmail(String email) {
-
+    public StudentEntity loginByEmail(String email) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         try {
-            Query query = entityManager.createQuery("Select ref from StudentEntity ref where ref.email = :email");
+            Query query = entityManager.createQuery(
+                    "SELECT ref FROM StudentEntity ref WHERE ref.email = :email"
+            );
             query.setParameter("email", email);
-            StudentEntity studentEntity = (StudentEntity) query.getSingleResult();
-            return studentEntity;
+            return (StudentEntity) query.getSingleResult();
         } catch (NoResultException e) {
             return null;
         } finally {
@@ -48,33 +51,15 @@ public class StudentDAOImpl implements StudentDAO {
         }
     }
 
-
-        @Override
-        public void update(StudentEntity studentEntity) {
-
-            EntityManager entityManager = entityManagerFactory.createEntityManager();
-            try {
-                entityManager.getTransaction().begin();
-                entityManager.merge(studentEntity);
-                entityManager.getTransaction().commit();
-            } finally {
-                entityManager.close();
-            }
-        }
-
     @Override
-    public void updateLoginCount(String email, int count) {
-
+    public void setCountToZero(String email) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         try {
             entityManager.getTransaction().begin();
-
             Query query = entityManager.createQuery(
-                    "update StudentEntity s set s.loginCount = :count where s.email = :email"
+                    "UPDATE StudentEntity user SET user.count = 0 WHERE user.email = :eMail"
             );
-            query.setParameter("count", count);
-            query.setParameter("email", email);
-
+            query.setParameter("eMail", email);
             query.executeUpdate();
             entityManager.getTransaction().commit();
         } finally {
@@ -83,19 +68,46 @@ public class StudentDAOImpl implements StudentDAO {
     }
 
     @Override
-    public void resetLoginCount(String email) {
+    public int getCount(String email) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        try {
+            Query query = entityManager.createQuery(
+                    "SELECT user.count FROM StudentEntity user WHERE user.email = :eMail"
+            );
+            query.setParameter("eMail", email);
+            Object result = query.getSingleResult();
+            return result != null ? (Integer) result : 0;
+        } catch (NoResultException e) {
+            return 0;
+        } finally {
+            entityManager.close();
+        }
+    }
 
+    @Override
+    public void updateCount(String email) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         try {
             entityManager.getTransaction().begin();
-
             Query query = entityManager.createQuery(
-                    "update StudentEntity s set s.loginCount = 0 where s.email = :email"
+                    "UPDATE StudentEntity user SET user.count = user.count + 1 WHERE user.email = :eMail"
             );
-            query.setParameter("email", email);
-
+            query.setParameter("eMail", email);
             query.executeUpdate();
             entityManager.getTransaction().commit();
+        } finally {
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public boolean checkEmail(String email) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        try {
+            Long count = (Long) entityManager.createQuery(
+                    "SELECT COUNT(user) FROM StudentEntity user WHERE user.email = :email"
+            ).setParameter("email", email).getSingleResult();
+            return count > 0;
         } finally {
             entityManager.close();
         }
@@ -103,48 +115,58 @@ public class StudentDAOImpl implements StudentDAO {
 
     @Override
     public boolean saveOtp(String email, String otp) {
-
         EntityManager entityManager = entityManagerFactory.createEntityManager();
-
         try {
             entityManager.getTransaction().begin();
-
-            Query query = entityManager.createQuery("select s from StudentEntity s where s.email =:email");
-
+            Query query = entityManager.createQuery(
+                    "UPDATE StudentEntity u SET u.otp = :otp, u.otpGeneratedTime = :generatedTime WHERE u.email = :email"
+            );
+            query.setParameter("otp", otp);
+            query.setParameter("generatedTime", LocalDateTime.now());  //it will save current time
             query.setParameter("email", email);
 
-            StudentEntity entity =(StudentEntity) query.getSingleResult();
-
-          entity.setOtp(otp);
-
-            entityManager.merge(entity);
-
-           return true;
-
-        }catch (NoResultException e) {
-            return false;
-        }finally {
+            int rowsAffected = query.executeUpdate();
+            entityManager.getTransaction().commit();
+            return rowsAffected > 0;
+        } finally {
             entityManager.close();
         }
     }
 
     @Override
-    public boolean checkOtpMatch(String email, String otp) {
-
+    public StudentEntity checkOtpMatch(String email, String otp) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
+        try {
+            Query query = entityManager.createQuery(
+                    "SELECT ref FROM StudentEntity ref WHERE ref.email = :email AND ref.otp = :otp"
+            );
+            query.setParameter("email", email);
+            query.setParameter("otp", otp);
 
-        try{
-            Query query = entityManager.createQuery("select s from StudentEntity s where s.email = :email and s.otp = :otp");
+            return (StudentEntity) query.getSingleResult();
 
-            query.setParameter("email",email);
-            query.setParameter("otp",otp);
+        } catch (NoResultException e) {
+            return null;
+        } finally {
+            entityManager.close();
+        }
+    }
 
-            query.getSingleResult();
-            return true;
+    @Override
+    public boolean updatePassword(String email, String newPassword) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        try {
+            entityManager.getTransaction().begin();
+            Query query = entityManager.createQuery(
+                    "UPDATE StudentEntity u SET u.password = :password, u.otp = null, u.otpGeneratedTime = null, u.count = 0 WHERE u.email = :email"
+            );
+            query.setParameter("password", newPassword);
+            query.setParameter("email", email);
 
-        }catch (NoResultException e){
-            return false;
-        }finally {
+            int rowsAffected = query.executeUpdate();
+            entityManager.getTransaction().commit();
+            return rowsAffected > 0;
+        } finally {
             entityManager.close();
         }
     }
