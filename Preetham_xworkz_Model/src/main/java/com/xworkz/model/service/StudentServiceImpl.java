@@ -11,7 +11,10 @@ import org.springframework.stereotype.Service;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.Random;
 
 @Service
 public class StudentServiceImpl implements StudentService {
@@ -56,88 +59,136 @@ public class StudentServiceImpl implements StudentService {
 //    ------------------------------------------------------------------------
 
     @Override
-    public boolean saveStudent(StudentDTO dto) {
+    public boolean validateAndSave(StudentDTO studentDTO) {
+        if (studentDTO == null) return false;
 
-        // ONLY business logic here
-        String encryptedPassword = encrypt(dto.getPassword());
+        // Check if email already exists
+        if (studentDAO.checkEmail(studentDTO.getEmail())) {
+            return false;
+        }
 
-        StudentEntity entity = new StudentEntity();
-        entity.setName(dto.getName());
-        entity.setEmail(dto.getEmail());
-        entity.setPhone(dto.getPhone());
-        entity.setAge(dto.getAge());
-        entity.setGender(dto.getGender());
-        entity.setAddress(dto.getAddress());
-        entity.setPassword(encryptedPassword);
+        // Encrypt password
+        String encryptedPwd = encrypt(studentDTO.getPassword());
 
-        return studentDAO.save(entity);
+        // Create entity
+        StudentEntity studentEntity = new StudentEntity();
+        studentEntity.setName(studentDTO.getName());
+        studentEntity.setEmail(studentDTO.getEmail());
+        studentEntity.setPhone(studentDTO.getPhone());
+        studentEntity.setAge(studentDTO.getAge());
+        studentEntity.setGender(studentDTO.getGender());
+        studentEntity.setAddress(studentDTO.getAddress());
+        studentEntity.setPassword(encryptedPwd);
+        studentEntity.setCount(0);
+
+        return studentDAO.save(studentEntity);
     }
 
     @Override
     public boolean validateLogin(String email, String password) {
+        if (email == null || password == null) return false;
 
-        StudentEntity entity = studentDAO.findByEmail(email);
-        if (entity == null) {
+        StudentEntity signupEntity = studentDAO.loginByEmail(email);
+        if (signupEntity == null) return false;
+
+        try {
+            String decryptedPassword = decrypt(signupEntity.getPassword());
+            return decryptedPassword.equals(password);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    @Override
+    public void setCountToZero(String email) {
+        studentDAO.setCountToZero(email);
+    }
+
+    @Override
+    public int getCount(String email) {
+        return studentDAO.getCount(email);
+    }
+
+    @Override
+    public void updateCount(String email) {
+        studentDAO.updateCount(email);
+    }
+
+    @Override
+    public boolean sendOtp(String email) {
+
+        // Check if user exists
+        if (!studentDAO.checkEmail(email)) {
             return false;
         }
 
-        String decryptedPassword = decrypt(entity.getPassword());
-        return decryptedPassword.equals(password);
-    }
+        // Generate random 6-digit OTP
+        String generatedOtp = String.valueOf(100000 + new Random().nextInt(900000));
 
-    @Override
-    public StudentEntity findByEmail(String email) {
-        return studentDAO.findByEmail(email);
-    }
+        // Save OTP to database
+        boolean isSaved = studentDAO.saveOtp(email, generatedOtp);
 
-    //  FAILED LOGIN → increment count
-    @Override
-    public int updateCount(String email) {
-
-        StudentEntity entity = studentDAO.findByEmail(email);
-
-        if (entity == null) {
-            return 0;
-        }
-
-        int count = entity.getLoginCount() + 1;
-
-        studentDAO.updateLoginCount(email, count);
-
-        return count;
-    }
-
-    // SUCCESSFUL LOGIN → reset count
-    @Override
-    public void setCountToZero(String email) {
-
-        studentDAO.resetLoginCount(email);
-
-    }
-
-    @Override
-    public boolean generateAndSendOtp(String email) {
-
-        System.out.println("service : generateAndSendOtp called:"+email);
-
-        String otp = "171717";
-
-        boolean saved = studentDAO.saveOtp(email, otp);
-
-        System.out.println("DAO saveotp result:" + saved);
-
-        if (saved) {
-            otpUtil.sendOtpMail(otp);
+        if (isSaved) {
+            // Send OTP via email
+            otpUtil.sendSimpleMessage(email, "Password Reset OTP",
+                    "Your OTP for password reset is: " + generatedOtp + "\n\nThis OTP is valid for 10 minutes."
+            );
             return true;
         }
         return false;
     }
 
     @Override
-    public boolean verifyOtp(String email, String otp) {
+    public boolean checkOptLogin(String email, String otp) {
 
-        return studentDAO.checkOtpMatch(email , otp);
+       // getting STUDENT ENTITY ( which contains otpGeneratedTime)
+        StudentEntity student= studentDAO.checkOtpMatch(email, otp);
+
+        if(student == null){
+            System.out.println("Invalid OTP or email");
+            return false;
+        }
+
+        //getting stored time
+        LocalDateTime otpTime = student.getOtpGeneratedTime();
+
+        if(otpTime == null){
+            System.out.println("Otp generaation time not found");
+            return false;
+        }
+
+        // getting current time
+        LocalDateTime currentTime = LocalDateTime.now();
+
+        //calculating difference
+        long secondsDifference  = Duration.between(otpTime, currentTime).getSeconds();
+
+        System.out.println("OTP was generated at:"+otpTime);
+        System.out.println("Current Time is:"+currentTime);
+        System.out.println("time Difference is " + secondsDifference + "seconds");
+
+
+        //checking if its under 60 seconds
+        if(secondsDifference > 60){
+            System.out.println("OTP is timed out ( expired after 60 seconds)");
+            return false;
+        }
+
+        System.out.println("OTP is valid and within time limit");
+        return true;
 
     }
 
+    @Override
+    public boolean resetPassword(String email, String newPassword, String confirmPassword) {
+        if (!newPassword.equals(confirmPassword)) {
+            return false;
+        }
+
+        // Encrypt new password
+        String encryptedPassword = encrypt(newPassword);
+
+        // Update password and clear OTP
+        return studentDAO.updatePassword(email, encryptedPassword);
+    }
 }
