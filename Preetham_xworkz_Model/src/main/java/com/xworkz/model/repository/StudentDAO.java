@@ -6,16 +6,19 @@ public interface StudentDAO {
 
     boolean save(StudentEntity studentEntity);
 
-    StudentEntity findByEmail(String email);
+    StudentEntity loginByEmail(String email);
 
-    void update(StudentEntity studentEntity);
+    void setCountToZero(String email);
 
-    void updateLoginCount(String email, int count);
+    int getCount(String email);
 
-    void resetLoginCount(String email);
+    void updateCount(String email);
+
+    boolean checkEmail(String email);
 
     boolean saveOtp(String email, String otp);
 
+    StudentEntity checkOtpMatch(String email, String otp);
 
-    boolean checkOtpMatch(String email, String otp);
+    boolean updatePassword(String email, String newPassword);
 }
