@@ -152,6 +152,7 @@ public class StudentDAOImpl implements StudentDAO {
         }
     }
 
+    //updating in Db password and setting otp as null
     @Override
     public boolean updatePassword(String email, String newPassword) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
