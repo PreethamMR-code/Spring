@@ -93,6 +93,8 @@ public class XworkzController {
     }
 
 
+//    using forEach we can di validation for all
+
 //            bindingResult.getFieldErrors().forEach(error -> {
 //                model.addAttribute(
 //                        error.getField() + "Error",
