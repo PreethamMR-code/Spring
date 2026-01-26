@@ -138,6 +138,7 @@ public class StudentServiceImpl implements StudentService {
         return false;
     }
 
+    //sending otp to email and verifying
     @Override
     public boolean checkOptLogin(String email, String otp) {
 
