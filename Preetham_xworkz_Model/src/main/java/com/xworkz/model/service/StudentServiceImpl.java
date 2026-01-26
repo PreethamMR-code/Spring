@@ -179,6 +179,7 @@ public class StudentServiceImpl implements StudentService {
 
     }
 
+    //resetting password through otp and email
     @Override
     public boolean resetPassword(String email, String newPassword, String confirmPassword) {
         if (!newPassword.equals(confirmPassword)) {
