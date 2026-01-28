@@ -35,22 +35,57 @@
                         <i class="bi bi-book me-1"></i>Courses
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <i class="bi bi-person-circle me-1"></i>Profile
-                    </a>
-                </li>
-                <li class="nav-item dropdown ms-3">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                        <i class="bi bi-person-badge"></i> ${email != null ? email : 'User'}
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="bi bi-key me-2"></i>Change Password</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="signIn"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
-                    </ul>
-                </li>
+               <li class="nav-item dropdown ms-3">
+                   <a class="nav-link dropdown-toggle d-flex align-items-center"
+                      href="#"
+                      role="button"
+                      data-bs-toggle="dropdown">
+
+                       <i class="bi bi-person-circle fs-5 me-2"></i>
+
+                       <!-- Show Student Name -->
+                       ${student.name}
+
+                   </a>
+
+                   <ul class="dropdown-menu dropdown-menu-end shadow rounded-3 p-2">
+
+                       <!-- Profile Info -->
+                       <li class="px-3 py-2">
+                           <h6 class="mb-0 fw-bold">${student.name}</h6>
+                           <small class="text-muted">${student.email}</small>
+                       </li>
+
+                       <li><hr class="dropdown-divider"></li>
+
+                       <!-- Edit Profile -->
+                       <li>
+                           <a class="dropdown-item" href="editProfile">
+                               <i class="bi bi-pencil-square me-2"></i>Edit Profile
+                           </a>
+                       </li>
+
+                       <!-- Settings -->
+                       <li>
+                           <a class="dropdown-item" href="settings">
+                               <i class="bi bi-gear me-2"></i>Settings
+                           </a>
+                       </li>
+
+                       <li><hr class="dropdown-divider"></li>
+
+                       <!-- Logout -->
+                       <li>
+                           <a class="dropdown-item text-danger" href="logout">
+                               <i class="bi bi-box-arrow-right me-2"></i>Logout
+                           </a>
+                       </li>
+
+                   </ul>
+               </li>
+
+
+
             </ul>
         </div>
     </div>
