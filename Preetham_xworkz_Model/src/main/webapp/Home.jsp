@@ -35,57 +35,57 @@
                         <i class="bi bi-book me-1"></i>Courses
                     </a>
                 </li>
-               <li class="nav-item dropdown ms-3">
-                   <a class="nav-link dropdown-toggle d-flex align-items-center"
-                      href="#"
-                      role="button"
-                      data-bs-toggle="dropdown">
 
-                       <i class="bi bi-person-circle fs-5 me-2"></i>
+                <!-- ✅ UPDATED: Profile Dropdown with Name -->
+                <li class="nav-item dropdown ms-3">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="bg-white bg-opacity-25 rounded-circle p-2 me-2">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                        <span class="fw-semibold">${name != null ? name : 'User'}</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow" style="min-width: 280px;">
+                        <!-- Profile Info Section -->
+                        <li class="px-3 py-2 bg-light">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary bg-opacity-10 rounded-circle p-3 me-3">
+                                    <i class="bi bi-person-fill text-primary fs-4"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0 fw-bold">${name != null ? name : 'User Name'}</h6>
+                                    <small class="text-muted">${email != null ? email : 'email@example.com'}</small>
+                                </div>
+                            </div>
+                        </li>
 
-                       <!-- Show Student Name -->
-                       ${student.name}
+                        <li><hr class="dropdown-divider"></li>
 
-                   </a>
+                        <!-- Profile Actions -->
+                        <li>
+                            <a class="dropdown-item py-2" href="editProfile">
+                                <i class="bi bi-pencil-square me-2 text-primary"></i>
+                                <span class="fw-semibold">Edit Profile</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item py-2" href="#">
+                                <i class="bi bi-gear me-2 text-secondary"></i>
+                                <span class="fw-semibold">Settings</span>
+                            </a>
+                        </li>
 
-                   <ul class="dropdown-menu dropdown-menu-end shadow rounded-3 p-2">
+                        <li><hr class="dropdown-divider"></li>
 
-                       <!-- Profile Info -->
-                       <li class="px-3 py-2">
-                           <h6 class="mb-0 fw-bold">${student.name}</h6>
-                           <small class="text-muted">${student.email}</small>
-                       </li>
-
-                       <li><hr class="dropdown-divider"></li>
-
-                       <!-- Edit Profile -->
-                       <li>
-                           <a class="dropdown-item" href="editProfile">
-                               <i class="bi bi-pencil-square me-2"></i>Edit Profile
-                           </a>
-                       </li>
-
-                       <!-- Settings -->
-                       <li>
-                           <a class="dropdown-item" href="settings">
-                               <i class="bi bi-gear me-2"></i>Settings
-                           </a>
-                       </li>
-
-                       <li><hr class="dropdown-divider"></li>
-
-                       <!-- Logout -->
-                       <li>
-                           <a class="dropdown-item text-danger" href="logout">
-                               <i class="bi bi-box-arrow-right me-2"></i>Logout
-                           </a>
-                       </li>
-
-                   </ul>
-               </li>
-
-
-
+                        <!-- Logout -->
+                        <li>
+                            <a class="dropdown-item py-2 text-danger" href="signIn">
+                                <i class="bi bi-box-arrow-right me-2"></i>
+                                <span class="fw-semibold">Logout</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
             </ul>
         </div>
     </div>
@@ -96,7 +96,7 @@
     <div class="container">
         <div class="row align-items-center">
             <div class="col-lg-8">
-                <h1 class="display-4 fw-bold mb-3">Welcome Back!</h1>
+                <h1 class="display-4 fw-bold mb-3">Welcome Back, ${name != null ? name : 'User'}!</h1>
                 <p class="lead mb-4">Continue your learning journey with X-Workz Training Institute</p>
                 <div class="d-flex gap-3">
                     <button class="btn btn-light btn-lg px-4">
