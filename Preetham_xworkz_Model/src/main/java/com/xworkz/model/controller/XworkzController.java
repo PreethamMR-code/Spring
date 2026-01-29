@@ -1,6 +1,7 @@
 package com.xworkz.model.controller;
 
 import com.xworkz.model.DTO.StudentDTO;
+import com.xworkz.model.entity.StudentEntity;
 import com.xworkz.model.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -149,7 +150,12 @@ public class XworkzController {
         // reset failed attempts
         if (valid) {
             studentService.setCountToZero(email);
+
+            // ✅ FETCH USER DETAILS TO GET NAME
+            StudentEntity student = studentService.getUserByEmail(email);
+
             model.addAttribute("email", email);
+            model.addAttribute("name", student != null ? student.getName() : "User");
             return "Home";
         }else {
             // email exists but wrong credentials
@@ -245,6 +251,65 @@ public String validateOtpLogin(@RequestParam String email,
         } else {
             model.addAttribute("errorMsg", "Failed to update password. Please try again.");
             return "signInUpdatePassword";
+        }
+    }
+
+    @GetMapping("editProfile")
+    public String showEditProfile(@RequestParam String email, Model model){
+
+        // Fetch user details
+        StudentEntity student = studentService.getUserByEmail(email);
+
+        if (student == null) {
+            model.addAttribute("error", "User not found");
+            return "signIn";
+        }
+
+        // Create DTO from entity (exclude password)
+        StudentDTO studentDTO = new StudentDTO();
+        studentDTO.setName(student.getName());
+        studentDTO.setEmail(student.getEmail());
+        studentDTO.setPhone(student.getPhone());
+        studentDTO.setAge(student.getAge());
+        studentDTO.setGender(student.getGender());
+        studentDTO.setAddress(student.getAddress());
+
+        model.addAttribute("student", studentDTO);
+        return "editProfile";
+    }
+
+    @PostMapping("updateProfile")
+    public String updateProfile(
+            @RequestParam String email,
+            @RequestParam String name,
+            @RequestParam String phone,
+            @RequestParam Integer age,
+            @RequestParam String address,
+            Model model) {
+
+        // Verify email belongs to logged-in user (add session check)
+        StudentEntity student = studentService.getUserByEmail(email);
+        if (student == null) {
+            return "signIn";
+        }
+
+        // Validation
+        if (name == null || name.trim().isEmpty()) {
+            model.addAttribute("error", "Name is required");
+            return "editProfile";
+        }
+
+        // Update profile
+        boolean updated = studentService.updateProfile(email, name, phone, age, address);
+
+        if (updated) {
+            model.addAttribute("msg", "Profile updated successfully!");
+            model.addAttribute("email", email);
+            model.addAttribute("name", name);
+            return "Home";
+        } else {
+            model.addAttribute("error", "Failed to update profile");
+            return "editProfile";
         }
     }
 }
