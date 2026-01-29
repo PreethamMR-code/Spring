@@ -30,6 +30,13 @@
                         <i class="bi bi-house-door me-1"></i>Home
                     </a>
                 </li>
+
+                 <li class="nav-item">
+                        <a class="nav-link" href="<c:url value='/dashboard'/>">
+                            <i class="bi bi-speedometer2 me-1"></i>Dashboard
+                        </a>
+                    </li>
+
                 <li class="nav-item">
                     <a class="nav-link" href="#">
                         <i class="bi bi-book me-1"></i>Courses
@@ -63,7 +70,7 @@
 
                         <!-- Profile Actions -->
                         <li>
-                            <a class="dropdown-item py-2" href="editProfile">
+                            <a class="dropdown-item py-2" href="editProfile?email=${email}">
                                 <i class="bi bi-pencil-square me-2 text-primary"></i>
                                 <span class="fw-semibold">Edit Profile</span>
                             </a>
