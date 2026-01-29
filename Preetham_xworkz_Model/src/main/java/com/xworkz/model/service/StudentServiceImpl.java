@@ -142,10 +142,10 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public boolean checkOptLogin(String email, String otp) {
 
-       // getting STUDENT ENTITY ( which contains otpGeneratedTime)
-        StudentEntity student= studentDAO.checkOtpMatch(email, otp);
+        // getting STUDENT ENTITY ( which contains otpGeneratedTime)
+        StudentEntity student = studentDAO.checkOtpMatch(email, otp);
 
-        if(student == null){
+        if (student == null) {
             System.out.println("Invalid OTP or email");
             return false;
         }
@@ -153,7 +153,7 @@ public class StudentServiceImpl implements StudentService {
         //getting stored time
         LocalDateTime otpTime = student.getOtpGeneratedTime();
 
-        if(otpTime == null){
+        if (otpTime == null) {
             System.out.println("Otp generaation time not found");
             return false;
         }
@@ -162,15 +162,15 @@ public class StudentServiceImpl implements StudentService {
         LocalDateTime currentTime = LocalDateTime.now();
 
         //calculating difference
-        long secondsDifference  = Duration.between(otpTime, currentTime).getSeconds();
+        long secondsDifference = Duration.between(otpTime, currentTime).getSeconds();
 
-        System.out.println("OTP was generated at:"+otpTime);
-        System.out.println("Current Time is:"+currentTime);
+        System.out.println("OTP was generated at:" + otpTime);
+        System.out.println("Current Time is:" + currentTime);
         System.out.println("time Difference is " + secondsDifference + "seconds");
 
 
         //checking if its under 60 seconds
-        if(secondsDifference > 60){
+        if (secondsDifference > 60) {
             System.out.println("OTP is timed out ( expired after 60 seconds)");
             return false;
         }
@@ -192,5 +192,30 @@ public class StudentServiceImpl implements StudentService {
 
         // Update password and clear OTP
         return studentDAO.updatePassword(email, encryptedPassword);
+    }
+
+    @Override
+    public StudentEntity getUserByEmail(String email) {
+        return studentDAO.loginByEmail(email);
+    }
+
+    @Override
+    public boolean updateProfile(String email, String name, String phone, Integer age, String address) {
+
+        // Validate inputs
+        if (email == null || name == null || age == null || address == null) {
+            return false;
+        }
+
+        // Add validation in service
+        if (phone != null && !phone.matches("[6-9][0-9]{9}")) {
+            return false;
+        }
+        if (age < 18 || age > 60) {
+            return false;
+        }
+
+        // Call DAO to update
+        return studentDAO.updateProfile(email, name, phone, age, address);
     }
 }

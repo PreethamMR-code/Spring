@@ -173,4 +173,38 @@ public class StudentDAOImpl implements StudentDAO {
         }
     }
 
+    @Override
+    public boolean updateProfile(String email, String name, String phone, Integer age, String address) {
+
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+
+        try{
+            entityManager.getTransaction().begin();
+
+            Query query = entityManager.createQuery("UPDATE StudentEntity u SET u.name = :name, u.phone = :phone, " +
+                    "u.age = :age, u.address = :address WHERE u.email = :email");
+
+            query.setParameter("name", name);
+            query.setParameter("phone", phone);
+            query.setParameter("age", age);
+            query.setParameter("address", address);
+            query.setParameter("email", email);
+
+            int rowsAffected = query.executeUpdate();
+            entityManager.getTransaction().commit();
+
+            System.out.println("✅ Profile updated for: " + email);
+            return rowsAffected > 0;
+
+        } catch (Exception e) {
+            if (entityManager.getTransaction().isActive()) {
+                entityManager.getTransaction().rollback();
+            }
+            e.printStackTrace();
+            return false;
+        } finally {
+            entityManager.close();
+        }
+    }
+
 }

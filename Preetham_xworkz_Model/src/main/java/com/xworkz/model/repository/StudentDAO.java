@@ -21,4 +21,6 @@ public interface StudentDAO {
     StudentEntity checkOtpMatch(String email, String otp);
 
     boolean updatePassword(String email, String newPassword);
+
+    boolean updateProfile(String email, String name, String phone, Integer age, String address);
 }
