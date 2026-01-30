@@ -19,8 +19,8 @@
             <img src="https://x-workz.com/Logo.png" height="40" class="me-2" alt="X-Workz">
             X-Workz Dashboard
         </a>
-        <a href="<c:url value='/dashboard'/>" class="btn btn-outline-light btn-sm">
-            <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+        <a href="<c:url value='/Home'/>"  class="btn btn-outline-light btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Back
         </a>
     </div>
 </nav>
