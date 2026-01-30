@@ -27,9 +27,9 @@ public class DashboardController {
     BatchStudentService batchStudentService;
 
     // Dashboard Home
-    @GetMapping("")
-    public String dashboard() {
-        return "dashboard";
+    @GetMapping("/Home")
+    public String showHomePage() {
+        return "home";
     }
 
     // Show Add Batch Form
