@@ -42,7 +42,8 @@ public class DashboardController {
     // Process Add Batch
     @PostMapping("/addBatch")
     public String addBatch(@Valid @ModelAttribute("batchDTO") BatchDTO batchDTO,
-                           BindingResult bindingResult, Model model) {
+                           BindingResult bindingResult,
+                           Model model) {
         if (bindingResult.hasErrors()) {
             return "addBatch";
         }
@@ -97,7 +98,8 @@ public class DashboardController {
     // Process Add Student
     @PostMapping("/addStudent")
     public String addStudent(@Valid @ModelAttribute("studentDTO") BatchStudentDTO studentDTO,
-                             BindingResult bindingResult, Model model) {
+                             BindingResult bindingResult,
+                             Model model) {
         if (bindingResult.hasErrors()) {
             BatchEntity batch = batchService.getBatchById(studentDTO.getBatchId());
             model.addAttribute("batch", batch);
