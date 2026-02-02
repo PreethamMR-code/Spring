@@ -1,8 +1,8 @@
 package com.xworkz.model.controller;
 
-import com.xworkz.model.DTO.StudentDTO;
-import com.xworkz.model.entity.StudentEntity;
-import com.xworkz.model.service.StudentService;
+import com.xworkz.model.DTO.RegistrationDTO;
+import com.xworkz.model.entity.RegistrationEntity;
+import com.xworkz.model.service.RegistrationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,7 +16,7 @@ import javax.validation.Valid;
 public class XworkzController {
 
     @Autowired
-    private StudentService studentService;
+    private RegistrationService registrationService;
 
     // Home page
     @GetMapping("")
@@ -43,9 +43,9 @@ public class XworkzController {
     }
 
     @PostMapping("signUp")
-    public ModelAndView createAccount(@Valid StudentDTO studentDTO, BindingResult bindingResult, ModelAndView mv) {
+    public ModelAndView createAccount(@Valid RegistrationDTO registrationDTO, BindingResult bindingResult, ModelAndView mv) {
         mv.setViewName("signUp");
-        mv.addObject("dto", studentDTO);
+        mv.addObject("dto", registrationDTO);
 
         if (bindingResult.hasErrors()) {
             if (bindingResult.hasFieldErrors("name")) {
@@ -75,18 +75,18 @@ public class XworkzController {
             return mv;
         }
 
-        if (!studentDTO.getPassword().equals(studentDTO.getConfirmPassword())) {
+        if (!registrationDTO.getPassword().equals(registrationDTO.getConfirmPassword())) {
             mv.addObject("confirmPasswordError", "Passwords do not match");
             return mv;
         }
 
 
-        boolean saved = studentService.validateAndSave(studentDTO);
+        boolean saved = registrationService.validateAndSave(registrationDTO);
 
         if (saved) {
             mv.setViewName("signIn");
             mv.addObject("msg", "Account created successfully! Please login.");
-            mv.addObject("dto", new StudentDTO());
+            mv.addObject("dto", new RegistrationDTO());
         } else {
             mv.addObject("error", "Email already exists or registration failed");
         }
@@ -115,7 +115,7 @@ public class XworkzController {
 //        }
 //
 //        // Save student
-//        boolean saved = studentService.register(dto);
+//        boolean saved = registrationService.register(dto);
 //
 //        if (saved) {
 //            model.addAttribute("msg", "Account created successfully");
@@ -136,7 +136,7 @@ public class XworkzController {
                                Model model) {
 
         // check if email exists
-//        StudentEntity entity = studentService.findByEmail(email);
+//        RegistrationEntity entity = registrationService.findByEmail(email);
 
 //        if (email == null || email.trim().isEmpty()) {
 //            model.addAttribute("error", "Please enter your email");
@@ -144,22 +144,22 @@ public class XworkzController {
 //        }
 
         //validate the password
-        boolean valid = studentService.validateLogin(email, password);
+        boolean valid = registrationService.validateLogin(email, password);
 
 
         // reset failed attempts
         if (valid) {
-            studentService.setCountToZero(email);
+            registrationService.setCountToZero(email);
 
             // ✅ FETCH USER DETAILS TO GET NAME
-            StudentEntity student = studentService.getUserByEmail(email);
+            RegistrationEntity registration = registrationService.getUserByEmail(email);
 
             model.addAttribute("email", email);
-            model.addAttribute("name", student != null ? student.getName() : "User");
+            model.addAttribute("name", registration != null ? registration.getName() : "User");
             return "Home";
         }else {
             // email exists but wrong credentials
-            int count = studentService.getCount(email);
+            int count = registrationService.getCount(email);
             model.addAttribute("email", email);
 
             if (count >= 2) {
@@ -167,7 +167,7 @@ public class XworkzController {
                 model.addAttribute("showForgot", true);
                 model.addAttribute("error", "Account locked due to multiple failed attempts. Please reset your password.");
             } else {
-                studentService.updateCount(email);
+                registrationService.updateCount(email);
                 model.addAttribute("error", "Invalid email or password. Attempt " + (count + 1) + " of 3");
             }
             return "signIn";
@@ -175,7 +175,7 @@ public class XworkzController {
     }
 
         // email exists but wrong credentials
-      //  int count = studentService.incrementLoginCount(email);
+      //  int count = registrationService.incrementLoginCount(email);
 
 //        if (count >= 3) {
 //            model.addAttribute("error", "Account blocked. Login using OTP.");
@@ -196,7 +196,7 @@ public class XworkzController {
         System.out.println("Sending OTP to: " + email);
 
 
-        boolean isSent = studentService.sendOtp(email);
+        boolean isSent = registrationService.sendOtp(email);
         model.addAttribute("email", email);
 
         if (isSent) {
@@ -217,7 +217,7 @@ public String validateOtpLogin(@RequestParam String email,
 
     model.addAttribute("email", email);
 
-    boolean isValid = studentService.checkOptLogin(email, otp);
+    boolean isValid = registrationService.checkOptLogin(email, otp);
 
     if (isValid) {
         System.out.println("OTP validated Successfully");
@@ -243,7 +243,7 @@ public String validateOtpLogin(@RequestParam String email,
             return "signInUpdatePassword";
         }
 
-        boolean updated = studentService.resetPassword(email, newPassword, confirmPassword);
+        boolean updated = registrationService.resetPassword(email, newPassword, confirmPassword);
 
         if (updated) {
             model.addAttribute("msg", "Password updated successfully! Please login with your new password.");
@@ -258,23 +258,23 @@ public String validateOtpLogin(@RequestParam String email,
     public String showEditProfile(@RequestParam String email, Model model){
 
         // Fetch user details
-        StudentEntity student = studentService.getUserByEmail(email);
+        RegistrationEntity registrationEntity = registrationService.getUserByEmail(email);
 
-        if (student == null) {
+        if (registrationEntity == null) {
             model.addAttribute("error", "User not found");
             return "signIn";
         }
 
         // Create DTO from entity (exclude password)
-        StudentDTO studentDTO = new StudentDTO();
-        studentDTO.setName(student.getName());
-        studentDTO.setEmail(student.getEmail());
-        studentDTO.setPhone(student.getPhone());
-        studentDTO.setAge(student.getAge());
-        studentDTO.setGender(student.getGender());
-        studentDTO.setAddress(student.getAddress());
+        RegistrationDTO registrationDTO = new RegistrationDTO();
+        registrationDTO.setName(registrationEntity.getName());
+        registrationDTO.setEmail(registrationEntity.getEmail());
+        registrationDTO.setPhone(registrationEntity.getPhone());
+        registrationDTO.setAge(registrationEntity.getAge());
+        registrationDTO.setGender(registrationEntity.getGender());
+        registrationDTO.setAddress(registrationEntity.getAddress());
 
-        model.addAttribute("student", studentDTO);
+        model.addAttribute("registrationEntity", registrationDTO);
         return "editProfile";
     }
 
@@ -288,8 +288,8 @@ public String validateOtpLogin(@RequestParam String email,
             Model model) {
 
         // Verify email belongs to logged-in user (add session check)
-        StudentEntity student = studentService.getUserByEmail(email);
-        if (student == null) {
+        RegistrationEntity registration = registrationService.getUserByEmail(email);
+        if (registration == null) {
             return "signIn";
         }
 
@@ -300,7 +300,7 @@ public String validateOtpLogin(@RequestParam String email,
         }
 
         // Update profile
-        boolean updated = studentService.updateProfile(email, name, phone, age, address);
+        boolean updated = registrationService.updateProfile(email, name, phone, age, address);
 
         if (updated) {
             model.addAttribute("msg", "Profile updated successfully!");

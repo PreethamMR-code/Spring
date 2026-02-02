@@ -1,12 +1,12 @@
 package com.xworkz.model.repository;
 
-import com.xworkz.model.entity.StudentEntity;
+import com.xworkz.model.entity.RegistrationEntity;
 
-public interface StudentDAO {
+public interface RegistrationDAO {
 
-    boolean save(StudentEntity studentEntity);
+    boolean save(RegistrationEntity studentEntity);
 
-    StudentEntity loginByEmail(String email);
+    RegistrationEntity loginByEmail(String email);
 
     void setCountToZero(String email);
 
@@ -18,7 +18,7 @@ public interface StudentDAO {
 
     boolean saveOtp(String email, String otp);
 
-    StudentEntity checkOtpMatch(String email, String otp);
+    RegistrationEntity checkOtpMatch(String email, String otp);
 
     boolean updatePassword(String email, String newPassword);
 

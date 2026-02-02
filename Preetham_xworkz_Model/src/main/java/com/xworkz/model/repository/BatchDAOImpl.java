@@ -18,18 +18,32 @@ public class BatchDAOImpl implements BatchDAO{
 
     @Override
     public boolean saveBatch(BatchEntity batch) {
+        System.out.println("=== DAO SAVE BATCH CALLED ===");
+
         EntityManager em = entityManagerFactory.createEntityManager();
         try {
+            System.out.println("Starting transaction...");
             em.getTransaction().begin();
+
+            System.out.println("Persisting batch: " + batch.getBatchName());
             em.persist(batch);
+
+            System.out.println("Committing transaction...");
             em.getTransaction().commit();
+
+            System.out.println(" BATCH SAVED SUCCESSFULLY!");
             return true;
+
         } catch (Exception e) {
+            System.err.println(" ERROR SAVING BATCH:");
+            e.printStackTrace();
+
             if (em.getTransaction().isActive()) {
+                System.out.println("Rolling back transaction...");
                 em.getTransaction().rollback();
             }
-            e.printStackTrace();
             return false;
+
         } finally {
             em.close();
         }

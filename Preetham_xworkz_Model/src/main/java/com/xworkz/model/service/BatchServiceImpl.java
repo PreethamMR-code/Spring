@@ -18,9 +18,14 @@ public class BatchServiceImpl implements BatchService{
 
     @Override
     public boolean createBatch(BatchDTO batchDTO) {
+        System.out.println("=== CREATE BATCH SERVICE CALLED ===");
+
         if (batchDTO == null) {
+            System.err.println("ERROR: BatchDTO is null");
             return false;
         }
+
+        System.out.println("Converting DTO to Entity...");
 
         // Convert DTO to Entity
         BatchEntity batch = new BatchEntity();
@@ -31,9 +36,18 @@ public class BatchServiceImpl implements BatchService{
         batch.setBatchType(batchDTO.getBatchType());
         batch.setDescription(batchDTO.getDescription());
         batch.setCreatedAt(LocalDateTime.now());
-        batch.setActive(true);
+        batch.setActive(true);  // Make sure this matches your entity field
 
-        return batchDAO.saveBatch(batch);
+        System.out.println("Batch Entity Created:");
+        System.out.println("Name: " + batch.getBatchName());
+        System.out.println("Course: " + batch.getCourse());
+        System.out.println("Date: " + batch.getStartDate());
+
+        System.out.println("Calling DAO to save...");
+        boolean result = batchDAO.saveBatch(batch);
+
+        System.out.println("DAO Result: " + result);
+        return result;
     }
 
     @Override

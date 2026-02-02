@@ -1,6 +1,6 @@
 package com.xworkz.model.repository;
 
-import com.xworkz.model.entity.StudentEntity;
+import com.xworkz.model.entity.RegistrationEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -11,13 +11,13 @@ import javax.persistence.Query;
 import java.time.LocalDateTime;
 
 @Repository
-public class StudentDAOImpl implements StudentDAO {
+public class RegistrationDAOImpl implements RegistrationDAO {
 
     @Autowired
     EntityManagerFactory entityManagerFactory;
 
     @Override
-    public boolean save(StudentEntity studentEntity) {
+    public boolean save(RegistrationEntity studentEntity) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         try {
             entityManager.getTransaction().begin();
@@ -36,14 +36,14 @@ public class StudentDAOImpl implements StudentDAO {
     }
 
     @Override
-    public StudentEntity loginByEmail(String email) {
+    public RegistrationEntity loginByEmail(String email) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         try {
             Query query = entityManager.createQuery(
-                    "SELECT ref FROM StudentEntity ref WHERE ref.email = :email"
+                    "SELECT ref FROM RegistrationEntity ref WHERE ref.email = :email"
             );
             query.setParameter("email", email);
-            return (StudentEntity) query.getSingleResult();
+            return (RegistrationEntity) query.getSingleResult();
         } catch (NoResultException e) {
             return null;
         } finally {
@@ -57,7 +57,7 @@ public class StudentDAOImpl implements StudentDAO {
         try {
             entityManager.getTransaction().begin();
             Query query = entityManager.createQuery(
-                    "UPDATE StudentEntity user SET user.count = 0 WHERE user.email = :eMail"
+                    "UPDATE RegistrationEntity user SET user.count = 0 WHERE user.email = :eMail"
             );
             query.setParameter("eMail", email);
             query.executeUpdate();
@@ -72,7 +72,7 @@ public class StudentDAOImpl implements StudentDAO {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         try {
             Query query = entityManager.createQuery(
-                    "SELECT user.count FROM StudentEntity user WHERE user.email = :eMail"
+                    "SELECT user.count FROM RegistrationEntity user WHERE user.email = :eMail"
             );
             query.setParameter("eMail", email);
             Object result = query.getSingleResult();
@@ -90,7 +90,7 @@ public class StudentDAOImpl implements StudentDAO {
         try {
             entityManager.getTransaction().begin();
             Query query = entityManager.createQuery(
-                    "UPDATE StudentEntity user SET user.count = user.count + 1 WHERE user.email = :eMail"
+                    "UPDATE RegistrationEntity user SET user.count = user.count + 1 WHERE user.email = :eMail"
             );
             query.setParameter("eMail", email);
             query.executeUpdate();
@@ -105,7 +105,7 @@ public class StudentDAOImpl implements StudentDAO {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         try {
             Long count = (Long) entityManager.createQuery(
-                    "SELECT COUNT(user) FROM StudentEntity user WHERE user.email = :email"
+                    "SELECT COUNT(user) FROM RegistrationEntity user WHERE user.email = :email"
             ).setParameter("email", email).getSingleResult();
             return count > 0;
         } finally {
@@ -119,7 +119,7 @@ public class StudentDAOImpl implements StudentDAO {
         try {
             entityManager.getTransaction().begin();
             Query query = entityManager.createQuery(
-                    "UPDATE StudentEntity u SET u.otp = :otp, u.otpGeneratedTime = :generatedTime WHERE u.email = :email"
+                    "UPDATE RegistrationEntity u SET u.otp = :otp, u.otpGeneratedTime = :generatedTime WHERE u.email = :email"
             );
             query.setParameter("otp", otp);
             query.setParameter("generatedTime", LocalDateTime.now());  //it will save current time
@@ -134,16 +134,16 @@ public class StudentDAOImpl implements StudentDAO {
     }
 
     @Override
-    public StudentEntity checkOtpMatch(String email, String otp) {
+    public RegistrationEntity checkOtpMatch(String email, String otp) {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         try {
             Query query = entityManager.createQuery(
-                    "SELECT ref FROM StudentEntity ref WHERE ref.email = :email AND ref.otp = :otp"
+                    "SELECT ref FROM RegistrationEntity ref WHERE ref.email = :email AND ref.otp = :otp"
             );
             query.setParameter("email", email);
             query.setParameter("otp", otp);
 
-            return (StudentEntity) query.getSingleResult();
+            return (RegistrationEntity) query.getSingleResult();
 
         } catch (NoResultException e) {
             return null;
@@ -160,7 +160,7 @@ public class StudentDAOImpl implements StudentDAO {
         try {
             entityManager.getTransaction().begin();
             Query query = entityManager.createQuery(
-                    "UPDATE StudentEntity u SET u.password = :password, u.otp = null, u.otpGeneratedTime = null, u.count = 0 WHERE u.email = :email"
+                    "UPDATE RegistrationEntity u SET u.password = :password, u.otp = null, u.otpGeneratedTime = null, u.count = 0 WHERE u.email = :email"
             );
             query.setParameter("password", newPassword);
             query.setParameter("email", email);
@@ -181,7 +181,7 @@ public class StudentDAOImpl implements StudentDAO {
         try{
             entityManager.getTransaction().begin();
 
-            Query query = entityManager.createQuery("UPDATE StudentEntity u SET u.name = :name, u.phone = :phone, " +
+            Query query = entityManager.createQuery("UPDATE RegistrationEntity u SET u.name = :name, u.phone = :phone, " +
                     "u.age = :age, u.address = :address WHERE u.email = :email");
 
             query.setParameter("name", name);
@@ -193,7 +193,7 @@ public class StudentDAOImpl implements StudentDAO {
             int rowsAffected = query.executeUpdate();
             entityManager.getTransaction().commit();
 
-            System.out.println("✅ Profile updated for: " + email);
+            System.out.println(" Profile updated for: " + email);
             return rowsAffected > 0;
 
         } catch (Exception e) {

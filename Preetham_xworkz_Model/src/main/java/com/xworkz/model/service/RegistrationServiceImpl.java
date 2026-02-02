@@ -1,8 +1,8 @@
 package com.xworkz.model.service;
 
-import com.xworkz.model.DTO.StudentDTO;
-import com.xworkz.model.entity.StudentEntity;
-import com.xworkz.model.repository.StudentDAO;
+import com.xworkz.model.DTO.RegistrationDTO;
+import com.xworkz.model.entity.RegistrationEntity;
+import com.xworkz.model.repository.RegistrationDAO;
 
 import com.xworkz.model.utils.OTPUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +17,10 @@ import java.util.Base64;
 import java.util.Random;
 
 @Service
-public class StudentServiceImpl implements StudentService {
+public class RegistrationServiceImpl implements RegistrationService {
 
     @Autowired
-    StudentDAO studentDAO;
+    RegistrationDAO registrationDAO;
 
     @Autowired
     OTPUtil otpUtil;
@@ -59,11 +59,11 @@ public class StudentServiceImpl implements StudentService {
 //    ------------------------------------------------------------------------
 
     @Override
-    public boolean validateAndSave(StudentDTO studentDTO) {
+    public boolean validateAndSave(RegistrationDTO studentDTO) {
         if (studentDTO == null) return false;
 
         // Check if email already exists
-        if (studentDAO.checkEmail(studentDTO.getEmail())) {
+        if (registrationDAO.checkEmail(studentDTO.getEmail())) {
             return false;
         }
 
@@ -71,7 +71,7 @@ public class StudentServiceImpl implements StudentService {
         String encryptedPwd = encrypt(studentDTO.getPassword());
 
         // Create entity
-        StudentEntity studentEntity = new StudentEntity();
+        RegistrationEntity studentEntity = new RegistrationEntity();
         studentEntity.setName(studentDTO.getName());
         studentEntity.setEmail(studentDTO.getEmail());
         studentEntity.setPhone(studentDTO.getPhone());
@@ -81,14 +81,16 @@ public class StudentServiceImpl implements StudentService {
         studentEntity.setPassword(encryptedPwd);
         studentEntity.setCount(0);
 
-        return studentDAO.save(studentEntity);
+        return registrationDAO.save(studentEntity);
     }
 
     @Override
     public boolean validateLogin(String email, String password) {
+
         if (email == null || password == null) return false;
 
-        StudentEntity signupEntity = studentDAO.loginByEmail(email);
+        RegistrationEntity signupEntity = registrationDAO.loginByEmail(email);
+
         if (signupEntity == null) return false;
 
         try {
@@ -101,24 +103,24 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public void setCountToZero(String email) {
-        studentDAO.setCountToZero(email);
+        registrationDAO.setCountToZero(email);
     }
 
     @Override
     public int getCount(String email) {
-        return studentDAO.getCount(email);
+        return registrationDAO.getCount(email);
     }
 
     @Override
     public void updateCount(String email) {
-        studentDAO.updateCount(email);
+        registrationDAO.updateCount(email);
     }
 
     @Override
     public boolean sendOtp(String email) {
 
         // Check if user exists
-        if (!studentDAO.checkEmail(email)) {
+        if (!registrationDAO.checkEmail(email)) {
             return false;
         }
 
@@ -126,7 +128,7 @@ public class StudentServiceImpl implements StudentService {
         String generatedOtp = String.valueOf(100000 + new Random().nextInt(900000));
 
         // Save OTP to database
-        boolean isSaved = studentDAO.saveOtp(email, generatedOtp);
+        boolean isSaved = registrationDAO.saveOtp(email, generatedOtp);
 
         if (isSaved) {
             // Send OTP via email
@@ -143,7 +145,7 @@ public class StudentServiceImpl implements StudentService {
     public boolean checkOptLogin(String email, String otp) {
 
         // getting STUDENT ENTITY ( which contains otpGeneratedTime)
-        StudentEntity student = studentDAO.checkOtpMatch(email, otp);
+        RegistrationEntity student = registrationDAO.checkOtpMatch(email, otp);
 
         if (student == null) {
             System.out.println("Invalid OTP or email");
@@ -191,12 +193,12 @@ public class StudentServiceImpl implements StudentService {
         String encryptedPassword = encrypt(newPassword);
 
         // Update password and clear OTP
-        return studentDAO.updatePassword(email, encryptedPassword);
+        return registrationDAO.updatePassword(email, encryptedPassword);
     }
 
     @Override
-    public StudentEntity getUserByEmail(String email) {
-        return studentDAO.loginByEmail(email);
+    public RegistrationEntity getUserByEmail(String email) {
+        return registrationDAO.loginByEmail(email);
     }
 
     @Override
@@ -216,6 +218,6 @@ public class StudentServiceImpl implements StudentService {
         }
 
         // Call DAO to update
-        return studentDAO.updateProfile(email, name, phone, age, address);
+        return registrationDAO.updateProfile(email, name, phone, age, address);
     }
 }

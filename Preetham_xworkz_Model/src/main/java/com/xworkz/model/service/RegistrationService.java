@@ -1,12 +1,12 @@
 package com.xworkz.model.service;
 
-import com.xworkz.model.DTO.StudentDTO;
-import com.xworkz.model.entity.StudentEntity;
+import com.xworkz.model.DTO.RegistrationDTO;
+import com.xworkz.model.entity.RegistrationEntity;
 
 
-public interface StudentService {
+public interface RegistrationService {
 
-    boolean validateAndSave(StudentDTO studentDTO);
+    boolean validateAndSave(RegistrationDTO studentDTO);
 
     boolean validateLogin(String email, String password);
 
@@ -22,7 +22,7 @@ public interface StudentService {
 
     boolean resetPassword(String email, String newPassword, String confirmPassword);
 
-    StudentEntity getUserByEmail(String email);
+    RegistrationEntity getUserByEmail(String email);
 
     boolean updateProfile(String email, String name, String phone, Integer age, String address);
 }
