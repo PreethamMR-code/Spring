@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import java.time.LocalDate;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -26,35 +27,74 @@ public class DashboardController {
     @Autowired
     BatchStudentService batchStudentService;
 
-    // Dashboard Home
+    @GetMapping("")
+    public String dashboardHome() {
+        return "redirect:/Home";
+    }
+
     @GetMapping("/Home")
-    public String showHomePage() {
-        return "home";
+    public String home(Model model) {
+        return "Home";
     }
 
     // Show Add Batch Form
     @GetMapping("/addBatch")
     public String showAddBatchForm(Model model) {
+        model.addAttribute("activePage", "addBatch");
         model.addAttribute("batchDTO", new BatchDTO());
         return "addBatch";
     }
 
-    // Process Add Batch
+    // Process Add Batch (FIXED)
     @PostMapping("/addBatch")
-    public String addBatch(@Valid @ModelAttribute("batchDTO") BatchDTO batchDTO,
-                           BindingResult bindingResult,
-                           Model model) {
-        if (bindingResult.hasErrors()) {
-            return "addBatch";
-        }
+    public String addBatch(
+            @RequestParam String batchName,
+            @RequestParam String instructor,
+            @RequestParam String course,
+            @RequestParam String startDate,
+            @RequestParam String batchType,
+            @RequestParam(required = false) String description,
+            Model model) {
 
-        boolean saved = batchService.createBatch(batchDTO);
+        System.out.println("=== ADD BATCH CALLED ===");
+        System.out.println("Batch Name: " + batchName);
+        System.out.println("Instructor: " + instructor);
+        System.out.println("Course: " + course);
+        System.out.println("Start Date: " + startDate);
+        System.out.println("Batch Type: " + batchType);
+        System.out.println("Description: " + description);
 
-        if (saved) {
-            model.addAttribute("msg", "Batch created successfully!");
-            return "redirect:/dashboard/viewBatches";
-        } else {
-            model.addAttribute("error", "Failed to create batch");
+        try {
+            // Create DTO manually
+            BatchDTO batchDTO = new BatchDTO();
+            batchDTO.setBatchName(batchName);
+            batchDTO.setInstructor(instructor);
+            batchDTO.setCourse(course);
+
+            // Parse date
+            LocalDate date = LocalDate.parse(startDate);
+            batchDTO.setStartDate(date);
+
+            batchDTO.setBatchType(batchType);
+            batchDTO.setDescription(description);
+
+            // Save batch
+            boolean saved = batchService.createBatch(batchDTO);
+
+            System.out.println("Batch saved: " + saved);
+
+            if (saved) {
+                model.addAttribute("msg", "Batch created successfully!");
+                return "redirect:/dashboard/viewBatches";
+            } else {
+                model.addAttribute("error", "Failed to create batch");
+                return "addBatch";
+            }
+
+        } catch (Exception e) {
+            System.err.println("ERROR creating batch: " + e.getMessage());
+            e.printStackTrace();
+            model.addAttribute("error", "Error: " + e.getMessage());
             return "addBatch";
         }
     }
@@ -100,6 +140,7 @@ public class DashboardController {
     public String addStudent(@Valid @ModelAttribute("studentDTO") BatchStudentDTO studentDTO,
                              BindingResult bindingResult,
                              Model model) {
+
         if (bindingResult.hasErrors()) {
             BatchEntity batch = batchService.getBatchById(studentDTO.getBatchId());
             model.addAttribute("batch", batch);
