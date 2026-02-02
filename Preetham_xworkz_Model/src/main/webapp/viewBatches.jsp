@@ -22,9 +22,11 @@
             <a href="<c:url value='/dashboard/addBatch'/>" class="btn btn-light btn-sm">
                 <i class="bi bi-plus-lg me-1"></i>Add Batch
             </a>
-            <a href="<c:url value='/dashboard'/>" class="btn btn-outline-light btn-sm">
-                <i class="bi bi-arrow-left me-1"></i>Back
+
+            <a href="<c:url value='/dashboard/Home'/>" class="btn btn-outline-light btn-sm">
+                <i class="bi bi-house-door me-1"></i>Back To Home
             </a>
+
         </div>
     </div>
 </nav>
