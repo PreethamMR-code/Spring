@@ -235,8 +235,6 @@
                     <i class="bi bi-box-arrow-right"></i>
                     <span>Logout</span>
                 </a>
-
-
     </div>
 </div>
 
