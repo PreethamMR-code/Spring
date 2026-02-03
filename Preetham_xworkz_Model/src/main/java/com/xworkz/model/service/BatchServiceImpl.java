@@ -52,11 +52,13 @@ public class BatchServiceImpl implements BatchService{
 
     @Override
     public List<BatchEntity> getAllBatches() {
+
         return batchDAO.getAllBatches();
     }
 
     @Override
     public BatchEntity getBatchById(int id) {
+
         return batchDAO.getBatchById(id);
     }
 
@@ -79,6 +81,7 @@ public class BatchServiceImpl implements BatchService{
 
     @Override
     public boolean deleteBatch(int id) {
+
         return batchDAO.deleteBatch(id);
     }
 }
