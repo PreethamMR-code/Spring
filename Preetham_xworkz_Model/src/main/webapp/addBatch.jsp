@@ -383,6 +383,7 @@
     const sidebar = document.getElementById('sidebar');
     const sidebarOverlay = document.getElementById('sidebarOverlay');
 
+
     function toggleSidebar() {
         menuToggle.classList.toggle('active');
         sidebar.classList.toggle('active');
