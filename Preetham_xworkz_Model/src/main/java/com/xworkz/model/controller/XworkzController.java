@@ -30,13 +30,13 @@ public class XworkzController {
         return "signUp";
     }
 
-    // Show signin page
+    // Show sign in page
     @GetMapping("signIn")
     public String signInPage() {
         return "signIn";
     }
 
-    // Show OTP signin page
+    // Show OTP sign in page
     @GetMapping("SignInWithOTP")
     public String signInWithOTPPage() {
         return "SignInWithOTP";
@@ -91,6 +91,15 @@ public class XworkzController {
             mv.addObject("error", "Email already exists or registration failed");
         }
         return mv;
+    }
+
+    @GetMapping("checkEmail")
+    @ResponseBody
+    public String checkEmail(@RequestParam String email){
+
+        boolean exists = registrationService.isEmailExists(email);
+        System.out.println("Checking email: [" + email + "] | Exists in DB: " + exists);
+        return exists? "exists" : "not_exists";
     }
 
 
