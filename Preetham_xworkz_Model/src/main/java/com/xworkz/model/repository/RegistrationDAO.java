@@ -23,4 +23,6 @@ public interface RegistrationDAO {
     boolean updatePassword(String email, String newPassword);
 
     boolean updateProfile(String email, String name, String phone, Integer age, String address);
+
+    RegistrationEntity findByEmail(String email);
 }

@@ -105,8 +105,8 @@ public class RegistrationDAOImpl implements RegistrationDAO {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         try {
             Long count = (Long) entityManager.createQuery(
-                    "SELECT COUNT(user) FROM RegistrationEntity user WHERE user.email = :email"
-            ).setParameter("email", email).getSingleResult();
+                    "SELECT COUNT(user) FROM RegistrationEntity user WHERE LOWER(user.email) = LOWER(:email)"
+            ).setParameter("email", email.trim()).getSingleResult();
             return count > 0;
         } finally {
             entityManager.close();
@@ -202,6 +202,25 @@ public class RegistrationDAOImpl implements RegistrationDAO {
             }
             e.printStackTrace();
             return false;
+        } finally {
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public RegistrationEntity findByEmail(String email) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        try {
+            // We use LOWER() to ensure "Raj@gmail.com" matches "raj@gmail.com"
+            return entityManager.createQuery(
+                            "SELECT r FROM RegistrationEntity r WHERE LOWER(r.email) = LOWER(:email)",
+                            RegistrationEntity.class)
+                    .setParameter("email", email.trim())
+                    .getResultList()
+                    .stream()
+                    .findFirst()
+                    .orElse(null);
+
         } finally {
             entityManager.close();
         }
