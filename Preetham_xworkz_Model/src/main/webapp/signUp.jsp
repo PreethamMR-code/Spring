@@ -7,6 +7,7 @@
     <title>Sign Up | X-Workz</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         :root {
             --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -170,10 +171,11 @@
             <div class="mb-4">
                 <div class="form-floating">
                     <input type="email" id="email" name="email" class="form-control form-control-lg" value="${dto.email}"
-                           oninput="validateEmail()" onchange="validateEmail()" placeholder="Email">
+                           onblur="checkEmailAvailability()" oninput="clearServerError();"
+                            placeholder="Email">
                     <label for="email"><i class="fas fa-envelope me-2"></i>Email</label>
                 </div>
-                <div class="text-danger error-message" id="emailError">${emailError}</div>
+                <div class="error-message" id="emailError">${emailError}</div>
             </div>
 
             <div class="mb-4">
@@ -254,12 +256,12 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             </c:if>
-            <c:if test="${not empty error}">
-                <div class="alert alert-danger border-0 alert-dismissible fade show mt-4" role="alert">
-                    <i class="fas fa-exclamation-triangle me-2"></i>${error}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            </c:if>
+           <c:if test="${not empty error}">
+               <div id="serverErrorAlert" class="alert alert-danger border-0 alert-dismissible fade show mt-4" role="alert">
+                   <i class="fas fa-exclamation-triangle me-2"></i>${error}
+                   <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+               </div>
+           </c:if>
         </form>
     </div>
 </main>
@@ -287,17 +289,50 @@
         return true;
     }
 
-    function validateEmail() {
-        const email = document.getElementById("email").value.trim();
-        const emailError = document.getElementById("emailError");
+   async function checkEmailAvailability() {
+           const emailInput = document.getElementById("email");
+           const emailError = document.getElementById("emailError");
+           const email = emailInput.value.trim();
 
-        if (!/^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(email)) {
-            emailError.textContent = "Email must end with @gmail.com";
-            return false;
+
+           if (email === "") {
+                   emailError.textContent = "";
+                   return;
+               }
+
+           if (!/^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(email)) {
+               emailError.textContent = "Email must end with @gmail.com";
+               return;
+           }
+
+           try {
+                   // Axios sends the request and waits for the server's Promise to resolve
+                 //  const response = await axios.get(`checkEmail?email=${email}`);
+
+                  const response = await axios.get('checkEmail', {params: { email: email }});
+                   const result = response.data.trim();
+
+                   if (result === "exists") {
+                       emailError.textContent = "This email is already registered!";
+                       emailError.style.color = "red";
+                     //  document.querySelector('button[type="submit"]').disabled = true;
+                   } else {
+                       emailError.textContent = "Email is available";
+                       emailError.style.color = "green";
+                    //   document.querySelector('button[type="submit"]').disabled = false;
+                   }
+               } catch (error) {
+                   console.error("Axios check failed:", error);
+               }
+           }
+
+        function clearServerError() {
+            const alertBox = document.getElementById("serverErrorAlert");
+            if (alertBox) {
+                // This hides the server alert as soon as the user starts typing
+                alertBox.style.display = 'none';
+            }
         }
-        emailError.textContent = "";
-        return true;
-    }
 
     function validatePhone() {
         const phone = document.getElementById("phone").value.trim();
