@@ -84,6 +84,13 @@ public class RegistrationServiceImpl implements RegistrationService {
         return registrationDAO.save(studentEntity);
     }
 
+    //checking email exists through ajax
+
+    @Override
+    public boolean isEmailExists(String email) {
+        return registrationDAO.findByEmail(email)!= null;
+    }
+
     @Override
     public boolean validateLogin(String email, String password) {
 
@@ -220,4 +227,6 @@ public class RegistrationServiceImpl implements RegistrationService {
         // Call DAO to update
         return registrationDAO.updateProfile(email, name, phone, age, address);
     }
+
+
 }

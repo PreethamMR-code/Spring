@@ -25,4 +25,6 @@ public interface RegistrationService {
     RegistrationEntity getUserByEmail(String email);
 
     boolean updateProfile(String email, String name, String phone, Integer age, String address);
+
+    boolean isEmailExists(String email);
 }
