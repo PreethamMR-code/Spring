@@ -253,24 +253,143 @@
                     <ul class="navbar-nav ms-auto align-items-center">
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown">
-                                <div class="bg-white bg-opacity-25 rounded-circle p-2 me-2">
-                                    <i class="bi bi-person-fill"></i>
-                                </div>
+
+                                <!-- ✅ REPLACE this icon with actual image -->
+                                        <c:choose>
+                                            <c:when test="${not empty profilePhoto}">
+                                                <img src="<c:url value='/uploads/${profilePhoto}'/>"
+                                                     class="rounded-circle me-2"
+                                                     width="35" height="35"
+                                                     style="object-fit: cover; border: 2px solid white;"
+                                                     alt="Profile">
+                                            </c:when>
+                                            <c:otherwise>
+                                                <div class="bg-white bg-opacity-25 rounded-circle p-2 me-2">
+                                                    <i class="bi bi-person-fill"></i>
+                                                </div>
+                                            </c:otherwise>
+                                        </c:choose>
                                 <span class="fw-semibold">${name != null ? name : 'User'}</span>
                             </a>
-                            <ul class="dropdown-menu dropdown-menu-end shadow">
-                                <li class="px-3 py-2 bg-light">
-                                    <h6 class="mb-0 fw-bold">${name}</h6>
-                                    <small class="text-muted">${email}</small>
-                                </li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="signIn">Logout</a></li>
-                            </ul>
-                        </li>
+                            <ul class="dropdown-menu dropdown-menu-end shadow" style="min-width: 300px;">
+                                    <!-- Profile Info -->
+                                    <li class="px-3 py-3 bg-light">
+                                        <div class="d-flex align-items-center">
+                                            <!-- Profile Photo -->
+                                            <div class="position-relative me-3">
+                                                <c:choose>
+                                                    <c:when test="${not empty profilePhoto}">
+                                                        <img src="<c:url value='/uploads/${profilePhoto}'/>"
+                                                             class="rounded-circle"
+                                                             width="60" height="60"
+                                                             style="object-fit: cover; border: 3px solid #0d6efd;"
+                                                             alt="Profile">
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center"
+                                                             style="width: 60px; height: 60px;">
+                                                            <i class="bi bi-person-fill text-primary fs-3"></i>
+                                                        </div>
+                                                    </c:otherwise>
+                                                </c:choose>
+
+                                                <!-- Upload Button -->
+                                                <button class="btn btn-primary btn-sm rounded-circle position-absolute bottom-0 end-0"
+                                                        style="width: 25px; height: 25px; padding: 0;"
+                                                        data-bs-toggle="modal" data-bs-target="#uploadPhotoModal">
+                                                    <i class="bi bi-camera-fill" style="font-size: 0.7rem;"></i>
+                                                </button>
+                                            </div>
+
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-0 fw-bold">${name}</h6>
+                                                <small class="text-muted">${email}</small>
+                                            </div>
+                                        </div>
+                                    </li>
+
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="editProfile?email=${email}">
+                                        <i class="bi bi-pencil-square me-2"></i>Edit Profile
+                                    </a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" href="signIn">
+                                        <i class="bi bi-box-arrow-right me-2"></i>Logout
+                                    </a></li>
+                                </ul>
+                            </li>
                     </ul>
+
+<!--  ADD UPLOAD MODAL at bottom of page (before </body>) -->
+                            <div class="modal fade" id="uploadPhotoModal" tabindex="-1">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">
+                                                <i class="bi bi-camera me-2"></i>Upload Profile Photo
+                                            </h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+
+                                        <form action="<c:url value='/uploadProfilePhoto'/>" method="post" enctype="multipart/form-data">
+                                            <div class="modal-body">
+                                                <input type="hidden" name="email" value="${email}">
+
+                                                <!-- Preview Area -->
+                                                <div class="text-center mb-3">
+                                                    <img id="photoPreview"
+                                                         src="<c:url value='/uploads/${profilePhoto}'/>"
+                                                         class="rounded-circle mb-3"
+                                                         width="150" height="150"
+                                                         style="object-fit: cover; border: 3px solid #dee2e6;"
+                                                         alt="Preview">
+                                                </div>
+
+                                                <!-- File Input -->
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold">Choose Photo</label>
+                                                    <input type="file"
+                                                           class="form-control"
+                                                           name="profilePhoto"
+                                                           id="profilePhotoInput"
+                                                           accept="image/*"
+                                                           required
+                                                           onchange="previewImage(this)">
+                                                    <small class="text-muted">Max size: 5MB. Formats: JPG, PNG, GIF</small>
+                                                </div>
+                                            </div>
+
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                <button type="submit" class="btn btn-primary">
+                                                    <i class="bi bi-upload me-1"></i>Upload
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
                 </div>
             </div>
         </nav>
+
+        <!-- Error Messages-->
+        <c:if test="${not empty msg}">
+            <div class="alert alert-success alert-dismissible fade show position-fixed" style="top: 80px; right: 20px; z-index: 9999;" role="alert">
+                ${msg}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </c:if>
+
+        <c:if test="${not empty error}">
+            <div class="alert alert-danger alert-dismissible fade show position-fixed" style="top: 80px; right: 20px; z-index: 9999;" role="alert">
+                ${error}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </c:if>
+
+
+
 
         <div class="bg-primary text-white py-5 mb-4">
             <div class="container">
@@ -422,6 +541,17 @@
 
     menuToggle.addEventListener('click', toggleSidebar);
     sidebarOverlay.addEventListener('click', toggleSidebar);
+
+
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('photoPreview').src = e.target.result;
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
 </script>
 </body>
 </html>
