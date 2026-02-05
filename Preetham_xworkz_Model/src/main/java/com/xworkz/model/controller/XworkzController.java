@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.validation.Valid;
@@ -165,6 +166,9 @@ public class XworkzController {
 
             model.addAttribute("email", email);
             model.addAttribute("name", registration != null ? registration.getName() : "User");
+
+           // Pass profile photo to view
+            model.addAttribute("profilePhoto", registration != null ? registration.getProfilePhoto() : "default-avatar.png");
             return "Home";
         }else {
             // email exists but wrong credentials
@@ -320,5 +324,16 @@ public String validateOtpLogin(@RequestParam String email,
             model.addAttribute("error", "Failed to update profile");
             return "editProfile";
         }
+    }
+
+    @PostMapping("/uploadProfilePhoto")
+    public String uploadProfilePhoto(
+            @RequestParam String email,
+            @RequestParam MultipartFile profilePhoto,
+            Model model) {
+
+        boolean success = registrationService.uploadProfilePhoto(email, profilePhoto);
+        model.addAttribute("msg", success ? "Photo uploaded!" : "Upload failed");
+        return "Home";
     }
 }
