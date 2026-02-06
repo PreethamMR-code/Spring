@@ -14,6 +14,13 @@ import java.nio.file.Files;
 @Controller
 public class FileController {
 
+    @GetMapping("/test")
+    @ResponseBody
+    public String test() {
+        return "✅ FileController SCANNED! Path: " + FileUploadConfig.PROFILE_DIR;
+    }
+
+
     @GetMapping("/uploads/profiles/{filename:.+}")
     @ResponseBody
     public byte[] getProfilePhoto(@PathVariable String filename,
