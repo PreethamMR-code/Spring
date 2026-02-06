@@ -25,4 +25,6 @@ public interface RegistrationDAO {
     boolean updateProfile(String email, String name, String phone, Integer age, String address);
 
     RegistrationEntity findByEmail(String email);
+
+    boolean updateProfilePhoto(String email, String newFilename);
 }
