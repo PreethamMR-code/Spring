@@ -2,6 +2,7 @@ package com.xworkz.model.service;
 
 import com.xworkz.model.DTO.RegistrationDTO;
 import com.xworkz.model.entity.RegistrationEntity;
+import org.springframework.web.multipart.MultipartFile;
 
 
 public interface RegistrationService {
@@ -27,4 +28,6 @@ public interface RegistrationService {
     boolean updateProfile(String email, String name, String phone, Integer age, String address);
 
     boolean isEmailExists(String email);
+
+    boolean uploadProfilePhoto(String email, MultipartFile file);
 }
