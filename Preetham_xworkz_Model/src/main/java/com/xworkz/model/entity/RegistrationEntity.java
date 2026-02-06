@@ -47,5 +47,8 @@ public class RegistrationEntity {
 
         @Column(name = "otp_generated_time")
         private LocalDateTime otpGeneratedTime;
+
+        @Column(name = "profile_photo", length = 255)
+        private String profilePhoto = "default-avatar.png";
 }
 
