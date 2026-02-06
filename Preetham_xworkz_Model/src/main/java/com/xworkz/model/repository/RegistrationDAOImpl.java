@@ -226,4 +226,33 @@ public class RegistrationDAOImpl implements RegistrationDAO {
         }
     }
 
+    @Override
+    public boolean updateProfilePhoto(String email, String newFilename) {
+        EntityManager em = entityManagerFactory.createEntityManager();
+        try {
+            em.getTransaction().begin();
+
+            Query query = em.createQuery(
+                    "UPDATE StudentEntity s SET s.profilePhoto = :photo WHERE s.email = :email"
+            );
+            query.setParameter("photo", newFilename);
+            query.setParameter("email", email);
+
+            int updated = query.executeUpdate();
+            em.getTransaction().commit();
+
+            System.out.println("✅ Profile photo updated for: " + email);
+            return updated > 0;
+
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            e.printStackTrace();
+            return false;
+        } finally {
+            em.close();
+        }
+    }
+
 }
