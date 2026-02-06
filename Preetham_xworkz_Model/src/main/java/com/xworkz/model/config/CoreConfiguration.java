@@ -18,7 +18,7 @@ import java.util.Properties;
 
 @Configuration
 @EnableWebMvc
-@ComponentScan(basePackages = "com.xworkz.model")
+@ComponentScan(basePackages = {"com.xworkz.model","com.xworkz.model.controller"})
 public class CoreConfiguration implements WebMvcConfigurer {
 
     public CoreConfiguration(){
@@ -33,8 +33,6 @@ public class CoreConfiguration implements WebMvcConfigurer {
         registry.addResourceHandler("/js/**")
                 .addResourceLocations("/js/");
     }
-
-
 
     @Bean
     public ViewResolver viewResolver(){
