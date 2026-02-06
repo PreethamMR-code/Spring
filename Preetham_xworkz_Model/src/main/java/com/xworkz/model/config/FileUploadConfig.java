@@ -12,7 +12,7 @@ public class FileUploadConfig {
     public static final String PROFILE_DIR = UPLOAD_DIR + "profiles/";
 
     // Default avatar filename
-    public static final String DEFAULT_AVATAR = "default-avatar.png";
+    public static final String DEFAULT_AVATAR = "default-avatar.jpg";
 
     // Max file size (5MB)
     public static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
