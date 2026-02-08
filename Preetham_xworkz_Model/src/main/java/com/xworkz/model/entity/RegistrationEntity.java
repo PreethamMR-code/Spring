@@ -48,7 +48,12 @@ public class RegistrationEntity {
         @Column(name = "otp_generated_time")
         private LocalDateTime otpGeneratedTime;
 
-        @Column(name = "profile_photo", length = 255)
-        private String profilePhoto = "default-avatar.png";
+//        @Column(name = "profile_photo", length = 255)
+//        private String profilePhoto = "default-avatar.png";
+
+        // RegistrationEntity.java
+        @OneToOne
+        @JoinColumn(name = "file_id") // This creates a foreign key column in 'students' table
+        private FileEntity profileImage;
 }
 
