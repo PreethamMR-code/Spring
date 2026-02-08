@@ -253,60 +253,55 @@
                     <ul class="navbar-nav ms-auto align-items-center">
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown">
-
-                                <!-- ✅ REPLACE this icon with actual image -->
-                                        <c:choose>
-                                            <c:when test="${not empty profilePhoto}">
-                                                <img src="<c:url value='/uploads/${profilePhoto}'/>"
-                                                     class="rounded-circle me-2"
-                                                     width="35" height="35"
-                                                     style="object-fit: cover; border: 2px solid white;"
-                                                     alt="Profile">
-                                            </c:when>
-                                            <c:otherwise>
-                                                <div class="bg-white bg-opacity-25 rounded-circle p-2 me-2">
-                                                    <i class="bi bi-person-fill"></i>
-                                                </div>
-                                            </c:otherwise>
-                                        </c:choose>
+                                <c:choose>
+                                    <c:when test="${not empty sessionScope.fileId}">
+                                        <img src="<c:url value='/getImage?id=${sessionScope.fileId}'/>"
+                                             class="rounded-circle me-2"
+                                             width="35" height="35"
+                                             style="object-fit: cover; border: 2px solid white;"
+                                             alt="Profile">
+                                    </c:when>
+                                    <c:otherwise>
+                                        <div class="bg-white bg-opacity-25 rounded-circle p-2 me-2">
+                                            <i class="bi bi-person-fill"></i>
+                                        </div>
+                                    </c:otherwise>
+                                </c:choose>
                                 <span class="fw-semibold">${name != null ? name : 'User'}</span>
                             </a>
+
                             <ul class="dropdown-menu dropdown-menu-end shadow" style="min-width: 300px;">
-                                    <!-- Profile Info -->
-                                    <li class="px-3 py-3 bg-light">
-                                        <div class="d-flex align-items-center">
-                                            <!-- Profile Photo -->
-                                            <div class="position-relative me-3">
-                                                <c:choose>
-                                                    <c:when test="${not empty profilePhoto}">
-                                                        <img src="<c:url value='/uploads/${profilePhoto}'/>"
-                                                             class="rounded-circle"
-                                                             width="60" height="60"
-                                                             style="object-fit: cover; border: 3px solid #0d6efd;"
-                                                             alt="Profile">
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center"
-                                                             style="width: 60px; height: 60px;">
-                                                            <i class="bi bi-person-fill text-primary fs-3"></i>
-                                                        </div>
-                                                    </c:otherwise>
-                                                </c:choose>
+                                <li class="px-3 py-3 bg-light">
+                                    <div class="d-flex align-items-center">
+                                        <div class="position-relative me-3">
+                                            <c:choose>
+                                                <c:when test="${not empty sessionScope.fileId}">
+                                                    <img src="<c:url value='/getImage?id=${sessionScope.fileId}'/>"
+                                                         class="rounded-circle"
+                                                         width="60" height="60"
+                                                         style="object-fit: cover; border: 3px solid #0d6efd;"
+                                                         alt="Profile">
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center"
+                                                         style="width: 60px; height: 60px;">
+                                                        <i class="bi bi-person-fill text-primary fs-3"></i>
+                                                    </div>
+                                                </c:otherwise>
+                                            </c:choose>
 
-                                                <!-- Upload Button -->
-                                                <button class="btn btn-primary btn-sm rounded-circle position-absolute bottom-0 end-0"
-                                                        style="width: 25px; height: 25px; padding: 0;"
-                                                        data-bs-toggle="modal" data-bs-target="#uploadPhotoModal">
-                                                    <i class="bi bi-camera-fill" style="font-size: 0.7rem;"></i>
-                                                </button>
-                                            </div>
-
-                                            <div class="flex-grow-1">
-                                                <h6 class="mb-0 fw-bold">${name}</h6>
-                                                <small class="text-muted">${email}</small>
-                                            </div>
+                                            <button class="btn btn-primary btn-sm rounded-circle position-absolute bottom-0 end-0"
+                                                    style="width: 25px; height: 25px; padding: 0;"
+                                                    data-bs-toggle="modal" data-bs-target="#uploadPhotoModal">
+                                                <i class="bi bi-camera-fill" style="font-size: 0.7rem;"></i>
+                                            </button>
                                         </div>
-                                    </li>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-0 fw-bold">${name}</h6>
+                                            <small class="text-muted">${email}</small>
+                                        </div>
+                                    </div>
+                                </li>
 
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="editProfile?email=${email}">
@@ -332,18 +327,21 @@
                                         </div>
 
                                         <form action="<c:url value='/uploadProfilePhoto'/>" method="post" enctype="multipart/form-data">
-                                            <div class="modal-body">
-                                                <input type="hidden" name="email" value="${email}">
-
-                                                <!-- Preview Area -->
-                                                <div class="text-center mb-3">
-                                                    <img id="photoPreview"
-                                                         src="<c:url value='/uploads/${profilePhoto}'/>"
-                                                         class="rounded-circle mb-3"
-                                                         width="150" height="150"
-                                                         style="object-fit: cover; border: 3px solid #dee2e6;"
-                                                         alt="Preview">
-                                                </div>
+                                                        <div class="modal-body">
+                                                            <input type="hidden" name="email" value="${email}">
+                                                            <div class="text-center mb-3">
+                                                                <img id="photoPreview"
+                                                                     src="<c:choose>
+                                                                            <c:when test='${not empty sessionScope.fileId}'>
+                                                                                <c:url value='/getImage?id=${sessionScope.fileId}'/>
+                                                                            </c:when>
+                                                                            <c:otherwise>https://ui-avatars.com/api/?name=${name}&size=150</c:otherwise>
+                                                                          </c:choose>"
+                                                                     class="rounded-circle mb-3"
+                                                                     width="150" height="150"
+                                                                     style="object-fit: cover; border: 3px solid #dee2e6;"
+                                                                     alt="Preview">
+                                                            </div>
 
                                                 <!-- File Input -->
                                                 <div class="mb-3">
