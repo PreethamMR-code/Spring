@@ -1,6 +1,7 @@
 package com.xworkz.model.service;
 
 import com.xworkz.model.DTO.RegistrationDTO;
+import com.xworkz.model.entity.FileEntity;
 import com.xworkz.model.entity.RegistrationEntity;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,4 +31,6 @@ public interface RegistrationService {
     boolean isEmailExists(String email);
 
     boolean uploadProfilePhoto(String email, MultipartFile file);
+
+    FileEntity getFileById(int id);
 }

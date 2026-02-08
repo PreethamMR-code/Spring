@@ -2,6 +2,7 @@ package com.xworkz.model.service;
 
 import com.xworkz.model.DTO.RegistrationDTO;
 import com.xworkz.model.config.FileUploadConfig;
+import com.xworkz.model.entity.FileEntity;
 import com.xworkz.model.entity.RegistrationEntity;
 import com.xworkz.model.repository.RegistrationDAO;
 
@@ -14,6 +15,7 @@ import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -237,76 +239,35 @@ public class RegistrationServiceImpl implements RegistrationService {
 
 
     @Override
-    public boolean uploadProfilePhoto(String email, MultipartFile file){
+    // RegistrationServiceImpl.java
+    public boolean uploadProfilePhoto(String email, MultipartFile image) throws IOException {
+        String uploadDir = "D:/filefolder";
+        String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
 
+        // 1. Create directory and save file
+        Path directoryPath = Paths.get(uploadDir);
+        if (!Files.exists(directoryPath)) Files.createDirectories(directoryPath);
+        Path filePath = directoryPath.resolve(fileName);
+        Files.write(filePath, image.getBytes());
 
-        try {
-            // Check file empty
-            if (file.isEmpty()) {
-                System.out.println(" File is empty");
-                return false;
-            }
+        // 2. Create and Save File Metadata
+        FileEntity fileEntity = new FileEntity();
+        fileEntity.setOriginalFileName(image.getOriginalFilename());
+        fileEntity.setStoredFilePath(filePath.toString());
+        fileEntity.setContentType(image.getContentType());
+        int imageId = RegistrationDAO.saveFile(fileEntity); // Save to DB
 
-            // Check file size
-            if (file.getSize() > FileUploadConfig.MAX_FILE_SIZE) {
-                System.out.println(" File size too large");
-                return false;
-            }
+        // 3. Link Image to User
+        RegistrationEntity user = registrationDAO.loginByEmail(email);
+        user.setProfileImage(fileEntity);
+        return registrationDAO.update(user);
+    }
 
-            // Create unique filename
-            String originalFilename = file.getOriginalFilename();
-            String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+    @Override
+    public FileEntity getFileById(int id) {
 
-            // Clean email for filename (remove @ and .)
-            String cleanEmail = email.replace("@", "_at_").replace(".", "_");
-
-            // Add timestamp to prevent caching issues
-            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
-
-            String newFilename = "user_" + cleanEmail + "_" + timestamp + extension;
-
-            System.out.println("New filename: " + newFilename);
-
-// Ensure upload folder exists
-//            Path uploadPath = Paths.get(FileUploadConfig.PROFILE_DIR);
-//            Files.createDirectories(uploadPath);
-
-
-            // Delete old profile photo (if exists)
-            RegistrationEntity entity = registrationDAO.loginByEmail(email);
-            if (entity != null && entity.getProfilePhoto() != null) {
-                String oldPhoto = entity.getProfilePhoto();
-                if (!oldPhoto.equals(FileUploadConfig.DEFAULT_AVATAR)) {
-                    File oldFile = new File(FileUploadConfig.PROFILE_DIR + oldPhoto);
-                    if (oldFile.exists()) {
-                        boolean deleted = oldFile.delete();
-                        System.out.println(deleted ? "🗑️ Deleted old photo: " + oldPhoto : "⚠️ Could not delete old photo");
-                    }
-                }
-            }
-
-            //Save to D drive
-            Path filePath = Paths.get(FileUploadConfig.PROFILE_DIR + newFilename);
-            Files.write(filePath, file.getBytes());
-
-            System.out.println(" File saved to D drive: " + filePath.toAbsolutePath());
-
-            // 4. Update DB (filename only)
-            boolean updated =  registrationDAO.updateProfilePhoto(email, newFilename);
-
-            if(updated){
-                System.out.println(" Database updated with filename: " + newFilename);
-            } else {
-                System.err.println(" Failed to update database");
-                // Delete the uploaded file if database update fails
-                Files.deleteIfExists(filePath);
-            }
-
-            return updated;
-        } catch (Exception e) {
-            System.out.println("Error saving file:"+ e.getMessage());
-            e.printStackTrace();
-            return false;
+            // This calls your DAO to find the specific File metadata
+            return registrationDAO.getFileById(id);
         }
     }
 
