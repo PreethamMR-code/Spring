@@ -5,6 +5,8 @@ import com.xworkz.model.entity.FileEntity;
 import com.xworkz.model.entity.RegistrationEntity;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+
 
 public interface RegistrationService {
 
@@ -30,7 +32,7 @@ public interface RegistrationService {
 
     boolean isEmailExists(String email);
 
-    boolean uploadProfilePhoto(String email, MultipartFile file);
+    boolean uploadProfilePhoto(String email, MultipartFile image) throws IOException;
 
     FileEntity getFileById(int id);
 }

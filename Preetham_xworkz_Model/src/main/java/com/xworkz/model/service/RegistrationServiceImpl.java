@@ -239,28 +239,36 @@ public class RegistrationServiceImpl implements RegistrationService {
 
 
     @Override
-    // RegistrationServiceImpl.java
     public boolean uploadProfilePhoto(String email, MultipartFile image) throws IOException {
-        String uploadDir = "D:/filefolder";
+
+        // Use the config constant instead of a hardcoded string
+        String uploadDir = FileUploadConfig.UPLOAD_DIR;
         String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
 
-        // 1. Create directory and save file
+        // 1. Physical Save to Disk
         Path directoryPath = Paths.get(uploadDir);
         if (!Files.exists(directoryPath)) Files.createDirectories(directoryPath);
         Path filePath = directoryPath.resolve(fileName);
         Files.write(filePath, image.getBytes());
 
-        // 2. Create and Save File Metadata
+        // 2. Create Metadata Object
         FileEntity fileEntity = new FileEntity();
         fileEntity.setOriginalFileName(image.getOriginalFilename());
         fileEntity.setStoredFilePath(filePath.toString());
         fileEntity.setContentType(image.getContentType());
-        int imageId = RegistrationDAO.saveFile(fileEntity); // Save to DB
+        fileEntity.setFileSize(image.getSize());
 
-        // 3. Link Image to User
+        // 3. Save Metadata FIRST to get an ID from the DB
+        int fileId = registrationDAO.saveFile(fileEntity);
+        fileEntity.setId(fileId); // Now the entity has its database ID
+
+        // 4. Link Metadata to User and Save
         RegistrationEntity user = registrationDAO.loginByEmail(email);
-        user.setProfileImage(fileEntity);
-        return registrationDAO.update(user);
+        if (user != null) {
+            user.setProfileImage(fileEntity); // This links the two tables
+            return registrationDAO.save(user);
+        }
+        return false;
     }
 
     @Override
@@ -269,7 +277,7 @@ public class RegistrationServiceImpl implements RegistrationService {
             // This calls your DAO to find the specific File metadata
             return registrationDAO.getFileById(id);
         }
+
     }
 
 
-}
