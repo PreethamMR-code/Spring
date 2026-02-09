@@ -22,4 +22,4 @@ public class FileEntity {
         private String contentType;
         private LocalDateTime uploadedAt = LocalDateTime.now();
     }
-}
+

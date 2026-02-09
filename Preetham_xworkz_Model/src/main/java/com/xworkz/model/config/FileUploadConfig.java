@@ -6,12 +6,12 @@ import org.springframework.context.annotation.Configuration;
 public class FileUploadConfig {
 
     // Base upload directory
-    public static final String UPLOAD_DIR = "D:/XWorkz/uploads/";
+    public static final String UPLOAD_DIR = "D:/filefolder/";
 
-    // Profile photos subdirectory
-    public static final String PROFILE_DIR = UPLOAD_DIR + "profiles/";
+    // Subdirectory for profile photos (optional, but keeps things organized)
+    public static final String PROFILE_DIR = UPLOAD_DIR;
 
-    // Default avatar filename
+    // Default avatar filename (make sure this file exists in D:/filefolder if used)
     public static final String DEFAULT_AVATAR = "default-avatar.jpg";
 
     // Max file size (5MB)
