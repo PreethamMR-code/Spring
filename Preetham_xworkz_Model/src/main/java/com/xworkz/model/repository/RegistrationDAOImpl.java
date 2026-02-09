@@ -1,5 +1,6 @@
 package com.xworkz.model.repository;
 
+import com.xworkz.model.entity.FileEntity;
 import com.xworkz.model.entity.RegistrationEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -21,7 +22,8 @@ public class RegistrationDAOImpl implements RegistrationDAO {
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         try {
             entityManager.getTransaction().begin();
-            entityManager.persist(studentEntity);
+            //  CHANGE: Use merge to handle both new and existing users
+            entityManager.merge(studentEntity);
             entityManager.getTransaction().commit();
             return true;
         } catch (Exception e) {
@@ -227,29 +229,26 @@ public class RegistrationDAOImpl implements RegistrationDAO {
     }
 
     @Override
-    public boolean updateProfilePhoto(String email, String newFilename) {
+    public int saveFile(FileEntity fileEntity) {
         EntityManager em = entityManagerFactory.createEntityManager();
         try {
             em.getTransaction().begin();
-
-            Query query = em.createQuery(
-                    "UPDATE StudentEntity s SET s.profilePhoto = :photo WHERE s.email = :email"
-            );
-            query.setParameter("photo", newFilename);
-            query.setParameter("email", email);
-
-            int updated = query.executeUpdate();
+            em.persist(fileEntity); // This inserts into 'uploaded_files'
             em.getTransaction().commit();
-
-            System.out.println("✅ Profile photo updated for: " + email);
-            return updated > 0;
-
+            return fileEntity.getId(); // Returns the auto-generated ID
         } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            e.printStackTrace();
-            return false;
+            if (em.getTransaction().isActive()) em.getTransaction().rollback();
+            return 0;
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public FileEntity getFileById(int id) {
+        EntityManager em = entityManagerFactory.createEntityManager();
+        try {
+            return em.find(FileEntity.class, id); // Simply finds by primary key
         } finally {
             em.close();
         }

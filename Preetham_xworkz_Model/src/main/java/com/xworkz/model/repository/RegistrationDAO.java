@@ -1,5 +1,6 @@
 package com.xworkz.model.repository;
 
+import com.xworkz.model.entity.FileEntity;
 import com.xworkz.model.entity.RegistrationEntity;
 
 public interface RegistrationDAO {
@@ -26,5 +27,7 @@ public interface RegistrationDAO {
 
     RegistrationEntity findByEmail(String email);
 
-    boolean updateProfilePhoto(String email, String newFilename);
+    int saveFile(FileEntity fileEntity);
+
+    FileEntity getFileById(int id);
 }
