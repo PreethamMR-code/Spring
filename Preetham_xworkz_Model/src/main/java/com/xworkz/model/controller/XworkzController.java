@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 @Controller
@@ -141,9 +142,7 @@ public class XworkzController {
 
 
     @PostMapping("login")
-    public String processLogin(@RequestParam String email,
-                               @RequestParam String password,
-                               Model model) {
+    public String processLogin(@RequestParam String email, @RequestParam String password, Model model, HttpSession session) {
 
         // check if email exists
 //        RegistrationEntity entity = registrationService.findByEmail(email);
@@ -153,22 +152,19 @@ public class XworkzController {
 //            return "login";
 //        }
 
-        //validate the password
         boolean valid = registrationService.validateLogin(email, password);
 
-
-        // reset failed attempts
         if (valid) {
             registrationService.setCountToZero(email);
-
-            // ✅ FETCH USER DETAILS TO GET NAME
             RegistrationEntity registration = registrationService.getUserByEmail(email);
+
+            // ✅ IMPORTANT: Save the fileId in the session so Home.jsp can find it
+            if (registration != null && registration.getProfileImage() != null) {
+                session.setAttribute("fileId", registration.getProfileImage().getId());
+            }
 
             model.addAttribute("email", email);
             model.addAttribute("name", registration != null ? registration.getName() : "User");
-
-           // Pass profile photo to view
-            model.addAttribute("profilePhoto", registration != null ? registration.getProfilePhoto() : "default-avatar.png");
             return "Home";
         }else {
             // email exists but wrong credentials
@@ -186,6 +182,7 @@ public class XworkzController {
             return "signIn";
         }
     }
+
 
         // email exists but wrong credentials
       //  int count = registrationService.incrementLoginCount(email);
@@ -327,13 +324,29 @@ public String validateOtpLogin(@RequestParam String email,
     }
 
     @PostMapping("/uploadProfilePhoto")
-    public String uploadProfilePhoto(
-            @RequestParam String email,
-            @RequestParam MultipartFile profilePhoto,
-            Model model) {
+    public String uploadProfilePhoto(@RequestParam String email,
+                                     @RequestParam MultipartFile profilePhoto,
+                                     Model model,
+                                     HttpSession session) {
 
         boolean success = registrationService.uploadProfilePhoto(email, profilePhoto);
-        model.addAttribute("msg", success ? "Photo uploaded!" : "Upload failed");
+
+        if (success) {
+            // ✅ Refresh user data and session fileId after upload
+            RegistrationEntity registration = registrationService.getUserByEmail(email);
+            if (registration != null && registration.getProfileImage() != null) {
+                session.setAttribute("fileId", registration.getProfileImage().getId());
+            }
+            model.addAttribute("msg", "Photo uploaded successfully!");
+        } else {
+            model.addAttribute("error", "Upload failed");
+        }
+
+        // Refresh model attributes for Home.jsp
+        RegistrationEntity reg = registrationService.getUserByEmail(email);
+        model.addAttribute("email", email);
+        model.addAttribute("name", reg.getName());
+
         return "Home";
     }
 }
