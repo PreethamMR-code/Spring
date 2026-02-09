@@ -20,12 +20,24 @@ public class FileController {
     RegistrationService registrationService;
 
     @GetMapping("/getImage")
-    public void getImage(@RequestParam int id, HttpServletResponse response) throws IOException {
+    public void getImage(@RequestParam int id,
+                         HttpServletResponse response)
+            throws IOException {
+
         FileEntity file = registrationService.getFileById(id);
+
         if (file != null) {
-            response.setContentType(file.getContentType());
             Path imagePath = Paths.get(file.getStoredFilePath());
-            Files.copy(imagePath, response.getOutputStream());
+
+            // ✅ Change: Verify file existence to avoid 500 errors
+            if (Files.exists(imagePath)) {
+                response.setContentType(file.getContentType());
+                Files.copy(imagePath, response.getOutputStream());
+                response.getOutputStream().flush(); // Ensure data is fully sent
+            } else {
+                // Optional: Send a 404 or a default image if file is missing on disk
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            }
         }
     }
 

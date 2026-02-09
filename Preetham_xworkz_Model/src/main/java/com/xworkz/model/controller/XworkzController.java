@@ -13,6 +13,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import java.io.IOException;
 
 @Controller
 public class XworkzController {
@@ -329,24 +330,23 @@ public String validateOtpLogin(@RequestParam String email,
                                      Model model,
                                      HttpSession session) {
 
-        boolean success = registrationService.uploadProfilePhoto(email, profilePhoto);
-
-        if (success) {
-            // ✅ Refresh user data and session fileId after upload
-            RegistrationEntity registration = registrationService.getUserByEmail(email);
-            if (registration != null && registration.getProfileImage() != null) {
-                session.setAttribute("fileId", registration.getProfileImage().getId());
+        try {
+            boolean success = registrationService.uploadProfilePhoto(email, profilePhoto);
+            if (success) {
+                // Refresh session so the new photo shows up immediately
+                RegistrationEntity reg = registrationService.getUserByEmail(email);
+                session.setAttribute("fileId", reg.getProfileImage().getId());
+                return "redirect:/dashboard/Home"; // Use your actual Home mapping path
             }
-            model.addAttribute("msg", "Photo uploaded successfully!");
-        } else {
-            model.addAttribute("error", "Upload failed");
+        } catch (IOException e) {
+            model.addAttribute("error", "Disk Error: " + e.getMessage());
         }
-
-        // Refresh model attributes for Home.jsp
-        RegistrationEntity reg = registrationService.getUserByEmail(email);
-        model.addAttribute("email", email);
-        model.addAttribute("name", reg.getName());
-
         return "Home";
+    }
+
+    @GetMapping("logout")
+    public String logout(HttpSession session) {
+        session.invalidate(); // Clears all session data (including fileId)
+        return "redirect:/signIn";
     }
 }
