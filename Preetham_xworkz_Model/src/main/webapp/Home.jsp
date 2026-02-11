@@ -325,6 +325,7 @@
                                             </h5>
                                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                         </div>
+// form starts
 
                                         <form action="<c:url value='/uploadProfilePhoto'/>" method="post" enctype="multipart/form-data">
                                                         <div class="modal-body">
