@@ -271,6 +271,7 @@ public class RegistrationServiceImpl implements RegistrationService {
         return false;
     }
 
+
     @Override
     public FileEntity getFileById(int id) {
 
