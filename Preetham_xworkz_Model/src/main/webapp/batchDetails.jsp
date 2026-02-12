@@ -8,20 +8,41 @@
     <title>Batch Details | X-Workz</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .response-yes  { background:#d1fae5; color:#065f46; border-radius:20px; padding:3px 10px; font-size:0.75rem; font-weight:700; white-space:nowrap; }
+        .response-no   { background:#fee2e2; color:#991b1b; border-radius:20px; padding:3px 10px; font-size:0.75rem; font-weight:700; white-space:nowrap; }
+        .response-none { background:#f1f5f9; color:#64748b; border-radius:20px; padding:3px 10px; font-size:0.75rem; font-weight:700; white-space:nowrap; }
+    </style>
 </head>
-
 <body class="bg-light">
 
-<!-- Navbar -->
+<%-- Flash messages --%>
+<c:if test="${not empty msg}">
+    <div class="alert alert-success alert-dismissible fade show position-fixed"
+         style="top:15px;right:15px;z-index:9999;min-width:320px;" role="alert">
+        ${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+</c:if>
+<c:if test="${not empty error}">
+    <div class="alert alert-danger alert-dismissible fade show position-fixed"
+         style="top:15px;right:15px;z-index:9999;min-width:320px;" role="alert">
+        ${error}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+</c:if>
+
+<%-- Navbar --%>
 <nav class="navbar navbar-dark bg-primary shadow-sm">
     <div class="container-fluid">
-        <a class="navbar-brand" href="<c:url value='/dashboard'/>">
-            <img src="https://x-workz.com/Logo.png" height="40" class="me-2" alt="X-Workz">
+        <a class="navbar-brand" href="<c:url value='/dashboard/Home'/>">
+            <img src="https://x-workz.com/Logo.png" height="35" class="me-2" alt="X-Workz">
             X-Workz Dashboard
         </a>
         <div class="d-flex gap-2">
             <a href="<c:url value='/dashboard/addStudent/${batch.id}'/>" class="btn btn-light btn-sm">
                 <i class="bi bi-person-plus me-1"></i>Add Student
+            </a>
+            <a href="<c:url value='/dashboard/emailResponses?batchId=${batch.id}'/>" class="btn btn-outline-light btn-sm">
+                <i class="bi bi-bar-chart me-1"></i>Email Responses
             </a>
             <a href="<c:url value='/dashboard/viewBatches'/>" class="btn btn-outline-light btn-sm">
                 <i class="bi bi-arrow-left me-1"></i>Back
@@ -30,50 +51,35 @@
     </div>
 </nav>
 
-<!-- Batch Info Header -->
+<%-- Batch Info --%>
 <div class="bg-white shadow-sm py-4 mb-4">
     <div class="container">
         <div class="row align-items-center">
             <div class="col-md-8">
                 <h2 class="fw-bold mb-2">${batch.batchName}</h2>
                 <div class="d-flex flex-wrap gap-3">
-                    <span class="badge bg-primary fs-6">
-                        <i class="bi bi-laptop me-1"></i>${batch.batchType}
-                    </span>
-                    <span class="text-muted">
-                        <i class="bi bi-book me-1"></i>${batch.course}
-                    </span>
-                    <span class="text-muted">
-                        <i class="bi bi-person-video3 me-1"></i>${batch.instructor}
-                    </span>
-                    <span class="text-muted">
-                        <i class="bi bi-calendar-event me-1"></i>${batch.startDate}
-                    </span>
+                    <span class="badge bg-primary fs-6"><i class="bi bi-laptop me-1"></i>${batch.batchType}</span>
+                    <span class="text-muted"><i class="bi bi-book me-1"></i>${batch.course}</span>
+                    <span class="text-muted"><i class="bi bi-person-video3 me-1"></i>${batch.instructor}</span>
+                    <span class="text-muted"><i class="bi bi-calendar-event me-1"></i>${batch.startDate}</span>
                 </div>
             </div>
             <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                <h4 class="fw-bold mb-0">
-                    <span class="badge bg-success">${students != null ? students.size() : 0} Students</span>
-                </h4>
+                <span class="badge bg-success fs-5">${students != null ? students.size() : 0} Students</span>
             </div>
         </div>
-
         <c:if test="${not empty batch.description}">
-            <div class="mt-3">
-                <p class="text-muted mb-0"><strong>Description:</strong> ${batch.description}</p>
-            </div>
+            <p class="text-muted mt-3 mb-0"><strong>Description:</strong> ${batch.description}</p>
         </c:if>
     </div>
 </div>
 
-<!-- Students List -->
-<div class="container my-5">
+<%-- Students Table --%>
+<div class="container my-4">
     <div class="card border-0 shadow-sm">
         <div class="card-header bg-white py-3">
             <div class="d-flex justify-content-between align-items-center">
-                <h5 class="mb-0 fw-bold">
-                    <i class="bi bi-people-fill text-primary me-2"></i>Enrolled Students
-                </h5>
+                <h5 class="mb-0 fw-bold"><i class="bi bi-people-fill text-primary me-2"></i>Enrolled Students</h5>
                 <a href="<c:url value='/dashboard/addStudent/${batch.id}'/>" class="btn btn-primary btn-sm">
                     <i class="bi bi-person-plus me-1"></i>Add Student
                 </a>
@@ -83,9 +89,8 @@
             <c:choose>
                 <c:when test="${empty students}">
                     <div class="text-center py-5">
-                        <i class="bi bi-person-x text-muted" style="font-size: 4rem;"></i>
+                        <i class="bi bi-person-x text-muted" style="font-size:4rem;"></i>
                         <h5 class="mt-3 text-muted">No Students Enrolled</h5>
-                        <p class="text-muted">Add students to this batch to get started</p>
                         <a href="<c:url value='/dashboard/addStudent/${batch.id}'/>" class="btn btn-primary mt-2">
                             <i class="bi bi-person-plus me-2"></i>Add First Student
                         </a>
@@ -93,16 +98,18 @@
                 </c:when>
                 <c:otherwise>
                     <div class="table-responsive">
-                        <table class="table table-hover mb-0">
+                        <table class="table table-hover mb-0 align-middle">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Student ID</th>
+                                    <th>ID</th>
                                     <th>Name</th>
                                     <th>Email</th>
                                     <th>Phone</th>
                                     <th>Gender</th>
                                     <th>Age</th>
-                                    <th>Joined Date</th>
+                                    <th>Joined</th>
+                                    <%-- ✅ NEW: Email Response column --%>
+                                    <th>Last Response</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -115,16 +122,42 @@
                                         <td>${student.phone}</td>
                                         <td>${student.gender}</td>
                                         <td>${student.age}</td>
-                                        <td>${student.joinedDate}</td>
+                                        <td><small>${student.joinedDate}</small></td>
+
+                                        <%-- ✅ Response badge — uses notifications map set by DashboardController --%>
                                         <td>
-                                            <div class="btn-group btn-group-sm">
-                                                <button class="btn btn-outline-primary" title="View Details">
-                                                    <i class="bi bi-eye"></i>
-                                                </button>
+                                            <c:set var="notif" value="${latestResponses[student.id]}"/>
+                                            <c:choose>
+                                                <c:when test="${notif == null}">
+                                                    <span class="response-none">No email sent</span>
+                                                </c:when>
+                                                <c:when test="${notif.response == 'YES'}">
+                                                    <span class="response-yes">✓ YES</span>
+                                                    <br><small class="text-muted" style="font-size:0.7rem;">${notif.subject}</small>
+                                                </c:when>
+                                                <c:when test="${notif.response == 'NO'}">
+                                                    <span class="response-no">✗ NO</span>
+                                                    <br><small class="text-muted" style="font-size:0.7rem;">${notif.subject}</small>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <span class="response-none">⏳ Awaiting</span>
+                                                    <br><small class="text-muted" style="font-size:0.7rem;">${notif.subject}</small>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </td>
+
+                                        <td>
+                                            <div class="d-flex gap-1 flex-wrap">
+                                                <%-- ✅ NEW: Send Email button --%>
+                                                <a href="<c:url value='/dashboard/sendEmail?studentId=${student.id}&batchId=${batch.id}'/>"
+                                                   class="btn btn-sm btn-outline-primary" title="Send Email">
+                                                    <i class="bi bi-envelope"></i>
+                                                </a>
+                                                <%-- Delete button --%>
                                                 <form action="<c:url value='/dashboard/deleteStudent/${student.id}/${batch.id}'/>"
                                                       method="post" style="display:inline;"
                                                       onsubmit="return confirm('Remove this student from batch?');">
-                                                    <button type="submit" class="btn btn-outline-danger" title="Remove">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Remove">
                                                         <i class="bi bi-trash"></i>
                                                     </button>
                                                 </form>
