@@ -7,6 +7,7 @@ import com.xworkz.model.entity.BatchEntity;
 import com.xworkz.model.entity.BatchStudentEntity;
 import com.xworkz.model.service.BatchService;
 import com.xworkz.model.service.BatchStudentService;
+import com.xworkz.model.service.EmailNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,6 +15,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.util.List;
 
@@ -25,6 +27,9 @@ public class DashboardController {
     BatchService batchService;
 
     @Autowired
+    EmailNotificationService emailNotificationService;
+
+    @Autowired
     BatchStudentService batchStudentService;
 
     @GetMapping("")
@@ -33,7 +38,18 @@ public class DashboardController {
     }
 
     @GetMapping("/Home")
-    public String home(Model model) {
+    public String home(Model model, HttpSession session) {
+
+        String name  = (String) session.getAttribute("name");
+        String email = (String) session.getAttribute("email");
+        Object fileId = session.getAttribute("fileId");
+
+        model.addAttribute("name",  name  != null ? name  : "User");
+        model.addAttribute("email", email != null ? email : "");
+        if (fileId != null) {
+            model.addAttribute("fileId", fileId);
+        }
+
         return "Home";
     }
 
@@ -109,14 +125,37 @@ public class DashboardController {
 
     // View Batch Details
     @GetMapping("/batchDetails/{id}")
-    public String batchDetails(@PathVariable int id, Model model) {
+    public String batchDetails(@PathVariable int id, Model model, HttpSession session) {
+
+        // Session attributes for navbar (same as home())
+        model.addAttribute("name",  session.getAttribute("name"));
+        model.addAttribute("email", session.getAttribute("email"));
+
         BatchEntity batch = batchService.getBatchById(id);
         List<BatchStudentEntity> students = batchStudentService.getStudentsByBatchId(id);
 
         model.addAttribute("batch", batch);
         model.addAttribute("students", students);
+
+
+        java.util.Map<Integer, com.xworkz.model.entity.EmailNotificationEntity> latestResponses
+                = new java.util.HashMap<>();
+
+        List<com.xworkz.model.entity.EmailNotificationEntity> allNotifications
+                = emailNotificationService.getByBatchId(id);
+
+        // For each notification (already sorted by sentAt DESC from DAO),
+        // only put the FIRST one we find for each student (= most recent)
+        for (com.xworkz.model.entity.EmailNotificationEntity n : allNotifications) {
+            if (!latestResponses.containsKey(n.getStudentId())) {
+                latestResponses.put(n.getStudentId(), n);
+            }
+        }
+
+        model.addAttribute("latestResponses", latestResponses);
         return "batchDetails";
     }
+
 
     // Show Add Student Form
     @GetMapping("/addStudent/{batchId}")
