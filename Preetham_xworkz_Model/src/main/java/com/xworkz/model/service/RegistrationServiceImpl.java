@@ -22,6 +22,7 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Random;
 
@@ -241,34 +242,77 @@ public class RegistrationServiceImpl implements RegistrationService {
     @Override
     public boolean uploadProfilePhoto(String email, MultipartFile image) throws IOException {
 
-        // Use the config constant instead of a hardcoded string
-        String uploadDir = FileUploadConfig.UPLOAD_DIR;
-        String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
+        // ── Step 1: Validate the file ──────────────────────────────────────
+        if (image == null || image.isEmpty()) {
+            throw new IllegalArgumentException("No file was selected.");
+        }
+        String contentType = image.getContentType();
+        boolean validType = Arrays.asList(FileUploadConfig.ALLOWED_TYPES).contains(contentType);
+        if (!validType) {
+            throw new IllegalArgumentException("Invalid file type. Only JPG, PNG, GIF allowed.");
+        }
+        if (image.getSize() > FileUploadConfig.MAX_FILE_SIZE) {
+            throw new IllegalArgumentException("File exceeds 5MB limit.");
+        }
 
-        // 1. Physical Save to Disk
-        Path directoryPath = Paths.get(uploadDir);
-        if (!Files.exists(directoryPath)) Files.createDirectories(directoryPath);
+        // ── Step 2: Load the user ──────────────────────────────────────────
+        RegistrationEntity user = registrationDAO.loginByEmail(email);
+        if (user == null) return false;
+
+        // ── Step 3: Delete the OLD file (if user already has a photo) ──────
+        FileEntity oldFile = user.getProfileImage();
+        if (oldFile != null) {
+            // 3a. Unlink from user FIRST (clears the FK so the FileEntity can be deleted)
+            user.setProfileImage(null);
+            registrationDAO.save(user);
+
+            // 3b. Delete old physical file from disk
+            try {
+                Files.deleteIfExists(Paths.get(oldFile.getStoredFilePath()));
+                System.out.println("🗑️ Deleted old photo: " + oldFile.getStoredFilePath());
+            } catch (IOException e) {
+                System.err.println("Warning: Could not delete old file: " + e.getMessage());
+                // Don't stop the upload — just log the warning
+            }
+
+            // 3c. Delete old FileEntity row from DB
+            registrationDAO.deleteFile(oldFile.getId());
+        }
+
+        // ── Step 4: Save new file to D:\filefolder\ ────────────────────────
+        String originalName = image.getOriginalFilename();
+        String safeOriginalName = originalName != null
+                ? originalName.replaceAll("[^a-zA-Z0-9._-]", "_")  // sanitize filename
+                : "photo.jpg";
+        String fileName = email.replaceAll("[^a-zA-Z0-9]", "_")
+                + "_" + System.currentTimeMillis()
+                + "_" + safeOriginalName;
+
+        Path directoryPath = Paths.get(FileUploadConfig.UPLOAD_DIR);
+        if (!Files.exists(directoryPath)) {
+            Files.createDirectories(directoryPath);
+        }
         Path filePath = directoryPath.resolve(fileName);
         Files.write(filePath, image.getBytes());
+        System.out.println("✅ Saved new photo to: " + filePath);
 
-        // 2. Create Metadata Object
-        FileEntity fileEntity = new FileEntity();
-        fileEntity.setOriginalFileName(image.getOriginalFilename());
-        fileEntity.setStoredFilePath(filePath.toString());
-        fileEntity.setContentType(image.getContentType());
-        fileEntity.setFileSize(image.getSize());
+        // ── Step 5: Create and save new FileEntity ─────────────────────────
+        FileEntity newFileEntity = new FileEntity();
+        newFileEntity.setOriginalFileName(originalName);
+        newFileEntity.setStoredFilePath(filePath.toString());
+        newFileEntity.setContentType(contentType);
+        newFileEntity.setFileSize(image.getSize());
+        newFileEntity.setUploadedAt(LocalDateTime.now());
 
-        // 3. Save Metadata FIRST to get an ID from the DB
-        int fileId = registrationDAO.saveFile(fileEntity);
-        fileEntity.setId(fileId); // Now the entity has its database ID
-
-        // 4. Link Metadata to User and Save
-        RegistrationEntity user = registrationDAO.loginByEmail(email);
-        if (user != null) {
-            user.setProfileImage(fileEntity); // This links the two tables
-            return registrationDAO.save(user);
+        int fileId = registrationDAO.saveFile(newFileEntity);
+        if (fileId == 0) {
+            throw new RuntimeException("Failed to save file metadata to DB.");
         }
-        return false;
+        newFileEntity.setId(fileId);
+
+        // ── Step 6: Link new FileEntity to user ────────────────────────────
+        user.setProfileImage(newFileEntity);
+        return registrationDAO.save(user);
     }
 
 

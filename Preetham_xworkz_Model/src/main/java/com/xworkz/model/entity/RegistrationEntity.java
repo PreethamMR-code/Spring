@@ -52,7 +52,7 @@ public class RegistrationEntity {
 //        private String profilePhoto = "default-avatar.png";
 
         // RegistrationEntity.java
-        @OneToOne
+        @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
         @JoinColumn(name = "file_id") // This creates a foreign key column in 'students' table
         private FileEntity profileImage;
 }
