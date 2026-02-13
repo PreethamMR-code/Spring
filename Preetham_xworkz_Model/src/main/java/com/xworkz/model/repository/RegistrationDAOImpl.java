@@ -254,4 +254,24 @@ public class RegistrationDAOImpl implements RegistrationDAO {
         }
     }
 
+    @Override
+    public void deleteFile(int id) {
+
+        EntityManager em = entityManagerFactory.createEntityManager();
+        try {
+            em.getTransaction().begin();
+            FileEntity entity = em.find(FileEntity.class, id);
+            if (entity != null) {
+                em.remove(entity);
+            }
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) em.getTransaction().rollback();
+            e.printStackTrace();
+        } finally {
+            em.close();
+        }
+
+    }
+
 }

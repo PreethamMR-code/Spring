@@ -30,4 +30,6 @@ public interface RegistrationDAO {
     int saveFile(FileEntity fileEntity);
 
     FileEntity getFileById(int id);
+
+    void deleteFile(int id);
 }
