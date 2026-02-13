@@ -10,6 +10,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
@@ -143,7 +144,10 @@ public class XworkzController {
 
 
     @PostMapping("login")
-    public String processLogin(@RequestParam String email, @RequestParam String password, Model model, HttpSession session) {
+    public String processLogin(@RequestParam String email,
+                               @RequestParam String password,
+                               Model model,
+                               HttpSession session) {
 
         // check if email exists
 //        RegistrationEntity entity = registrationService.findByEmail(email);
@@ -159,13 +163,19 @@ public class XworkzController {
             registrationService.setCountToZero(email);
             RegistrationEntity registration = registrationService.getUserByEmail(email);
 
-            // ✅ IMPORTANT: Save the fileId in the session so Home.jsp can find it
-            if (registration != null && registration.getProfileImage() != null) {
+            if (registration != null) {
+
+            session.setAttribute("name",  registration.getName());
+            session.setAttribute("email", registration.getEmail());
+
+            if (registration.getProfileImage() != null) {
                 session.setAttribute("fileId", registration.getProfileImage().getId());
             }
 
-            model.addAttribute("email", email);
-            model.addAttribute("name", registration != null ? registration.getName() : "User");
+            model.addAttribute("name",  registration.getName());
+            model.addAttribute("email", registration.getEmail());
+        }
+
             return "Home";
         }else {
             // email exists but wrong credentials
@@ -198,6 +208,13 @@ public class XworkzController {
 //        model.addAttribute("error", "Invalid password (" + count + "/3)");
 //        return "login";
 //    }
+
+
+    @GetMapping("logout")
+    public String logout(HttpSession session) {
+        session.invalidate(); // Clears name, email, fileId — everything
+        return "redirect:/signIn";
+    }
 
 
     @PostMapping("sendOTP")
@@ -327,26 +344,34 @@ public String validateOtpLogin(@RequestParam String email,
     @PostMapping("/uploadProfilePhoto")
     public String uploadProfilePhoto(@RequestParam String email,
                                      @RequestParam MultipartFile profilePhoto,
-                                     Model model,
+                                     RedirectAttributes redirectAttributes,
                                      HttpSession session) {
 
         try {
             boolean success = registrationService.uploadProfilePhoto(email, profilePhoto);
-            if (success) {
-                // Refresh session so the new photo shows up immediately
-                RegistrationEntity reg = registrationService.getUserByEmail(email);
-                session.setAttribute("fileId", reg.getProfileImage().getId());
-                return "redirect:/dashboard/Home"; // Use your actual Home mapping path
-            }
-        } catch (IOException e) {
-            model.addAttribute("error", "Disk Error: " + e.getMessage());
-        }
-        return "Home";
-    }
 
-    @GetMapping("logout")
-    public String logout(HttpSession session) {
-        session.invalidate(); // Clears all session data (including fileId)
-        return "redirect:/signIn";
+            if (success) {
+                // ✅ Re-fetch user from DB to get the FRESH fileId
+                RegistrationEntity updated = registrationService.getUserByEmail(email);
+                if (updated != null && updated.getProfileImage() != null) {
+                    session.setAttribute("fileId", updated.getProfileImage().getId());
+                    System.out.println("✅ Session updated with new fileId: " + updated.getProfileImage().getId());
+                }
+                // ✅ RedirectAttributes carry the message THROUGH the redirect
+                redirectAttributes.addFlashAttribute("msg", "Profile photo updated successfully!");
+            } else {
+                redirectAttributes.addFlashAttribute("error", "Failed to update photo. Please try again.");
+            }
+
+        } catch (IllegalArgumentException e) {
+            // Validation errors (wrong type, too large)
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+
+        } catch (IOException e) {
+            // Disk errors
+            redirectAttributes.addFlashAttribute("error", "Disk error: " + e.getMessage());
+        }
+
+        return "redirect:/dashboard/Home";
     }
 }
