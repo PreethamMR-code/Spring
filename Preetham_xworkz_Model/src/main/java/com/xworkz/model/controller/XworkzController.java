@@ -149,43 +149,41 @@ public class XworkzController {
                                Model model,
                                HttpSession session) {
 
-        // check if email exists
-//        RegistrationEntity entity = registrationService.findByEmail(email);
-
-//        if (email == null || email.trim().isEmpty()) {
-//            model.addAttribute("error", "Please enter your email");
-//            return "login";
-//        }
-
         boolean valid = registrationService.validateLogin(email, password);
 
         if (valid) {
             registrationService.setCountToZero(email);
             RegistrationEntity registration = registrationService.getUserByEmail(email);
 
-            if (registration != null) {
+            session.invalidate();
 
-            session.setAttribute("name",  registration.getName());
-            session.setAttribute("email", registration.getEmail());
+            session.setAttribute("name",  registration != null ? registration.getName()  : "User");
+            session.setAttribute("email", registration != null ? registration.getEmail() : "");
 
-            if (registration.getProfileImage() != null) {
+            // ✅ KEY FIX for photo: Always set or REMOVE fileId so previous user's photo doesn't show
+            if (registration != null && registration.getProfileImage() != null) {
                 session.setAttribute("fileId", registration.getProfileImage().getId());
+            } else {
+                // ← This line is critical: removes previous user's photo from session
+                session.removeAttribute("fileId");
             }
 
-            model.addAttribute("name",  registration.getName());
-            model.addAttribute("email", registration.getEmail());
-        }
+            // Still add to model for the first render after login
+            if (registration != null) {
+                model.addAttribute("name",  registration.getName());
+                model.addAttribute("email", registration.getEmail());
+            }
 
             return "Home";
-        }else {
-            // email exists but wrong credentials
+
+        } else {
             int count = registrationService.getCount(email);
             model.addAttribute("email", email);
 
             if (count >= 2) {
                 model.addAttribute("disableLogin", true);
                 model.addAttribute("showForgot", true);
-                model.addAttribute("error", "Account locked due to multiple failed attempts. Please reset your password.");
+                model.addAttribute("error", "Account locked due to multiple failed attempts.");
             } else {
                 registrationService.updateCount(email);
                 model.addAttribute("error", "Invalid email or password. Attempt " + (count + 1) + " of 3");
@@ -212,7 +210,9 @@ public class XworkzController {
 
     @GetMapping("logout")
     public String logout(HttpSession session) {
-        session.invalidate(); // Clears name, email, fileId — everything
+        // Clear ALL session data (name, email, fileId, etc.)
+        session.invalidate();
+        // Redirect to signIn — this is always an absolute path from context root
         return "redirect:/signIn";
     }
 
