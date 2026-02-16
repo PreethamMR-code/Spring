@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.io.IOException;
@@ -147,7 +148,8 @@ public class XworkzController {
     public String processLogin(@RequestParam String email,
                                @RequestParam String password,
                                Model model,
-                               HttpSession session) {
+                               HttpSession session,
+                               HttpServletRequest request) {
 
         boolean valid = registrationService.validateLogin(email, password);
 
@@ -155,20 +157,21 @@ public class XworkzController {
             registrationService.setCountToZero(email);
             RegistrationEntity registration = registrationService.getUserByEmail(email);
 
+            // STEP 1: Kill the old session (removes previous user's data)
             session.invalidate();
 
-            session.setAttribute("name",  registration != null ? registration.getName()  : "User");
-            session.setAttribute("email", registration != null ? registration.getEmail() : "");
+            // STEP 2: Get a BRAND NEW session from the request
+            HttpSession newSession = request.getSession(true);
 
-            // ✅ KEY FIX for photo: Always set or REMOVE fileId so previous user's photo doesn't show
+            // STEP 3: Write into newSession — NOT session (session is dead now)
+            newSession.setAttribute("name",  registration != null ? registration.getName()  : "User");
+            newSession.setAttribute("email", registration != null ? registration.getEmail() : "");
+
             if (registration != null && registration.getProfileImage() != null) {
-                session.setAttribute("fileId", registration.getProfileImage().getId());
-            } else {
-                // ← This line is critical: removes previous user's photo from session
-                session.removeAttribute("fileId");
+                newSession.setAttribute("fileId", registration.getProfileImage().getId());
             }
+            // No removeAttribute needed — newSession is already completely empty
 
-            // Still add to model for the first render after login
             if (registration != null) {
                 model.addAttribute("name",  registration.getName());
                 model.addAttribute("email", registration.getEmail());
