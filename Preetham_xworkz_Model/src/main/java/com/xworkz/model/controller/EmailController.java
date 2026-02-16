@@ -18,15 +18,21 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
+import java.util.List;
 
 @Controller
 public class EmailController {
 
-    @Autowired EmailNotificationService emailNotificationService;
-    @Autowired BatchService batchService;
-    @Autowired BatchStudentService batchStudentService;
+    @Autowired
+    EmailNotificationService emailNotificationService;
 
-    // ── SHOW the "Send Email" compose form ────────────────────────────────
+    @Autowired
+    BatchService batchService;
+
+    @Autowired
+    BatchStudentService batchStudentService;
+
+    //  SHOW the "Send Email" compose form ────────────────────────────────
     @GetMapping("/dashboard/sendEmail")
     public String showSendEmailForm(@RequestParam int studentId,
                                     @RequestParam int batchId,
@@ -39,7 +45,7 @@ public class EmailController {
         return "sendEmail";
     }
 
-    // ── PROCESS the email send form ───────────────────────────────────────
+    //  PROCESS the email send form ───────────────────────────────────────
     @PostMapping("/dashboard/sendEmail")
     public String processSendEmail(
             @RequestParam int studentId,
@@ -57,7 +63,7 @@ public class EmailController {
             return "redirect:/dashboard/batchDetails/" + batchId;
         }
 
-        // ✅ FIX 1: Use LAN IP instead of localhost so mobile devices can open the link
+        //  FIX 1: Use LAN IP instead of localhost so mobile devices can open the link
         String appBaseUrl = buildAccessibleBaseUrl(request);
 
         String sentBy = (String) session.getAttribute("name");
@@ -72,10 +78,10 @@ public class EmailController {
 
         if (sent) {
             redirectAttributes.addFlashAttribute("msg",
-                    "✅ Email sent successfully to " + student.getName() + " (" + student.getEmail() + ")");
+                    " Email sent successfully to " + student.getName() + " (" + student.getEmail() + ")");
         } else {
             redirectAttributes.addFlashAttribute("error",
-                    "❌ Failed to send email. Check your SMTP settings.");
+                    " Failed to send email. Check your SMTP settings.");
         }
 
         return "redirect:/dashboard/batchDetails/" + batchId;
@@ -100,6 +106,91 @@ public class EmailController {
         model.addAttribute("token", token);
         return "respondPage";
     }
+//
+//    // BATCH EMAIL — Send to ALL students in a batch at once
+//
+//    @GetMapping("/dashboard/sendBatchEmail")
+//    public String showBatchEmailForm(@RequestParam int batchId, Model model) {
+//        BatchEntity batch = batchService.getBatchById(batchId);
+//        if (batch == null) return "redirect:/dashboard/viewBatches";
+//
+//        List<BatchStudentEntity> students = batchStudentService.getStudentsByBatchId(batchId);
+//        model.addAttribute("batch", batch);
+//        model.addAttribute("students", students);
+//        model.addAttribute("studentCount", students != null ? students.size() : 0);
+//        return "sendBatchEmail";
+//    }
+//
+//    // STEP 2: Loop through every student and send each one their own email
+//    // URL: POST /dashboard/sendBatchEmail
+//    @PostMapping("/dashboard/sendBatchEmail")
+//    public String processSendBatchEmail(@RequestParam int batchId,
+//                                        @RequestParam String subject,
+//                                        @RequestParam String emailMessage,
+//                                        @RequestParam String responsePageMessage,
+//                                        HttpSession session,
+//                                        HttpServletRequest request,
+//                                        RedirectAttributes redirectAttributes) {
+//
+//        BatchEntity batch = batchService.getBatchById(batchId);
+//        if (batch == null) {
+//            redirectAttributes.addFlashAttribute("error", "Batch not found");
+//            return "redirect:/dashboard/viewBatches";
+//        }
+//
+//        List<BatchStudentEntity> students = batchStudentService.getStudentsByBatchId(batchId);
+//        if (students == null || students.isEmpty()) {
+//            redirectAttributes.addFlashAttribute("error", "No students in this batch to email.");
+//            return "redirect:/dashboard/batchDetails/" + batchId;
+//        }
+//
+//        String appBaseUrl = buildAccessibleBaseUrl(request);
+//        String sentBy = (String) session.getAttribute("name");
+//        if (sentBy == null) sentBy = "Admin";
+//
+//        // Send to each student individually.
+//        // Each student gets their OWN unique UUID token so their YES/NO
+//        // is tracked separately in the email_notifications table.
+//        int successCount = 0;
+//        int failCount = 0;
+//
+//        for (BatchStudentEntity student : students) {
+//            boolean sent = emailNotificationService.sendNotification(
+//                    batchId,
+//                    student.getId(),
+//                    student.getName(),
+//                    student.getEmail(),
+//                    subject,
+//                    emailMessage,
+//                    responsePageMessage,
+//                    sentBy,
+//                    appBaseUrl
+//            );
+//            if (sent) {
+//                successCount++;
+//                System.out.println("✅ Sent to: " + student.getEmail());
+//            } else {
+//                failCount++;
+//                System.err.println("❌ Failed: " + student.getEmail());
+//            }
+//        }
+//
+//        // Show result message back on batch details page
+//        if (failCount == 0) {
+//            redirectAttributes.addFlashAttribute("msg",
+//                    "✅ Email sent to all " + successCount + " students in " + batch.getBatchName() + "!");
+//        } else if (successCount == 0) {
+//            redirectAttributes.addFlashAttribute("error",
+//                    "❌ Failed to send to all " + failCount + " students. Check SMTP settings.");
+//        } else {
+//            redirectAttributes.addFlashAttribute("msg",
+//                    "⚠️ Sent to " + successCount + " students. Failed for " + failCount + " students.");
+//        }
+//
+//        return "redirect:/dashboard/batchDetails/" + batchId;
+//    }
+
+
 
     // ── RECORD STUDENT RESPONSE (Yes/No button click) ─────────────────────
     @PostMapping("/respond")
@@ -158,7 +249,7 @@ public class EmailController {
                         InetAddress addr = addresses.nextElement();
                         if (addr instanceof Inet4Address && !addr.isLoopbackAddress()) {
                             host = addr.getHostAddress(); // e.g. "192.168.1.5"
-                            System.out.println("✅ Detected LAN IP: " + host);
+                            System.out.println(" Detected LAN IP: " + host);
                             break outerLoop;
                         }
                     }
@@ -171,7 +262,7 @@ public class EmailController {
         String url = request.getScheme() + "://" + host
                 + ":" + request.getServerPort()
                 + request.getContextPath();
-        System.out.println("📧 Email links will use base URL: " + url);
+        System.out.println(" Email links will use base URL: " + url);
         return url;
     }
 }
