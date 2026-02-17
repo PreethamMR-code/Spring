@@ -41,6 +41,13 @@
             <a href="<c:url value='/dashboard/addStudent/${batch.id}'/>" class="btn btn-light btn-sm">
                 <i class="bi bi-person-plus me-1"></i>Add Student
             </a>
+
+            <%-- NEW: Email ALL students in this batch at once --%>
+                <a href="<c:url value='/dashboard/sendBatchEmail'/>?batchId=${batch.id}"
+                   class="btn btn-warning btn-sm fw-semibold">
+                    <i class="bi bi-envelope-paper me-1"></i>Email All Students
+                </a>
+
             <a href="<c:url value='/dashboard/emailResponses?batchId=${batch.id}'/>" class="btn btn-outline-light btn-sm">
                 <i class="bi bi-bar-chart me-1"></i>Email Responses
             </a>
