@@ -125,11 +125,14 @@ public class DashboardController {
 
     // View Batch Details
     @GetMapping("/batchDetails/{id}")
-    public String batchDetails(@PathVariable int id, Model model, HttpSession session) {
+    public String batchDetails(@PathVariable int id,
+                               Model model,
+                               HttpSession session) {
 
         // Session attributes for navbar (same as home())
         model.addAttribute("name",  session.getAttribute("name"));
         model.addAttribute("email", session.getAttribute("email"));
+        model.addAttribute("fileId", session.getAttribute("fileId"));
 
         BatchEntity batch = batchService.getBatchById(id);
         List<BatchStudentEntity> students = batchStudentService.getStudentsByBatchId(id);
