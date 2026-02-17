@@ -41,7 +41,7 @@ public class BatchStudentDAOImpl implements BatchStudentDAO{
         EntityManager em = entityManagerFactory.createEntityManager();
         try {
             Query query = em.createQuery(
-                    "SELECT s FROM BatchStudentEntity s WHERE s.batchId = :batchId AND s.isActive = true ORDER BY s.joinedDate DESC"
+                    "SELECT s FROM BatchStudentEntity s WHERE s.batchId = :batchId AND s.isActive = true ORDER BY s.joinedDate DESC", BatchStudentEntity.class
             );
             query.setParameter("batchId", batchId);
             return query.getResultList();
