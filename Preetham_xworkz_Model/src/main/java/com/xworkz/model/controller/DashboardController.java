@@ -40,8 +40,8 @@ public class DashboardController {
     @GetMapping("/Home")
     public String home(Model model, HttpSession session) {
 
-        String name  = (String) session.getAttribute("name");
-        String email = (String) session.getAttribute("email");
+        String name   = (String) session.getAttribute("name");
+        String email  = (String) session.getAttribute("email");
         Object fileId = session.getAttribute("fileId");
 
         model.addAttribute("name",  name  != null ? name  : "User");
@@ -49,6 +49,10 @@ public class DashboardController {
         if (fileId != null) {
             model.addAttribute("fileId", fileId);
         }
+
+        // ✅ Pass all active batches so Home.jsp can show enrolled count + course cards
+        List<BatchEntity> batches = batchService.getAllBatches();
+        model.addAttribute("batches", batches);
 
         return "Home";
     }
