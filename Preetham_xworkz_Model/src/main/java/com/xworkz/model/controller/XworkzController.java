@@ -286,9 +286,8 @@ public String validateOtpLogin(@RequestParam String email,
     }
 
     @GetMapping("editProfile")
-    public String showEditProfile(@RequestParam String email, Model model){
+    public String showEditProfile(@RequestParam String email, Model model) {
 
-        // Fetch user details
         RegistrationEntity registrationEntity = registrationService.getUserByEmail(email);
 
         if (registrationEntity == null) {
@@ -296,7 +295,6 @@ public String validateOtpLogin(@RequestParam String email,
             return "signIn";
         }
 
-        // Create DTO from entity (exclude password)
         RegistrationDTO registrationDTO = new RegistrationDTO();
         registrationDTO.setName(registrationEntity.getName());
         registrationDTO.setEmail(registrationEntity.getEmail());
@@ -305,41 +303,45 @@ public String validateOtpLogin(@RequestParam String email,
         registrationDTO.setGender(registrationEntity.getGender());
         registrationDTO.setAddress(registrationEntity.getAddress());
 
+        // ✅ Key: attribute name is "registrationEntity"
+        // The new editProfile.jsp does: <c:set var="u" value="${registrationEntity}"/>
+        // So ${u.name}, ${u.email} etc. will all work correctly.
         model.addAttribute("registrationEntity", registrationDTO);
         return "editProfile";
     }
 
+
     @PostMapping("updateProfile")
-    public String updateProfile(
-            @RequestParam String email,
-            @RequestParam String name,
-            @RequestParam String phone,
-            @RequestParam Integer age,
-            @RequestParam String address,
-            Model model) {
+    public String updateProfile(@RequestParam String email,
+                                @RequestParam String name,
+                                @RequestParam String phone,
+                                @RequestParam Integer age,
+                                @RequestParam String address,
+                                Model model,
+                                HttpSession session) {
 
-        // Verify email belongs to logged-in user (add session check)
         RegistrationEntity registration = registrationService.getUserByEmail(email);
-        if (registration == null) {
-            return "signIn";
-        }
+        if (registration == null) return "signIn";
 
-        // Validation
         if (name == null || name.trim().isEmpty()) {
             model.addAttribute("error", "Name is required");
             return "editProfile";
         }
 
-        // Update profile
         boolean updated = registrationService.updateProfile(email, name, phone, age, address);
 
         if (updated) {
+            // ✅ Update session so navbar reflects new name immediately
+            session.setAttribute("name", name);
+
             model.addAttribute("msg", "Profile updated successfully!");
             model.addAttribute("email", email);
             model.addAttribute("name", name);
-            return "Home";
+
+            // Redirect back to home with success message
+            return "redirect:/dashboard/Home";
         } else {
-            model.addAttribute("error", "Failed to update profile");
+            model.addAttribute("error", "Failed to update profile. Please try again.");
             return "editProfile";
         }
     }
