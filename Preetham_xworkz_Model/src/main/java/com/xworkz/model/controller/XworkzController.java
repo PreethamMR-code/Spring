@@ -303,13 +303,12 @@ public String validateOtpLogin(@RequestParam String email,
         registrationDTO.setGender(registrationEntity.getGender());
         registrationDTO.setAddress(registrationEntity.getAddress());
 
-        // ✅ Key: attribute name is "registrationEntity"
+        // Key: attribute name is "registrationEntity"
         // The new editProfile.jsp does: <c:set var="u" value="${registrationEntity}"/>
         // So ${u.name}, ${u.email} etc. will all work correctly.
         model.addAttribute("registrationEntity", registrationDTO);
         return "editProfile";
     }
-
 
     @PostMapping("updateProfile")
     public String updateProfile(@RequestParam String email,
