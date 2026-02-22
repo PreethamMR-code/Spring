@@ -119,6 +119,9 @@
             </div>
         </div>
 
+         <%-- EDIT OPTION NOT ADDED yet --%>
+
+
         <%-- Batch Grid --%>
         <c:choose>
             <c:when test="${empty batches}">
