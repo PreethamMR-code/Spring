@@ -164,6 +164,10 @@
                             </a>
                         </div>
                     </c:when>
+
+                    <%-- EDIT OPTION NOT ADDED yet --%>
+
+
                     <c:otherwise>
                         <div class="table-responsive">
                             <table class="table table-hover mb-0 align-middle">
