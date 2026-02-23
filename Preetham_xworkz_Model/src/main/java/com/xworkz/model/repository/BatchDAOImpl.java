@@ -70,6 +70,8 @@ public class BatchDAOImpl implements BatchDAO{
         }
     }
 
+    // needs UI impl for edit option
+
     @Override
     public boolean updateBatch(BatchEntity batch) {
         EntityManager em = entityManagerFactory.createEntityManager();
