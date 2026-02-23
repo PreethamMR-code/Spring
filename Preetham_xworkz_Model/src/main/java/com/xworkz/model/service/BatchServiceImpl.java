@@ -62,6 +62,8 @@ public class BatchServiceImpl implements BatchService{
         return batchDAO.getBatchById(id);
     }
 
+    // needs edit option
+
     @Override
     public boolean updateBatch(BatchDTO batchDTO) {
         BatchEntity batch = batchDAO.getBatchById(batchDTO.getId());
