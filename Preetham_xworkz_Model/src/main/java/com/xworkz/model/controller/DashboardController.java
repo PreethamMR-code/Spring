@@ -65,6 +65,7 @@ public class DashboardController {
         return "addBatch";
     }
 
+
     // Process Add Batch (FIXED)
     @PostMapping("/addBatch")
     public String addBatch(
