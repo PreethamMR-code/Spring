@@ -55,6 +55,8 @@ public class BatchStudentServiceImpl implements BatchStudentService{
         return batchStudentDAO.generateStudentId();
     }
 
+    // needs edit option
+
     @Override
     public boolean updateStudent(BatchStudentDTO studentDTO) {
         BatchStudentEntity student = batchStudentDAO.getStudentById(studentDTO.getId());
