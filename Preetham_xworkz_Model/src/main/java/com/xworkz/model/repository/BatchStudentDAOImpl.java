@@ -78,6 +78,8 @@ public class BatchStudentDAOImpl implements BatchStudentDAO{
         }
     }
 
+    // needs UI impl for edit
+
     @Override
     public boolean updateStudent(BatchStudentEntity student) {
         EntityManager em = entityManagerFactory.createEntityManager();
