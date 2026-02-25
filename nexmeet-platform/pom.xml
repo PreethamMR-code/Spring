@@ -29,6 +29,12 @@
       <version>5.3.32</version>
     </dependency>
 
+    <!-- ===================================================
+             SPRING SECURITY
+             Handles login, logout, role-based access control.
+             Protects URLs so only the right role can access them.
+             e.g. /admin/** only accessible by SUPER_ADMIN
+        =================================================== -->
     <dependency>
       <groupId>org.springframework.security</groupId>
       <artifactId>spring-security-web</artifactId>
@@ -47,8 +53,217 @@
       <version>5.8.9</version>
     </dependency>
 
+    <!-- Hibernate -->
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-core</artifactId>
+      <version>5.6.15.Final</version>
+    </dependency>
+
+    <!-- MySQL Connector -->
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>8.0.33</version>
+    </dependency>
+
+    <!-- ===================================================
+             CONNECTION POOL (HikariCP)
+             Instead of opening and closing a database connection
+             every single time (very slow), a connection pool
+             keeps a set of connections open and ready to reuse.
+             HikariCP is the fastest connection pool available.
+        =================================================== -->
+    <dependency>
+      <groupId>com.zaxxer</groupId>
+      <artifactId>HikariCP</artifactId>
+      <version>4.0.3</version>
+    </dependency>
+
+    <!-- ===================================================
+            JAVAX SERVLET API
+            This is what lets Java understand HTTP requests
+            and responses. Tomcat 9 uses javax.servlet.
+            "provided" scope = Tomcat already has this,
+            don't include it in our WAR file, just use it
+            during compilation.
+       =================================================== -->
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>4.0.1</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- ===================================================
+             JSP API
+             Allows Java to process JSP pages.
+             Also "provided" because Tomcat handles this.
+        =================================================== -->
+    <dependency>
+      <groupId>javax.servlet.jsp</groupId>
+      <artifactId>javax.servlet.jsp-api</artifactId>
+      <version>2.3.3</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- ===================================================
+            JSTL (JSP Standard Tag Library)
+            Pre-built tags we use in JSP pages instead of
+            writing raw Java code in HTML.
+            Example: <c:forEach> to loop through a list
+            instead of writing a Java for loop in JSP.
+       =================================================== -->
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>jstl</artifactId>
+      <version>1.2</version>
+    </dependency>
+
+    <!-- Lombok -->
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>1.18.30</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- ===================================================
+            VALIDATION API + HIBERNATE VALIDATOR
+            For form validation. Instead of manually checking
+            "is this email valid?" or "is this field empty?"
+            you use annotations like @NotNull, @Email, @Size
+            directly on your DTO classes.
+       =================================================== -->
+    <dependency>
+      <groupId>javax.validation</groupId>
+      <artifactId>validation-api</artifactId>
+      <version>2.0.1.Final</version>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate.validator</groupId>
+      <artifactId>hibernate-validator</artifactId>
+      <version>6.2.5.Final</version>
+    </dependency>
+
+    <!-- ===================================================
+             JACKSON (JSON support)
+             Converts Java objects to JSON and back.
+             Needed when we build REST API responses later
+             or when we send data via AJAX calls.
+        =================================================== -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.15.3</version>
+    </dependency>
+
+    <!-- ===================================================
+             APACHE POI (Excel Reading)
+             For the bulk upload feature — reading Excel files
+             uploaded by colleges/companies containing
+             lists of students or employees.
+        =================================================== -->
+    <dependency>
+      <groupId>org.apache.poi</groupId>
+      <artifactId>poi-ooxml</artifactId>
+      <version>5.2.3</version>
+    </dependency>
+
+    <!-- ===================================================
+             ZXING (QR Code Generator)
+             Google's library for generating QR codes.
+             Each delegate registration will get a unique
+             QR code for check-in at the event.
+        =================================================== -->
+    <dependency>
+      <groupId>com.google.zxing</groupId>
+      <artifactId>core</artifactId>
+      <version>3.5.2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.zxing</groupId>
+      <artifactId>javase</artifactId>
+      <version>3.5.2</version>
+    </dependency>
+
+    <!-- ===================================================
+            ITEXT PDF (Certificate Generator)
+            For generating PDF certificates after conferences.
+            Delegate name, conference name, unique ID — all
+            formatted nicely as a downloadable PDF.
+       =================================================== -->
+    <dependency>
+      <groupId>com.itextpdf</groupId>
+      <artifactId>itextpdf</artifactId>
+      <version>5.5.13.3</version>
+    </dependency>
+
+    <!-- ===================================================
+             SLF4J + LOGBACK (Logging)
+             Instead of System.out.println() everywhere,
+             professional apps use a logging framework.
+             It lets you control what gets printed (INFO, DEBUG,
+             ERROR) and can write logs to files.
+        =================================================== -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>1.7.36</version>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>1.2.12</version>
+    </dependency>
+
   </dependencies>
   <build>
     <finalName>nexmeet-platform</finalName>
+    <plugins>
+
+      <!-- ===================================================
+                 MAVEN COMPILER PLUGIN
+                 Tells Maven to compile our code using Java 8.
+            =================================================== -->
+      <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-compiler-plugin</artifactId>
+      <version>3.11.0</version>
+      <configuration>
+        <source>1.8</source>
+        <target>1.8</target>
+      </configuration>
+      </plugin>
+
+      <!-- ===================================================
+                 MAVEN WAR PLUGIN
+                 Packages our project into a WAR file that
+                 Tomcat can deploy and run.
+            =================================================== -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>3.4.0</version>
+      </plugin>
+
+      <!-- ===================================================
+                 TOMCAT MAVEN PLUGIN
+                 This is the solution for IntelliJ Community.
+                 Lets you run the app with: mvn tomcat7:run
+                 Even though it says "tomcat7" in the name,
+                 it works perfectly fine for Tomcat 9 apps.
+            =================================================== -->
+      <plugin>
+        <groupId>org.apache.tomcat.maven</groupId>
+        <artifactId>tomcat7-maven-plugin</artifactId>
+        <version>2.2</version>
+        <configuration>
+          <port>8080</port>
+          <path>/nexmeet</path>
+        </configuration>
+      </plugin>
+
+    </plugins>
   </build>
 </project>
