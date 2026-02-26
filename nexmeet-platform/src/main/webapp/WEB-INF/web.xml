@@ -1,7 +1,142 @@
-<!DOCTYPE web-app PUBLIC
- "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
- "http://java.sun.com/dtd/web-app_2_3.dtd" >
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+         http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+         version="3.1">
 
-<web-app>
-  <display-name>Archetype Created Web Application</display-name>
+  <display-name>NexMeet Platform</display-name>
+
+  <!--
+      CHARACTER ENCODING FILTER
+      This must be the FIRST filter.
+      It ensures all request data (form inputs) are read as UTF-8.
+      Without this, Indian language characters or special symbols
+      in form inputs will appear as garbage characters.
+  -->
+  <filter>
+    <filter-name>encodingFilter</filter-name>
+    <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+    <init-param>
+      <param-name>encoding</param-name>
+      <param-value>UTF-8</param-value>
+    </init-param>
+    <init-param>
+      <param-name>forceEncoding</param-name>
+      <param-value>true</param-value>
+    </init-param>
+  </filter>
+  <filter-mapping>
+    <filter-name>encodingFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+  <!--
+      SPRING SECURITY FILTER
+      This intercepts EVERY request before it reaches Spring MVC.
+      It checks: "Is this user logged in? Do they have permission
+      to access this URL?"
+      If not → redirect to login page.
+      The filter-name MUST be exactly "springSecurityFilterChain"
+      — Spring Security looks for this exact name.
+  -->
+  <filter>
+    <filter-name>springSecurityFilterChain</filter-name>
+    <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>springSecurityFilterChain</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+  <!--
+      CONTEXT LOADER LISTENER
+      Loads the "root" Spring application context.
+      This context contains: Hibernate config, Security config,
+      Service beans, DAO beans — everything that is NOT
+      web-specific.
+      It starts BEFORE the DispatcherServlet.
+  -->
+  <listener>
+    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+  </listener>
+
+  <!--
+      ROOT CONTEXT CONFIG LOCATION
+      Tells the ContextLoaderListener where to find
+      the root application context files.
+      We split config into multiple files to keep it organized.
+  -->
+  <context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>
+      /WEB-INF/spring-db-config.xml
+      /WEB-INF/spring-security.xml
+    </param-value>
+  </context-param>
+
+  <!--
+      DISPATCHER SERVLET
+      This is the heart of Spring MVC.
+      It's a single servlet that receives ALL HTTP requests
+      and routes them to the correct Controller method.
+      This is the "Front Controller" pattern.
+
+      Think of it as a reception desk:
+      Every visitor (request) comes here first.
+      The receptionist (DispatcherServlet) looks at what
+      they want and sends them to the right department (Controller).
+  -->
+  <servlet>
+    <servlet-name>dispatcher</servlet-name>
+    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+    <init-param>
+      <param-name>contextConfigLocation</param-name>
+      <param-value>/WEB-INF/spring-mvc-config.xml</param-value>
+    </init-param>
+    <!--
+        load-on-startup = 1 means start this servlet immediately
+        when Tomcat starts, not when first request arrives.
+        This makes first request faster.
+    -->
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+
+  <!--
+      Map the DispatcherServlet to handle ALL URLs ("/*" would
+      intercept JSP rendering too, so we use "/" which means
+      "everything except JSPs handled by Tomcat's default servlet")
+  -->
+  <servlet-mapping>
+    <servlet-name>dispatcher</servlet-name>
+    <url-pattern>/</url-pattern>
+  </servlet-mapping>
+
+  <!--
+      DEFAULT SESSION TIMEOUT
+      If user is inactive for 30 minutes, their session expires
+      and they'll need to log in again.
+  -->
+  <session-config>
+    <session-timeout>30</session-timeout>
+  </session-config>
+
+  <!--
+      CUSTOM ERROR PAGES
+      Instead of showing ugly Tomcat error pages,
+      show our custom designed error pages.
+  -->
+  <error-page>
+    <error-code>404</error-code>
+    <location>/WEB-INF/views/common/error-404.jsp</location>
+  </error-page>
+  <error-page>
+    <error-code>403</error-code>
+    <location>/WEB-INF/views/common/error-403.jsp</location>
+  </error-page>
+  <error-page>
+    <error-code>500</error-code>
+    <location>/WEB-INF/views/common/error-500.jsp</location>
+  </error-page>
+
 </web-app>
