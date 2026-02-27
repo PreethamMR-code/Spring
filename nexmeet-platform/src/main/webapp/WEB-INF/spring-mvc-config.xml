@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="
+           http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context.xsd
+           http://www.springframework.org/schema/mvc
+           http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+    <!--
+        COMPONENT SCAN
+        Tells Spring: "Scan this package and all sub-packages.
+        If you find a class with @Controller, @Service, @Repository,
+        or @Component annotation, create an object of it automatically
+        and manage it."
+        This is called Dependency Injection — Spring manages object
+        creation, you don't do 'new MyController()' manually.
+    -->
+    <context:component-scan base-package="com.nexmeet.platform" />
+
+    <!--
+        ENABLE MVC ANNOTATIONS
+        Activates @RequestMapping, @GetMapping, @PostMapping,
+        @ResponseBody and all other Spring MVC annotations.
+        Without this line, those annotations do nothing.
+    -->
+    <mvc:annotation-driven />
+
+    <!--
+        STATIC RESOURCES HANDLER
+        Tells Spring: "Don't try to find a Controller for
+        requests to /static/**. Just serve the files directly."
+        Without this, requesting /static/css/style.css would
+        look for a Controller method, fail, and return 404.
+    -->
+    <mvc:resources mapping="/static/**" location="/static/" />
+
+    <!--
+        VIEW RESOLVER
+        When a Controller returns a String like "home" or
+        "admin/dashboard", Spring needs to know which JSP
+        file that refers to.
+
+        prefix = /WEB-INF/views/
+        suffix = .jsp
+
+        So returning "home"         → /WEB-INF/views/home.jsp
+        Returning "admin/dashboard" → /WEB-INF/views/admin/dashboard.jsp
+
+        JSP files are inside WEB-INF intentionally — files inside
+        WEB-INF cannot be accessed directly by browser URL.
+        They can ONLY be rendered by Spring, which means users
+        can't bypass your security by typing the JSP path directly.
+    -->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/views/" />
+        <property name="suffix" value=".jsp" />
+        <property name="order"  value="1" />
+    </bean>
+
+    <!--
+        MULTIPART RESOLVER
+        Required for file upload functionality.
+        Needed for: profile pictures, conference banners,
+        Excel bulk uploads, organizer documents.
+        maxUploadSize = 10MB (10 * 1024 * 1024 bytes)
+    -->
+    <bean id="multipartResolver"
+          class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="maxUploadSize" value="10485760" />
+        <property name="defaultEncoding" value="UTF-8" />
+    </bean>
+
+</beans>
