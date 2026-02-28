@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+             xmlns:beans="http://www.springframework.org/schema/beans"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="
+                 http://www.springframework.org/schema/security
+                 http://www.springframework.org/schema/security/spring-security.xsd
+                 http://www.springframework.org/schema/beans
+                 http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!--
+        SECURITY CONFIGURATION
+        This is where we define the rules:
+        - Which URLs are public (no login needed)
+        - Which URLs require login
+        - Which URLs require specific roles
+        - How login works
+        - How logout works
+    -->
+    <http auto-config="true" use-expressions="true">
+
+        <!--
+            CSRF PROTECTION
+            Cross-Site Request Forgery protection.
+            Prevents malicious websites from submitting forms
+            on behalf of logged-in users.
+            We'll enable this properly once forms are ready.
+            Disabled for now during initial development.
+        -->
+        <csrf disabled="true" />
+
+        <!--
+            PUBLIC URLS — No login required
+            Anyone can access these, even without an account.
+        -->
+        <intercept-url pattern="/static/**"       access="permitAll" />
+        <intercept-url pattern="/"                access="permitAll" />
+        <intercept-url pattern="/home"            access="permitAll" />
+        <intercept-url pattern="/conferences"     access="permitAll" />
+        <intercept-url pattern="/conference/**"   access="permitAll" />
+        <intercept-url pattern="/register"        access="permitAll" />
+        <intercept-url pattern="/login"           access="permitAll" />
+        <intercept-url pattern="/error/**"        access="permitAll" />
+
+        <!--
+            ROLE-PROTECTED URLS
+            Only users with these specific roles can access these paths.
+            If a DELEGATE tries to access /admin/**, they get 403 Forbidden.
+        -->
+        <intercept-url pattern="/admin/**"        access="hasRole('SUPER_ADMIN')" />
+        <intercept-url pattern="/organizer/**"    access="hasRole('ORGANIZER')" />
+        <intercept-url pattern="/institution/**"  access="hasRole('INSTITUTIONAL_ADMIN')" />
+        <intercept-url pattern="/delegate/**"     access="hasRole('DELEGATE')" />
+
+        <!--
+            Any other URL not listed above requires at least being logged in.
+        -->
+        <intercept-url pattern="/**"              access="isAuthenticated()" />
+
+        <!--
+            LOGIN CONFIGURATION
+            login-page         = our custom login page URL
+            login-processing-url = where the login form POSTs to
+                                   (Spring Security handles this automatically)
+            username-parameter = name of the email input field in login form
+            password-parameter = name of the password input field
+            default-target-url = where to go after successful login
+            authentication-failure-url = where to go if login fails
+        -->
+        <form-login
+                login-page="/login"
+                login-processing-url="/login/process"
+                username-parameter="email"
+                password-parameter="password"
+                default-target-url="/dashboard"
+                authentication-failure-url="/login?error=true"
+                always-use-default-target="false" />
+
+        <!--
+            LOGOUT CONFIGURATION
+            logout-url            = URL to trigger logout
+            logout-success-url    = where to go after logout
+            invalidate-session    = destroy the session on logout
+            delete-cookies        = remove the JSESSIONID cookie
+        -->
+        <logout
+                logout-url="/logout"
+                logout-success-url="/login?logout=true"
+                invalidate-session="true"
+                delete-cookies="JSESSIONID" />
+
+    </http>
+
+    <!--
+        AUTHENTICATION MANAGER
+        Tells Spring Security HOW to authenticate users.
+        We use our custom UserDetailsService which loads
+        user info from the database.
+
+        password-encoder = BCrypt (industry standard for password hashing)
+        BCrypt is a one-way hash — even if database is stolen,
+        attacker cannot reverse the hash to get real passwords.
+    -->
+    <authentication-manager>
+        <authentication-provider user-service-ref="userDetailsServiceImpl">
+            <password-encoder ref="passwordEncoder" />
+        </authentication-provider>
+    </authentication-manager>
+
+    <!--
+        BCRYPT PASSWORD ENCODER
+        strength=12 means 2^12 = 4096 hashing rounds.
+        Higher = more secure but slower.
+        12 is the industry standard balance.
+    -->
+    <beans:bean id="passwordEncoder"
+                class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder">
+        <beans:constructor-arg value="12" />
+    </beans:bean>
+
+</beans:beans>
