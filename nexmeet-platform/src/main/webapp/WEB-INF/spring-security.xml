@@ -70,7 +70,7 @@
         <form-login
                 login-page="/login"
                 login-processing-url="/login/process"
-                username-parameter="email"
+                username-parameter="username"
                 password-parameter="password"
                 default-target-url="/dashboard"
                 authentication-failure-url="/login?error=true"
