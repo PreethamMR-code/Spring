@@ -26,7 +26,7 @@
         <div>
             <label>Email:</label>
             <!-- name="email" must match username-parameter in security config -->
-            <input type="email" name="email" required />
+            <input type="text" name="username" required />
         </div>
         <div>
             <label>Password:</label>
