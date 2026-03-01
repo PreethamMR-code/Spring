@@ -28,7 +28,7 @@
         @ResponseBody and all other Spring MVC annotations.
         Without this line, those annotations do nothing.
     -->
-    <mvc:annotation-driven />
+    <mvc:annotation-driven validator="validator"/>
 
     <!--
         STATIC RESOURCES HANDLER
@@ -73,6 +73,14 @@
           class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
         <property name="maxUploadSize" value="10485760" />
         <property name="defaultEncoding" value="UTF-8" />
+    </bean>
+
+    <!-- Add this bean definition -->
+    <bean id="validator"
+          class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean">
+        <property name="messageInterpolator">
+            <bean class="org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator"/>
+        </property>
     </bean>
 
 </beans>
