@@ -240,13 +240,16 @@
      The embedded Tomcat 7 Maven plugin only provides
      EL 2.2 which is missing ELManager class.
      This provides the full EL 3.0 implementation.
+
+     no longer need it Stop relying on EL for Bean Validation entirely.
+     Hibernate Validator supports ParameterMessageInterpolator — a lighter message interpolator that doesn't use EL at all.
 =================================================== -->
-    <dependency>
-      <groupId>org.glassfish</groupId>
-      <artifactId>javax.el</artifactId>
-      <version>3.0.0</version>
-      <scope>provided</scope>  <!-- ADD THIS LINE -->
-    </dependency>
+<!--    <dependency>-->
+<!--      <groupId>org.glassfish</groupId>-->
+<!--      <artifactId>javax.el</artifactId>-->
+<!--      <version>3.0.0</version>-->
+<!--      <scope>provided</scope>  &lt;!&ndash; ADD THIS LINE &ndash;&gt;-->
+<!--    </dependency>-->
 
   </dependencies>
   <build>
