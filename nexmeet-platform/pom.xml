@@ -91,7 +91,7 @@
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
-      <version>4.0.1</version>
+      <version>3.1.0</version>
       <scope>provided</scope>
     </dependency>
 
@@ -287,14 +287,26 @@
                  Lets you run the app with: mvn tomcat7:run
                  Even though it says "tomcat7" in the name,
                  it works perfectly fine for Tomcat 9 apps.
+
+                 changed tomcat version
+
+                 The standard replacement is the Cargo Maven Plugin, which supports Tomcat 8.5, 9, and 10.
             =================================================== -->
       <plugin>
-        <groupId>org.apache.tomcat.maven</groupId>
-        <artifactId>tomcat7-maven-plugin</artifactId>
-        <version>2.2</version>
+        <groupId>org.codehaus.cargo</groupId>
+        <artifactId>cargo-maven3-plugin</artifactId>
+        <version>1.10.12</version>
         <configuration>
-          <port>8080</port>
-          <path>/nexmeet</path>
+          <container>
+            <containerId>tomcat9x</containerId>
+            <type>embedded</type>
+          </container>
+          <configuration>
+            <properties>
+              <cargo.servlet.port>8080</cargo.servlet.port>
+              <cargo.context>/nexmeet</cargo.context>
+            </properties>
+          </configuration>
         </configuration>
       </plugin>
 
