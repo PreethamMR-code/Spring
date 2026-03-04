@@ -20,7 +20,13 @@
         This is called Dependency Injection — Spring manages object
         creation, you don't do 'new MyController()' manually.
     -->
-    <context:component-scan base-package="com.nexmeet.platform" />
+    <!-- REPLACE your current component-scan with this -->
+    <context:component-scan base-package="com.nexmeet.platform">
+        <context:exclude-filter type="annotation"
+                                expression="org.springframework.stereotype.Service" />
+        <context:exclude-filter type="annotation"
+                                expression="org.springframework.stereotype.Repository" />
+    </context:component-scan>
 
     <!--
         ENABLE MVC ANNOTATIONS
