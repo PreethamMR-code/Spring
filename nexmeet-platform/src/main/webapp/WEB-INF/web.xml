@@ -72,7 +72,6 @@
     <param-value>
       /WEB-INF/spring-db-config.xml
       /WEB-INF/spring-security.xml
-      /WEB-INF/applicationContext.xml
     </param-value>
   </context-param>
 
