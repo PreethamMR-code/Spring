@@ -22,7 +22,7 @@
         authentication automatically — we don't need a
         controller method for this URL.
     -->
-    <form action="/nexmeet/login/process" method="post">
+    <form action="${pageContext.request.contextPath}/login/process" method="post">
         <div>
             <label>Email:</label>
             <!-- name="email" must match username-parameter in security config -->
