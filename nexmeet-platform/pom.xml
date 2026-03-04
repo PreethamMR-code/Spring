@@ -304,9 +304,15 @@
           <configuration>
             <properties>
               <cargo.servlet.port>8080</cargo.servlet.port>
-              <cargo.context>/nexmeet</cargo.context>
             </properties>
           </configuration>
+          <deployables>
+            <deployable>
+              <properties>
+                <context>/nexmeet</context>
+              </properties>
+            </deployable>
+          </deployables>
         </configuration>
       </plugin>
 
