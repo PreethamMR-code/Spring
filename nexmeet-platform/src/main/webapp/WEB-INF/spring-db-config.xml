@@ -19,7 +19,8 @@
         web context don't overlap.
     -->
     <context:component-scan base-package="com.nexmeet.platform.service,
-                                          com.nexmeet.platform.dao" />
+                                      com.nexmeet.platform.service.impl,
+                                      com.nexmeet.platform.dao" />
 
     <!--
         DATABASE CONNECTION POOL (HikariCP)
@@ -84,7 +85,7 @@
                 <prop key="hibernate.format_sql">true</prop>
 
                 <!-- validate = check that entities match tables, don't change anything -->
-                <prop key="hibernate.hbm2ddl.auto">none</prop>
+                <prop key="hibernate.hbm2ddl.auto">validate</prop>
 
                 <!-- Improves performance by loading collections lazily by default -->
                 <prop key="hibernate.enable_lazy_load_no_trans">true</prop>
