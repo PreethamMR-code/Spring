@@ -103,7 +103,7 @@
     -->
     <authentication-manager>
         <authentication-provider user-service-ref="userDetailsServiceImpl">
-            <!-- DELETE the password-encoder line  -   <password-encoder ref="passwordEncoder" />  -->
+             <password-encoder ref="passwordEncoder" />
         </authentication-provider>
     </authentication-manager>
 
