@@ -1,72 +1,67 @@
 package com.nexmeet.platform.service.impl;
 
 
+import com.nexmeet.platform.entity.User;
+import com.nexmeet.platform.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /*
- * @Service tells Spring: "This is a service layer class.
- * Create one instance of it and manage it."
+ * Spring Security calls loadUserByUsername() automatically
+ * when someone submits the login form.
  *
- * The name "userDetailsServiceImpl" in @Service("userDetailsServiceImpl")
- * is CRITICAL — it must exactly match what we wrote in spring-security.xml:
- * <authentication-provider user-service-ref="userDetailsServiceImpl">
+ * The flow is:
+ * 1. User submits email + password
+ * 2. Spring Security calls loadUserByUsername(email)
+ * 3. We return a UserDetails object with the hashed password + roles
+ * 4. Spring Security compares submitted password with the hash
+ * 5. If match -> login success, redirect to dashboard
+ * 6. If no match -> login failure, redirect to /login?error
  *
- * UserDetailsService is a Spring Security interface with one method:
- * loadUserByUsername() — called every time someone tries to log in.
- * Spring Security calls this, gets the user details, then checks
- * if the password matches.
- *
- * This is a STUB (temporary placeholder) — we return a hardcoded
- * admin user for now. Phase 3 will replace this with real
- * database lookup.
+ * We never compare passwords ourselves — Spring Security handles that.
  */
 
 
 @Service("userDetailsServiceImpl")
+@Transactional(readOnly = true)
 public class UserDetailsServiceImpl implements UserDetailsService {
 
+    @Autowired
+    private UserService userService;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userService.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("No user found with email: " + email));
+
+        if (!user.isActive()) {
+            throw new UsernameNotFoundException("Account is deactivated: " + email);
+        }
 
         /*
-         * TEMPORARY: Hardcoded admin user for testing.
+         * Convert our Role entities into Spring Security's
+         * GrantedAuthority objects. Spring Security needs roles
+         * prefixed with "ROLE_" — so "SUPER_ADMIN" becomes "ROLE_SUPER_ADMIN".
          *
-         * org.springframework.security.core.userdetails.User.withUsername()
-         * is a builder that creates a UserDetails object.
-         *
-         * {noop} prefix means "no password encoding" — plain text.
-         * We use this ONLY for this temporary stub.
-         * In Phase 3, we'll use BCrypt encoded passwords from the database.
-         *
-         * "SUPER_ADMIN" is the role. Spring Security internally
-         * stores it as "ROLE_SUPER_ADMIN" — the "ROLE_" prefix is
-         * added automatically when using roles().
+         * This matches what we have in spring-security.xml:
+         * hasRole('SUPER_ADMIN') checks for "ROLE_SUPER_ADMIN" authority.
          */
+        Set<SimpleGrantedAuthority> authorities = user.getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
+                .collect(Collectors.toSet());
 
-
-
-        if ("admin@nexmeet.com".equals(email)) {
-            return org.springframework.security.core.userdetails.User
-                    .withUsername("admin@nexmeet.com")
-                    .password("{noop}admin123")
-                    .roles("SUPER_ADMIN")
-                    .build();
-    }
-
-
-        /*
-         * If the email doesn't match any user, throw this exception.
-         * Spring Security catches it and redirects to login page
-         * with an error message.
-         */
-
-
-        throw new UsernameNotFoundException(
-                "No user found with email: " + email);
+        return new org.springframework.security.core.userdetails.User(
+                user.getEmail(),
+                user.getPasswordHash(),
+                authorities
+        );
     }
 }
