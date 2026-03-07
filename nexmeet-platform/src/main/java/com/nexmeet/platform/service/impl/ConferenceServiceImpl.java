@@ -1,0 +1,84 @@
+package com.nexmeet.platform.service.impl;
+
+import com.nexmeet.platform.dao.ConferenceDao;
+import com.nexmeet.platform.dao.UserDao;
+import com.nexmeet.platform.entity.Conference;
+import com.nexmeet.platform.entity.User;
+import com.nexmeet.platform.enums.ConferenceStatus;
+import com.nexmeet.platform.service.ConferenceService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+@org.springframework.transaction.annotation.Transactional
+public class ConferenceServiceImpl implements ConferenceService {
+
+    @Autowired
+    private ConferenceDao conferenceDao;
+
+    @Autowired
+    private UserDao userDao;
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public Optional<Conference> findById(Long id) {
+        return conferenceDao.findById(id);
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public List<Conference> getApprovedConferences() {
+        return conferenceDao.findAllApproved();
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public List<Conference> getPendingConferences() {
+        return conferenceDao.findByStatus(ConferenceStatus.SUBMITTED);
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public List<Conference> getConferencesByOrganizer(Long organizerId) {
+        return conferenceDao.findByOrganizerId(organizerId);
+    }
+
+    @Override
+    public void approveConference(Long conferenceId, Long adminUserId) {
+        Conference conference = conferenceDao.findById(conferenceId)
+                .orElseThrow(() -> new IllegalArgumentException("Conference not found: " + conferenceId));
+
+        User admin = userDao.findById(adminUserId)
+                .orElseThrow(() -> new IllegalArgumentException("Admin not found: " + adminUserId));
+
+        conference.setStatus(ConferenceStatus.APPROVED);
+        conference.setApprovedBy(admin);
+        conference.setApprovedAt(LocalDateTime.now());
+        conference.setRejectionReason(null);
+
+        conferenceDao.update(conference);
+    }
+
+    @Override
+    public void rejectConference(Long conferenceId, Long adminUserId, String reason) {
+        Conference conference = conferenceDao.findById(conferenceId)
+                .orElseThrow(() -> new IllegalArgumentException("Conference not found: " + conferenceId));
+
+        conference.setStatus(ConferenceStatus.REJECTED);
+        conference.setRejectionReason(reason);
+
+        conferenceDao.update(conference);
+    }
+
+    @Override
+    @Transactional
+    public void save(Conference conference) {
+        conferenceDao.save(conference);
+    }
+}
