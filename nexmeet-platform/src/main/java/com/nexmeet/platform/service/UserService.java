@@ -1,0 +1,20 @@
+package com.nexmeet.platform.service;
+
+import com.nexmeet.platform.entity.User;
+
+import java.util.Optional;
+
+public interface UserService {
+
+    // Register a brand new user — creates User + assigns DELEGATE role
+    User registerUser(String fullName, String email, String rawPassword);
+
+    // Find user by email — used by Spring Security
+    Optional<User> findByEmail(String email);
+
+    // Find user by ID
+    Optional<User> findById(Long id);
+
+    // Check if email is already registered
+    boolean isEmailTaken(String email);
+}
