@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -64,5 +65,17 @@ public class RegistrationServiceImpl implements RegistrationService {
         conferenceDao.update(conference);
 
         return "SUCCESS";
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countByUserEmail(String email) {
+        return registrationDao.countByUserEmail(email);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Registration> findByUserEmail(String email) {
+        return registrationDao.findByUserEmail(email);
     }
 }
