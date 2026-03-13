@@ -1,6 +1,7 @@
 package com.nexmeet.platform.service;
 
 import com.nexmeet.platform.entity.Conference;
+import com.nexmeet.platform.enums.ConferenceStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,10 +20,14 @@ public interface ConferenceService {
     List<Conference> getConferencesByOrganizer(Long organizerId);
 
     // Admin approves a conference
-    void approveConference(Long conferenceId, Long adminUserId);
+    void approveConference(Long conferenceId, String adminEmail);
 
     // Admin rejects with reason
     void rejectConference(Long conferenceId, Long adminUserId, String reason);
 
     void save(Conference conference);
+
+    long countByOrganizer(Long organizerId);
+
+    long countByOrganizerAndStatus(Long organizerId, ConferenceStatus status);
 }

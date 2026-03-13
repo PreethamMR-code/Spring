@@ -50,18 +50,17 @@ public class ConferenceServiceImpl implements ConferenceService {
     }
 
     @Override
-    public void approveConference(Long conferenceId, Long adminUserId) {
+    public void approveConference(Long conferenceId, String adminEmail) {
         Conference conference = conferenceDao.findById(conferenceId)
-                .orElseThrow(() -> new IllegalArgumentException("Conference not found: " + conferenceId));
+                .orElseThrow(() -> new IllegalArgumentException("Conference not found"));
 
-        User admin = userDao.findById(adminUserId)
-                .orElseThrow(() -> new IllegalArgumentException("Admin not found: " + adminUserId));
+        User admin = userDao.findByEmail(adminEmail)
+                .orElseThrow(() -> new IllegalArgumentException("Admin not found"));
 
         conference.setStatus(ConferenceStatus.APPROVED);
         conference.setApprovedBy(admin);
         conference.setApprovedAt(LocalDateTime.now());
         conference.setRejectionReason(null);
-
         conferenceDao.update(conference);
     }
 
@@ -80,5 +79,17 @@ public class ConferenceServiceImpl implements ConferenceService {
     @Transactional
     public void save(Conference conference) {
         conferenceDao.save(conference);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countByOrganizer(Long organizerId) {
+        return conferenceDao.countByOrganizer(organizerId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countByOrganizerAndStatus(Long organizerId, ConferenceStatus status) {
+        return conferenceDao.countByOrganizerAndStatus(organizerId, status);
     }
 }
