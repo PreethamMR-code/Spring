@@ -25,4 +25,8 @@ public interface ConferenceDao {
 
     // For registration — check if conference is open
     boolean isRegistrationOpen(Long conferenceId);
+
+    long countByOrganizer(Long organizerId);
+
+    long countByOrganizerAndStatus(Long organizerId, ConferenceStatus status);
 }

@@ -97,4 +97,22 @@ public class ConferenceDaoImpl implements ConferenceDao {
                 .uniqueResult();
         return count > 0;
     }
+
+    @Override
+    public long countByOrganizer(Long organizerId) {
+        return (long) getCurrentSession()
+                .createQuery("SELECT COUNT(c) FROM Conference c WHERE c.organizer.id = :id")
+                .setParameter("id", organizerId)
+                .getSingleResult();
+
+    }
+
+    @Override
+    public long countByOrganizerAndStatus(Long organizerId, ConferenceStatus status) {
+        return (long) getCurrentSession()
+                .createQuery("SELECT COUNT(c) FROM Conference c WHERE c.organizer.id = :id AND c.status = :status")
+                .setParameter("id", organizerId)
+                .setParameter("status", status)
+                .getSingleResult();
+    }
 }
