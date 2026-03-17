@@ -55,9 +55,10 @@
                         <tr>
                             <th>Reg. Number</th>
                             <th>Conference</th>
-                            <th>Type</th>
+                            <th>Mode</th>
                             <th>Date</th>
                             <th>Status</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -68,7 +69,22 @@
                                 <td>${reg.conference.mode}</td>
                                 <td>${fn:substringBefore(reg.conference.startDate.toString(), 'T')}</td>
                                 <td>
-                                    <span class="badge bg-success">${reg.status}</span>
+                                    <span class="badge ${reg.status == 'CONFIRMED' ? 'bg-success' : 'bg-secondary'}">
+                                        ${reg.status}
+                                    </span>
+                                </td>
+                                <td>
+                                    <c:if test="${reg.status != 'CANCELLED'}">
+                                        <form action="${pageContext.request.contextPath}/delegate/registration/${reg.id}/cancel"
+                                              method="post" class="d-inline"
+                                              onsubmit="return confirm('Are you sure you want to cancel this registration?')">
+                                            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+                                            <button class="btn btn-danger btn-sm">Cancel</button>
+                                        </form>
+                                    </c:if>
+                                    <c:if test="${reg.status == 'CANCELLED'}">
+                                        <span class="text-muted">—</span>
+                                    </c:if>
                                 </td>
                             </tr>
                         </c:forEach>
