@@ -12,4 +12,6 @@ public interface RegistrationService {
     long countByUserEmail(String email);
 
     List<Registration> findByUserEmail(String email);
+
+    String cancelRegistration(Long registrationId, String userEmail);
 }

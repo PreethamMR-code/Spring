@@ -13,7 +13,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -77,5 +79,43 @@ public class RegistrationServiceImpl implements RegistrationService {
     @Transactional(readOnly = true)
     public List<Registration> findByUserEmail(String email) {
         return registrationDao.findByUserEmail(email);
+    }
+
+    @Override
+    @Transactional
+    public String cancelRegistration(Long registrationId, String userEmail) {
+        Optional<Registration> regOpt = registrationDao.findById(registrationId);
+
+        if (!regOpt.isPresent()) {
+            return "NOT_FOUND";
+        }
+
+        Registration reg = regOpt.get();
+
+        // Security check — delegate can only cancel their own
+        if (!reg.getUser().getEmail().equals(userEmail)) {
+            return "UNAUTHORIZED";
+        }
+
+        if (reg.getStatus() == RegistrationStatus.CANCELLED) {
+            return "ALREADY_CANCELLED";
+        }
+
+        // Check if registration deadline has passed
+        boolean afterDeadline = LocalDateTime.now()
+                .isAfter(reg.getConference().getRegistrationDeadline());
+
+        reg.setStatus(RegistrationStatus.CANCELLED);
+        reg.setCancelledAt(LocalDateTime.now());
+        registrationDao.cancel(reg);
+
+        // Free the seat
+        Conference conf = reg.getConference();
+        if (conf.getRegisteredCount() > 0) {
+            conf.setRegisteredCount(conf.getRegisteredCount() - 1);
+            conferenceDao.update(conf);
+        }
+
+        return afterDeadline ? "CANCELLED_LATE" : "CANCELLED";
     }
 }
