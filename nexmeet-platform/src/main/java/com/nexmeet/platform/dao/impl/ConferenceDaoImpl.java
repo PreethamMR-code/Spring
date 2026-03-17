@@ -84,18 +84,18 @@ public class ConferenceDaoImpl implements ConferenceDao {
 
     @Override
     public boolean isRegistrationOpen(Long conferenceId) {
-        Long count = (Long) getCurrentSession()
+        return (Long) getCurrentSession()
                 .createQuery(
                         "SELECT COUNT(c) FROM Conference c " +
                                 "WHERE c.id = :id " +
                                 "AND c.status = :status " +
                                 "AND c.registrationDeadline >= :now " +
-                                "AND c.registeredCount < c.maxDelegates")
+                                "AND c.registeredCount < c.maxDelegates",
+                        Long.class)
                 .setParameter("id", conferenceId)
                 .setParameter("status", ConferenceStatus.APPROVED)
                 .setParameter("now", LocalDateTime.now())
-                .uniqueResult();
-        return count > 0;
+                .getSingleResult() > 0;
     }
 
     @Override

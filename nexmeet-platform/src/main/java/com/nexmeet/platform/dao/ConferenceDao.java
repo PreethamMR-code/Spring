@@ -29,4 +29,6 @@ public interface ConferenceDao {
     long countByOrganizer(Long organizerId);
 
     long countByOrganizerAndStatus(Long organizerId, ConferenceStatus status);
+
+
 }
