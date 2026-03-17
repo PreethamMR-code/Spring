@@ -2,6 +2,7 @@ package com.nexmeet.platform.dao.impl;
 
 import com.nexmeet.platform.dao.RegistrationDao;
 import com.nexmeet.platform.entity.Registration;
+import com.nexmeet.platform.enums.RegistrationStatus;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +35,9 @@ public class RegistrationDaoImpl implements RegistrationDao {
 
     @Override
     public Optional<Registration> findById(Long id) {
-        return Optional.ofNullable(getCurrentSession().get(Registration.class, id));
+        Registration r = (Registration) sessionFactory.getCurrentSession()
+                .get(Registration.class, id);
+        return Optional.ofNullable(r);
     }
 
     @Override
@@ -81,8 +84,9 @@ public class RegistrationDaoImpl implements RegistrationDao {
     @Override
     public long countByUserEmail(String email) {
         return (long) sessionFactory.getCurrentSession()
-                .createQuery("SELECT COUNT(r) FROM Registration r WHERE r.user.email = :email")
+                .createQuery("SELECT COUNT(r) FROM Registration r WHERE r.user.email = :email AND r.status = :status")
                 .setParameter("email", email)
+                .setParameter("status", RegistrationStatus.CONFIRMED)
                 .getSingleResult();
     }
 
@@ -92,6 +96,11 @@ public class RegistrationDaoImpl implements RegistrationDao {
                 .createQuery("FROM Registration r WHERE r.user.email = :email ORDER BY r.registeredAt DESC")
                 .setParameter("email", email)
                 .getResultList();
+    }
+
+    @Override
+    public void cancel(Registration registration) {
+        sessionFactory.getCurrentSession().update(registration);
     }
 
 
