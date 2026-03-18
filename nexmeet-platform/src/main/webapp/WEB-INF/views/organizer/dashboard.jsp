@@ -53,6 +53,9 @@
         </div>
         <a href="${pageContext.request.contextPath}/organizer/conference/create"
            class="btn btn-success mt-3">+ Create Conference</a>
+
+           <a href="${pageContext.request.contextPath}/organizer/conferences"
+              class="btn btn-outline-success me-2">My Conferences</a>
     </div>
 </div>
 </body>
