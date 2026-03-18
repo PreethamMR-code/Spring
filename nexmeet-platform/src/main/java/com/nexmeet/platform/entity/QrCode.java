@@ -47,6 +47,10 @@ public class QrCode {
     @Column(name = "generated_at", nullable = false, updatable = false)
     private LocalDateTime generatedAt;
 
+    @Lob
+    @Column(name = "qr_image_base64", columnDefinition = "LONGTEXT")
+    private String qrImageBase64;
+
     @PrePersist
     protected void onCreate() {
         generatedAt = LocalDateTime.now();
@@ -68,4 +72,7 @@ public class QrCode {
     public void setQrImagePath(String qrImagePath) { this.qrImagePath = qrImagePath; }
 
     public LocalDateTime getGeneratedAt() { return generatedAt; }
+
+    public String getQrImageBase64() { return qrImageBase64; }
+    public void setQrImageBase64(String qrImageBase64) { this.qrImageBase64 = qrImageBase64; }
 }
