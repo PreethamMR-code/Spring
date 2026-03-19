@@ -1,12 +1,15 @@
 package com.nexmeet.platform.service.impl;
 
 import com.nexmeet.platform.dao.ConferenceDao;
+import com.nexmeet.platform.dao.QrCodeDao;
 import com.nexmeet.platform.dao.RegistrationDao;
 import com.nexmeet.platform.dao.UserDao;
 import com.nexmeet.platform.entity.Conference;
+import com.nexmeet.platform.entity.QrCode;
 import com.nexmeet.platform.entity.Registration;
 import com.nexmeet.platform.entity.User;
 import com.nexmeet.platform.enums.RegistrationStatus;
+import com.nexmeet.platform.service.QrCodeService;
 import com.nexmeet.platform.service.RegistrationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,6 +32,12 @@ public class RegistrationServiceImpl implements RegistrationService {
 
     @Autowired
     private UserDao userDao;
+
+    @Autowired
+    private QrCodeDao qrCodeDao;
+
+    @Autowired
+    private QrCodeService qrCodeService;
 
     @Override
     @Transactional
@@ -65,6 +74,13 @@ public class RegistrationServiceImpl implements RegistrationService {
         // 5. Increment registered count
         conference.setRegisteredCount(conference.getRegisteredCount() + 1);
         conferenceDao.update(conference);
+
+        // Generate QR Code
+        QrCode qr = new QrCode();
+        qr.setRegistration(reg);
+        qr.setQrToken(reg.getRegistrationNumber());   // <- was setQrData
+        qr.setQrImageBase64(qrCodeService.generateQrCodeBase64(reg.getRegistrationNumber()));
+        qrCodeDao.save(qr);
 
         return "SUCCESS";
     }
@@ -117,5 +133,11 @@ public class RegistrationServiceImpl implements RegistrationService {
         }
 
         return afterDeadline ? "CANCELLED_LATE" : "CANCELLED";
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Registration> findById(Long id) {
+        return registrationDao.findById(id);
     }
 }
