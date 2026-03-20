@@ -187,6 +187,7 @@
       <version>3.5.2</version>
     </dependency>
 
+
     <!-- ===================================================
             ITEXT PDF (Certificate Generator)
             For generating PDF certificates after conferences.
@@ -252,17 +253,6 @@
 <!--    </dependency>-->
 
 
-    <!-- ZXing QR Code Generator -->
-    <dependency>
-      <groupId>com.google.zxing</groupId>
-      <artifactId>core</artifactId>
-      <version>3.5.2</version>
-    </dependency>
-    <dependency>
-      <groupId>com.google.zxing</groupId>
-      <artifactId>javase</artifactId>
-      <version>3.5.2</version>
-    </dependency>
 
   </dependencies>
   <build>
