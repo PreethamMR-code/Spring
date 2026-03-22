@@ -83,6 +83,12 @@
                             <td>
                                 <a href="${pageContext.request.contextPath}/organizer/conference/${conf.id}"
                                    class="btn btn-outline-success btn-sm">View</a>
+
+                                   <c:if test="${conf.status == 'APPROVED'}">
+                                       <a href="${pageContext.request.contextPath}/organizer/conference/${conf.id}/attendance"
+                                          class="btn btn-outline-primary btn-sm ms-1">Attendance</a>
+                                   </c:if>
+
                                 <c:if test="${conf.status == 'DRAFT' || conf.status == 'REJECTED'}">
                                     <a href="${pageContext.request.contextPath}/organizer/conference/${conf.id}/edit"
                                        class="btn btn-outline-warning btn-sm">Edit</a>
