@@ -2,9 +2,11 @@ package com.nexmeet.platform.controller.organizer;
 
 import com.nexmeet.platform.dao.OrganizerDao;
 import com.nexmeet.platform.dto.ConferenceCreateDto;
+import com.nexmeet.platform.entity.Attendance;
 import com.nexmeet.platform.entity.Conference;
 import com.nexmeet.platform.entity.Organizer;
 import com.nexmeet.platform.enums.ConferenceStatus;
+import com.nexmeet.platform.service.AttendanceService;
 import com.nexmeet.platform.service.ConferenceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -25,6 +27,9 @@ public class OrganizerController {
 
     @Autowired
     private OrganizerDao organizerDao;
+
+    @Autowired
+    private AttendanceService attendanceService;
 
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication auth) {
@@ -116,5 +121,51 @@ public class OrganizerController {
             flash.addFlashAttribute("error", "Error: " + e.getMessage());
             return "redirect:/organizer/conference/create";
         }
+    }
+
+    @GetMapping("/conference/{id}/attendance")
+    public String attendancePage(@PathVariable Long id, Model model) {
+        Conference conf = conferenceService.findById(id)
+                .orElseThrow(() -> new RuntimeException("Conference not found"));
+        List<Attendance> attended = attendanceService.getAttendanceByConference(id);
+        model.addAttribute("conf", conf);
+        model.addAttribute("attended", attended);
+        model.addAttribute("attendedCount", attended.size());
+        return "organizer/attendance";
+    }
+
+    @PostMapping("/conference/{id}/attendance/mark")
+    public String markAttendance(@PathVariable Long id,
+                                 @RequestParam String registrationNumber,
+                                 Authentication auth,
+                                 RedirectAttributes flash) {
+        String result = attendanceService.markAttendance(
+                registrationNumber, id, auth.getName());
+
+        switch (result) {
+            case "SUCCESS":
+                flash.addFlashAttribute("success",
+                        "Delegate checked in successfully!");
+                break;
+            case "ALREADY_CHECKED_IN":
+                flash.addFlashAttribute("error",
+                        "This delegate is already checked in.");
+                break;
+            case "NOT_FOUND":
+                flash.addFlashAttribute("error",
+                        "Registration number not found.");
+                break;
+            case "WRONG_CONFERENCE":
+                flash.addFlashAttribute("error",
+                        "This ticket is for a different conference.");
+                break;
+            case "NOT_CONFIRMED":
+                flash.addFlashAttribute("error",
+                        "Registration is not confirmed.");
+                break;
+            default:
+                flash.addFlashAttribute("error", "Unknown error.");
+        }
+        return "redirect:/organizer/conference/" + id + "/attendance";
     }
 }
