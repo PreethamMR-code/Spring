@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 
+import javax.persistence.NoResultException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -42,11 +43,16 @@ public class RegistrationDaoImpl implements RegistrationDao {
 
     @Override
     public Optional<Registration> findByRegistrationNumber(String registrationNumber) {
-        Registration r = (Registration) getCurrentSession()
-                .createQuery("FROM Registration WHERE registrationNumber = :num")
-                .setParameter("num", registrationNumber)
-                .uniqueResult();
-        return Optional.ofNullable(r);
+        try {
+            Registration r = (Registration) sessionFactory.getCurrentSession()
+                    .createQuery(
+                            "FROM Registration r WHERE r.registrationNumber = :num")
+                    .setParameter("num", registrationNumber)
+                    .getSingleResult();
+            return Optional.of(r);
+        } catch (NoResultException e) {
+            return Optional.empty();
+        }
     }
 
     @Override

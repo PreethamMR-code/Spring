@@ -29,4 +29,6 @@ public interface RegistrationDao {
     List<Registration> findByUserEmail(String email);
 
     void cancel(Registration registration);
+
+
 }
