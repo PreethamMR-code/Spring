@@ -48,6 +48,9 @@
         <intercept-url pattern="/organizer/**"        access="hasRole('ROLE_ORGANIZER')" />
         <intercept-url pattern="/institution/**"      access="hasRole('ROLE_INSTITUTIONAL_ADMIN')" />
         <intercept-url pattern="/delegate/registration/*/cancel" access="hasRole('ROLE_DELEGATE')"/>
+        <intercept-url pattern="/delegate/registration/*/ticket" access="hasRole('ROLE_DELEGATE')"/>
+        <intercept-url pattern="/delegate/registration/*/certificate" access="hasRole('ROLE_DELEGATE')"/>
+
         <intercept-url pattern="/delegate/**"         access="hasRole('ROLE_DELEGATE')" />
 
         <intercept-url pattern="/**"                  access="isAuthenticated()" />
@@ -56,11 +59,13 @@
             ROLE-PROTECTED URLS
             Only users with these specific roles can access these paths.
             If a DELEGATE tries to access /admin/**, they get 403 Forbidden.
-        -->
+
         <intercept-url pattern="/admin/**"        access="hasRole('SUPER_ADMIN')" />
         <intercept-url pattern="/organizer/**"    access="hasRole('ORGANIZER')" />
         <intercept-url pattern="/institution/**"  access="hasRole('INSTITUTIONAL_ADMIN')" />
         <intercept-url pattern="/delegate/**"     access="hasRole('DELEGATE')" />
+
+        -->
 
         <!--
             Any other URL not listed above requires at least being logged in.
