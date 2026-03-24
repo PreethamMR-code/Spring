@@ -17,4 +17,6 @@ public interface RegistrationService {
     String cancelRegistration(Long registrationId, String userEmail);
 
     Optional<Registration> findById(Long id);
+
+    List<Registration> findByConferenceId(Long conferenceId);
 }

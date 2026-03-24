@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -139,5 +140,11 @@ public class RegistrationServiceImpl implements RegistrationService {
     @Transactional(readOnly = true)
     public Optional<Registration> findById(Long id) {
         return registrationDao.findById(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Registration> findByConferenceId(Long conferenceId) {
+        return registrationDao.findByConferenceId(conferenceId);
     }
 }
