@@ -39,4 +39,6 @@ public interface UserDao {
 
     // Soft delete — set is_active = false instead of deleting the row
     void deactivate(Long id);
+
+    long countAll();
 }

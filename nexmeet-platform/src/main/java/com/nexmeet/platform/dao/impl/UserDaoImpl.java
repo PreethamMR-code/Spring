@@ -94,8 +94,8 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public List<User> findAll() {
-        return getCurrentSession()
-                .createQuery("FROM User ORDER BY createdAt DESC", User.class)
+        return sessionFactory.getCurrentSession()
+                .createQuery("FROM User u ORDER BY u.createdAt DESC", User.class)
                 .getResultList();
     }
 
@@ -120,4 +120,12 @@ public class UserDaoImpl implements UserDao {
                 .setParameter("id", id)
                 .executeUpdate();
     }
+
+    @Override
+    public long countAll() {
+        return sessionFactory.getCurrentSession()
+                .createQuery("SELECT COUNT(u) FROM User u", Long.class)
+                .getSingleResult();
+    }
+
 }
