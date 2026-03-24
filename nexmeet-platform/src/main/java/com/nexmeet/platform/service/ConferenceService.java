@@ -30,4 +30,10 @@ public interface ConferenceService {
     long countByOrganizer(Long organizerId);
 
     long countByOrganizerAndStatus(Long organizerId, ConferenceStatus status);
+
+    List<Conference> getAllConferences();
+
+    long countByStatus(ConferenceStatus status);
+
+    List<Conference> findByStatus(ConferenceStatus conferenceStatus);
 }

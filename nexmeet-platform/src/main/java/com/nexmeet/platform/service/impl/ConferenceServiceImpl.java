@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -91,5 +92,22 @@ public class ConferenceServiceImpl implements ConferenceService {
     @Transactional(readOnly = true)
     public long countByOrganizerAndStatus(Long organizerId, ConferenceStatus status) {
         return conferenceDao.countByOrganizerAndStatus(organizerId, status);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Conference> getAllConferences() {
+        return conferenceDao.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countByStatus(ConferenceStatus status) {
+        return conferenceDao.countByStatus(status);
+    }
+
+    @Override
+    public List<Conference> findByStatus(ConferenceStatus conferenceStatus) {
+        return conferenceDao.findByStatus(conferenceStatus);
     }
 }
