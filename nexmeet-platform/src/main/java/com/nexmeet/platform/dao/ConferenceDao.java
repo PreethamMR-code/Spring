@@ -30,5 +30,7 @@ public interface ConferenceDao {
 
     long countByOrganizerAndStatus(Long organizerId, ConferenceStatus status);
 
+    List<Conference> findAll();
 
+    long countByStatus(ConferenceStatus status);
 }

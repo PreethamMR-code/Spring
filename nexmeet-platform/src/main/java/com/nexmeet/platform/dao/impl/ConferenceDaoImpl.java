@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -112,6 +113,22 @@ public class ConferenceDaoImpl implements ConferenceDao {
         return (long) getCurrentSession()
                 .createQuery("SELECT COUNT(c) FROM Conference c WHERE c.organizer.id = :id AND c.status = :status")
                 .setParameter("id", organizerId)
+                .setParameter("status", status)
+                .getSingleResult();
+    }
+
+    @Override
+    public List<Conference> findAll() {
+        return getCurrentSession()
+                .createQuery("FROM Conference c ORDER BY c.createdAt DESC",
+                        Conference.class)
+                .getResultList();
+    }
+
+    @Override
+    public long countByStatus(ConferenceStatus status) {
+        return getCurrentSession()
+                .createQuery("SELECT COUNT (c) FROM Conference c WHERE c.status = :status", Long.class)
                 .setParameter("status", status)
                 .getSingleResult();
     }
