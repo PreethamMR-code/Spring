@@ -25,12 +25,10 @@ import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-
+import java.util.*;
 
 
 @Service
@@ -106,5 +104,17 @@ public class UserServiceImpl implements UserService {
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public boolean isEmailTaken(String email) {
         return userDao.existsByEmail(email);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> getAllUsers() {
+        return userDao.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countAllUsers() {
+        return userDao.countAll();
     }
 }

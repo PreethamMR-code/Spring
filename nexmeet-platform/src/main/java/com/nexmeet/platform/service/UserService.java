@@ -2,6 +2,7 @@ package com.nexmeet.platform.service;
 
 import com.nexmeet.platform.entity.User;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserService {
@@ -17,4 +18,8 @@ public interface UserService {
 
     // Check if email is already registered
     boolean isEmailTaken(String email);
+
+    List<User> getAllUsers();
+
+    long countAllUsers();
 }
