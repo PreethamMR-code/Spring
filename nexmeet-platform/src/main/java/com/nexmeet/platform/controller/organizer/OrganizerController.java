@@ -5,9 +5,12 @@ import com.nexmeet.platform.dto.ConferenceCreateDto;
 import com.nexmeet.platform.entity.Attendance;
 import com.nexmeet.platform.entity.Conference;
 import com.nexmeet.platform.entity.Organizer;
+import com.nexmeet.platform.entity.Registration;
 import com.nexmeet.platform.enums.ConferenceStatus;
+import com.nexmeet.platform.enums.RegistrationStatus;
 import com.nexmeet.platform.service.AttendanceService;
 import com.nexmeet.platform.service.ConferenceService;
+import com.nexmeet.platform.service.RegistrationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -30,6 +33,9 @@ public class OrganizerController {
 
     @Autowired
     private AttendanceService attendanceService;
+
+    @Autowired
+    private RegistrationService registrationService;
 
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication auth) {
@@ -167,5 +173,34 @@ public class OrganizerController {
                 flash.addFlashAttribute("error", "Unknown error.");
         }
         return "redirect:/organizer/conference/" + id + "/attendance";
+    }
+
+    @GetMapping("/conference/{id}/delegates")
+    public String viewDelegates(@PathVariable Long id,
+                                Model model,
+                                Authentication auth) {
+        Conference conf = conferenceService.findById(id)
+                .orElseThrow(() -> new RuntimeException("Conference not found"));
+
+        // Security: only the organizer who owns this conference
+        String email = auth.getName();
+        if (!conf.getOrganizer().getUser().getEmail().equals(email)) {
+            return "redirect:/organizer/conferences";
+        }
+
+        List<Registration> registrations = registrationService.findByConferenceId(id);
+
+        long confirmedCount = registrations.stream()
+                .filter(r -> r.getStatus() == RegistrationStatus.CONFIRMED)
+                .count();
+        long cancelledCount = registrations.stream()
+                .filter(r -> r.getStatus() == RegistrationStatus.CANCELLED)
+                .count();
+
+        model.addAttribute("conf", conf);
+        model.addAttribute("registrations", registrations);
+        model.addAttribute("confirmedCount", confirmedCount);
+        model.addAttribute("cancelledCount", cancelledCount);
+        return "organizer/delegates";
     }
 }
