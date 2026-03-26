@@ -52,6 +52,13 @@
             </div>
         </div>
 
+        <div class="d-flex gap-2 mb-4">
+            <a href="${pageContext.request.contextPath}/admin/conferences"
+               class="btn btn-outline-danger">All Conferences</a>
+            <a href="${pageContext.request.contextPath}/admin/users"
+               class="btn btn-outline-primary">All Users</a>
+        </div>
+
         <!-- Pending Conferences Table -->
         <h5 class="text-danger">Conferences Awaiting Approval</h5>
         <c:choose>
@@ -89,6 +96,7 @@
                                         <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
                                         <button class="btn btn-success btn-sm">Approve</button>
                                     </form>
+
                                     <!-- Reject -->
                                     <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
                                             data-bs-target="#rejectModal${conf.id}">Reject</button>
