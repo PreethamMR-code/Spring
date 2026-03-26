@@ -99,7 +99,12 @@
                                     <td>${s.count}</td>
                                     <td><code>${a.registration.registrationNumber}</code></td>
                                     <td>${a.user.fullName}</td>
-                                    <td>${fn:substringBefore(a.checkedInAt.toString(),'.')}</td>
+                                    <td>
+                                        ${fn:replace(
+                                            fn:substringBefore(a.checkedInAt.toString(), '.'),
+                                            'T', ' '
+                                        )}
+                                    </td>
                                     <td>${a.checkedInBy.fullName}</td>
                                 </tr>
                             </c:forEach>
