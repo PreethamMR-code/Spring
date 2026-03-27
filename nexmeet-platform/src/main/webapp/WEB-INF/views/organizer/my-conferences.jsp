@@ -85,8 +85,10 @@
                                    class="btn btn-outline-success btn-sm">View</a>
 
                                    <c:if test="${conf.status == 'APPROVED'}">
+                                       <a href="${pageContext.request.contextPath}/organizer/conference/${conf.id}/delegates"
+                                          class="btn btn-outline-primary btn-sm ms-1">Delegates</a>
                                        <a href="${pageContext.request.contextPath}/organizer/conference/${conf.id}/attendance"
-                                          class="btn btn-outline-primary btn-sm ms-1">Attendance</a>
+                                          class="btn btn-outline-success btn-sm ms-1">Attendance</a>
                                    </c:if>
 
                                 <c:if test="${conf.status == 'DRAFT' || conf.status == 'REJECTED'}">
