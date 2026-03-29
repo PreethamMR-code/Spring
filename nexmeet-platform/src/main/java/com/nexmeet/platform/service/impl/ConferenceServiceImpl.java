@@ -110,4 +110,9 @@ public class ConferenceServiceImpl implements ConferenceService {
     public List<Conference> findByStatus(ConferenceStatus conferenceStatus) {
         return conferenceDao.findByStatus(conferenceStatus);
     }
+
+    @Override
+    public void update(Conference conf) {
+        conferenceDao.update(conf);
+    }
 }

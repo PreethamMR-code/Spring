@@ -36,4 +36,6 @@ public interface ConferenceService {
     long countByStatus(ConferenceStatus status);
 
     List<Conference> findByStatus(ConferenceStatus conferenceStatus);
+
+    void update(Conference conf);
 }
