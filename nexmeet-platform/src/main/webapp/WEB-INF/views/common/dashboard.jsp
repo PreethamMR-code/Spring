@@ -8,4 +8,5 @@
     <p>Welcome! You are logged in as: <strong>${pageContext.request.userPrincipal.name}</strong></p>
     <a href="${pageContext.request.contextPath}/logout">Logout</a>
 </body>
+
 </html>

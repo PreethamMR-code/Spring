@@ -20,6 +20,8 @@
 </head>
 <body>
 
+<%@ include file="/WEB-INF/views/common/navbar.jsp" %>
+
 <!-- Navbar -->
 <nav class="navbar navbar-light bg-white shadow-sm">
     <div class="container">

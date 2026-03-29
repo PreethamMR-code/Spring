@@ -17,6 +17,9 @@
 
 
 <body class="bg-light">
+
+<%@ include file="/WEB-INF/views/common/navbar.jsp" %>
+
 <div class="container mt-5">
     <div class="card p-4 shadow-sm">
         <h2 class="text-success">Organizer Dashboard</h2>
