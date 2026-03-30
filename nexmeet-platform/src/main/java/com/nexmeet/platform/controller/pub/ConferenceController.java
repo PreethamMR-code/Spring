@@ -19,10 +19,6 @@ public class ConferenceController {
     @Autowired
     private ConferenceService conferenceService;
 
-    @GetMapping({"/", "/home"})
-    public String home() {
-        return "pub/home";
-    }
 
     @GetMapping("/conferences")
     public String listConferences(Model model){
