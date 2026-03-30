@@ -203,4 +203,136 @@ public class OrganizerController {
         model.addAttribute("cancelledCount", cancelledCount);
         return "organizer/delegates";
     }
+
+    @GetMapping("/conference/{id}/edit")
+    public String showEditForm(@PathVariable Long id,
+                               Model model,
+                               Authentication auth) {
+        Conference conf = conferenceService.findById(id)
+                .orElseThrow(() -> new RuntimeException("Not found"));
+
+        // Security: only owning organizer
+        if (!conf.getOrganizer().getUser().getEmail().equals(auth.getName())) {
+            return "redirect:/organizer/conferences";
+        }
+
+        // Only DRAFT or REJECTED can be edited
+        if (conf.getStatus() != ConferenceStatus.DRAFT &&
+                conf.getStatus() != ConferenceStatus.REJECTED) {
+            return "redirect:/organizer/conferences";
+        }
+
+        // Map entity to DTO for form
+        ConferenceCreateDto dto = new ConferenceCreateDto();
+        dto.setTitle(conf.getTitle());
+        dto.setDescription(conf.getDescription());
+        dto.setConferenceType(conf.getConferenceType());
+        dto.setMode(conf.getMode());
+        dto.setTargetAudience(conf.getTargetAudience());
+        dto.setTargetDomains(conf.getTargetDomains());
+        dto.setStartDate(conf.getStartDate());
+        dto.setEndDate(conf.getEndDate());
+        dto.setRegistrationDeadline(conf.getRegistrationDeadline());
+        dto.setVenueName(conf.getVenueName());
+        dto.setVenueAddress(conf.getVenueAddress());
+        dto.setCity(conf.getCity());
+        dto.setState(conf.getState());
+        dto.setStreamingLink(conf.getStreamingLink());
+        dto.setMaxDelegates(conf.getMaxDelegates());
+        dto.setFree(conf.isFree());
+        dto.setDelegateFee(conf.getDelegateFee());
+        dto.setCertificateEnabled(conf.isCertificateEnabled());
+        dto.setQrCheckinEnabled(conf.isQrCheckinEnabled());
+        dto.setBulkUploadAllowed(conf.isBulkUploadAllowed());
+
+        model.addAttribute("dto", dto);
+        model.addAttribute("confId", id);
+        model.addAttribute("currentStatus", conf.getStatus());
+        return "organizer/edit-conference";
+    }
+
+    @PostMapping("/conference/{id}/edit")
+    public String updateConference(@PathVariable Long id,
+                                   @ModelAttribute("dto") ConferenceCreateDto dto,
+                                   @RequestParam String action,
+                                   Authentication auth,
+                                   RedirectAttributes flash) {
+        try {
+            Conference conf = conferenceService.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Not found"));
+
+            // Security check
+            if (!conf.getOrganizer().getUser().getEmail().equals(auth.getName())) {
+                flash.addFlashAttribute("error", "Unauthorized.");
+                return "redirect:/organizer/conferences";
+            }
+
+            // Only DRAFT or REJECTED can be edited
+            if (conf.getStatus() != ConferenceStatus.DRAFT &&
+                    conf.getStatus() != ConferenceStatus.REJECTED) {
+                flash.addFlashAttribute("error", "This conference cannot be edited.");
+                return "redirect:/organizer/conferences";
+            }
+
+            // Update all fields
+            conf.setTitle(dto.getTitle());
+            conf.setDescription(dto.getDescription());
+            conf.setConferenceType(dto.getConferenceType());
+            conf.setMode(dto.getMode());
+            conf.setTargetAudience(dto.getTargetAudience());
+            conf.setTargetDomains(dto.getTargetDomains());
+            conf.setStartDate(dto.getStartDate());
+            conf.setEndDate(dto.getEndDate());
+            conf.setRegistrationDeadline(dto.getRegistrationDeadline());
+            conf.setVenueName(dto.getVenueName());
+            conf.setVenueAddress(dto.getVenueAddress());
+            conf.setCity(dto.getCity());
+            conf.setState(dto.getState());
+            conf.setStreamingLink(dto.getStreamingLink());
+            conf.setMaxDelegates(dto.getMaxDelegates());
+            conf.setFree(dto.isFree());
+            conf.setDelegateFee(dto.getDelegateFee());
+            conf.setCertificateEnabled(dto.isCertificateEnabled());
+            conf.setQrCheckinEnabled(dto.isQrCheckinEnabled());
+            conf.setBulkUploadAllowed(dto.isBulkUploadAllowed());
+
+            if ("SUBMIT".equals(action)) {
+                conf.setStatus(ConferenceStatus.SUBMITTED);
+                conf.setRejectionReason(null);
+            } else {
+                conf.setStatus(ConferenceStatus.DRAFT);
+            }
+
+            conferenceService.update(conf);
+
+            flash.addFlashAttribute("success", "SUBMIT".equals(action)
+                    ? "Conference resubmitted for approval!"
+                    : "Conference saved as draft.");
+            return "redirect:/organizer/conferences";
+
+        } catch (Exception e) {
+            flash.addFlashAttribute("error", "Error: " + e.getMessage());
+            return "redirect:/organizer/conference/" + id + "/edit";
+        }
+    }
+
+    @GetMapping("/conference/{id}")
+    public String viewConference(@PathVariable Long id,
+                                 Model model,
+                                 Authentication auth) {
+        Conference conf = conferenceService.findById(id)
+                .orElseThrow(() -> new RuntimeException("Conference not found"));
+
+        // Security: only owning organizer
+        if (!conf.getOrganizer().getUser().getEmail().equals(auth.getName())) {
+            return "redirect:/organizer/conferences";
+        }
+
+        long registeredCount = conf.getRegisteredCount();
+        long attendedCount = attendanceService.getAttendanceByConference(id).size();
+
+        model.addAttribute("conf", conf);
+        model.addAttribute("attendedCount", attendedCount);
+        return "organizer/conference-detail";
+    }
 }
