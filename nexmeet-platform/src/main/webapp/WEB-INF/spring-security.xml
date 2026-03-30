@@ -34,6 +34,7 @@
             PUBLIC URLS — No login required
             Anyone can access these, even without an account.
         -->
+        <intercept-url pattern="/index.jsp"           access="permitAll" />
         <intercept-url pattern="/static/**"           access="permitAll" />
         <intercept-url pattern="/"                    access="permitAll" />
         <intercept-url pattern="/home"                access="permitAll" />
