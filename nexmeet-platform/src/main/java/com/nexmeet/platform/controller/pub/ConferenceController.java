@@ -1,11 +1,16 @@
 package com.nexmeet.platform.controller.pub;
 
+import com.nexmeet.platform.entity.Conference;
 import com.nexmeet.platform.service.ConferenceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /*
  * Public conference pages — no login required.
@@ -21,8 +26,57 @@ public class ConferenceController {
 
 
     @GetMapping("/conferences")
-    public String listConferences(Model model){
-        model.addAttribute("conferences", conferenceService.getApprovedConferences());
+    public String listConferences(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String mode,
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) String free,
+            Model model) {
+
+        List<Conference> all = conferenceService.getApprovedConferences();
+
+        List<Conference> filtered = all.stream()
+                .filter(c -> {
+                    if (search != null && !search.trim().isEmpty()) {
+                        String s = search.toLowerCase();
+                        return c.getTitle().toLowerCase().contains(s)
+                                || (c.getDescription() != null &&
+                                c.getDescription().toLowerCase().contains(s))
+                                || (c.getCity() != null &&
+                                c.getCity().toLowerCase().contains(s));
+                    }
+                    return true;
+                })
+                .filter(c -> type == null || type.isEmpty()
+                        || c.getConferenceType().name().equals(type))
+                .filter(c -> mode == null || mode.isEmpty()
+                        || c.getMode().name().equals(mode))
+                .filter(c -> city == null || city.isEmpty()
+                        || (c.getCity() != null &&
+                        c.getCity().toLowerCase().contains(city.toLowerCase())))
+                .filter(c -> {
+                    if (free == null || free.isEmpty()) return true;
+                    return "true".equals(free) ? c.isFree() : !c.isFree();
+                })
+                .collect(Collectors.toList());
+
+        List<String> cities = all.stream()
+                .map(Conference::getCity)
+                .filter(ct -> ct != null && !ct.isEmpty())
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
+
+        model.addAttribute("conferences", filtered);
+        model.addAttribute("cities", cities);
+        model.addAttribute("totalCount", all.size());
+        model.addAttribute("filteredCount", filtered.size());
+        model.addAttribute("search", search != null ? search : "");
+        model.addAttribute("selectedType", type != null ? type : "");
+        model.addAttribute("selectedMode", mode != null ? mode : "");
+        model.addAttribute("selectedCity", city != null ? city : "");
+        model.addAttribute("selectedFree", free != null ? free : "");
         return "pub/conferences";
     }
 
