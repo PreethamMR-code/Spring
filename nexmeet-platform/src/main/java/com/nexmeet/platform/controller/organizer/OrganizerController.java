@@ -2,15 +2,14 @@ package com.nexmeet.platform.controller.organizer;
 
 import com.nexmeet.platform.dao.OrganizerDao;
 import com.nexmeet.platform.dto.ConferenceCreateDto;
-import com.nexmeet.platform.entity.Attendance;
-import com.nexmeet.platform.entity.Conference;
-import com.nexmeet.platform.entity.Organizer;
-import com.nexmeet.platform.entity.Registration;
+import com.nexmeet.platform.dto.OrganizerProfileDto;
+import com.nexmeet.platform.entity.*;
 import com.nexmeet.platform.enums.ConferenceStatus;
 import com.nexmeet.platform.enums.RegistrationStatus;
 import com.nexmeet.platform.service.AttendanceService;
 import com.nexmeet.platform.service.ConferenceService;
 import com.nexmeet.platform.service.RegistrationService;
+import com.nexmeet.platform.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -36,6 +35,9 @@ public class OrganizerController {
 
     @Autowired
     private RegistrationService registrationService;
+
+    @Autowired
+    private UserService userService;
 
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication auth) {
@@ -334,5 +336,49 @@ public class OrganizerController {
         model.addAttribute("conf", conf);
         model.addAttribute("attendedCount", attendedCount);
         return "organizer/conference-detail";
+    }
+
+    @GetMapping("/profile/setup")
+    public String showProfileSetup(Model model, Authentication auth) {
+        // If profile already exists, skip to dashboard
+        if (organizerDao.existsByUserEmail(auth.getName())) {
+            return "redirect:/organizer/dashboard";
+        }
+        model.addAttribute("dto", new OrganizerProfileDto());
+        return "organizer/profile-setup";
+    }
+
+    @PostMapping("/profile/setup")
+    public String saveProfileSetup(
+            @ModelAttribute("dto") OrganizerProfileDto dto,
+            Authentication auth,
+            RedirectAttributes flash) {
+        try {
+            if (!organizerDao.existsByUserEmail(auth.getName())) {
+                // Get the logged-in user
+                User user =
+                        userService.findByEmail(auth.getName())
+                                .orElseThrow(() -> new RuntimeException("User not found"));
+
+                Organizer organizer = new Organizer();
+                organizer.setUser(user);
+                organizer.setOrganizationName(dto.getOrganizationName());
+                organizer.setOrganizationType(dto.getOrganizationType());
+                organizer.setWebsiteUrl(dto.getWebsiteUrl());
+                organizer.setAddress(dto.getAddress());
+                organizer.setCity(dto.getCity());
+                organizer.setState(dto.getState());
+                organizer.setPincode(dto.getPincode());
+                organizer.setVerificationStatus(
+                        com.nexmeet.platform.enums.VerificationStatus.PENDING);
+                organizerDao.save(organizer);
+            }
+            flash.addFlashAttribute("success",
+                    "Profile saved! Your account is pending admin verification.");
+            return "redirect:/organizer/dashboard";
+        } catch (Exception e) {
+            flash.addFlashAttribute("error", "Error: " + e.getMessage());
+            return "redirect:/organizer/profile/setup";
+        }
     }
 }
