@@ -31,4 +31,21 @@ public class OrganizerDaoImpl implements OrganizerDao {
         }
     }
 
+    @Override
+    public void save(Organizer organizer) {
+        sessionFactory.getCurrentSession().persist(organizer);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existsByUserEmail(String email) {
+        Long count = sessionFactory.getCurrentSession()
+                .createQuery(
+                        "SELECT COUNT(o) FROM Organizer o WHERE o.user.email = :email",
+                        Long.class)
+                .setParameter("email", email)
+                .getSingleResult();
+        return count > 0;
+    }
+
 }

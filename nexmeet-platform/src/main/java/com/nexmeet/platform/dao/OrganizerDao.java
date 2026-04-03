@@ -7,4 +7,8 @@ import java.util.Optional;
 public interface OrganizerDao {
 
     Optional<Organizer> findByUserEmail(String email);
+
+    void save(Organizer organizer);
+
+    boolean existsByUserEmail(String email);
 }
