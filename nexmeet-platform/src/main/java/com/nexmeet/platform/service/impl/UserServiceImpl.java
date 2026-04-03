@@ -55,7 +55,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public User registerUser(String fullName, String email, String rawPassword) {
+    public User registerUser(String fullName, String email, String rawPassword, String phone, String roleName) {
         if (userDao.existsByEmail(email)) {
             throw new IllegalArgumentException("Email already registered: " + email);
         }
@@ -68,19 +68,19 @@ public class UserServiceImpl implements UserService {
         user.setActive(true);
         user.setVerified(false);
 
-        /*
-         * Assign the DELEGATE role automatically on registration.
-         * We look up the role by name from the roles table.
-         * The roles table already has DELEGATE inserted from our SQL setup.
-         */
-        Role delegateRole = (Role) sessionFactory.getCurrentSession()
+        // Assign role — default to DELEGATE if not provided
+        String roleToAssign = (roleName != null && roleName.equals("ORGANIZER"))
+                ? "ORGANIZER" : "DELEGATE";
+
+
+        Role role = (Role) sessionFactory.getCurrentSession()
                 .createQuery("FROM Role WHERE name = :name")
-                .setParameter("name", "DELEGATE")
+                .setParameter("name", roleToAssign)
                 .uniqueResult();
 
-        if (delegateRole != null) {
+        if (role != null) {
             Set<Role> roles = new HashSet<>();
-            roles.add(delegateRole);
+            roles.add(role);
             user.setRoles(roles);
         }
 

@@ -8,7 +8,7 @@ import java.util.Optional;
 public interface UserService {
 
     // Register a brand new user — creates User + assigns DELEGATE role
-    User registerUser(String fullName, String email, String rawPassword);
+    User registerUser(String fullName, String email, String rawPassword, String phone, String roleName);
 
     // Find user by email — used by Spring Security
     Optional<User> findByEmail(String email);
