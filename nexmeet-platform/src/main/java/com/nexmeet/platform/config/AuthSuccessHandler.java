@@ -30,7 +30,7 @@ public class AuthSuccessHandler implements AuthenticationSuccessHandler {
                 redirectUrl = "/nexmeet/admin/dashboard";
                 break;
             } else if (role.equals("ROLE_ORGANIZER")) {
-                redirectUrl = "/nexmeet/organizer/dashboard";
+                redirectUrl = "/nexmeet/organizer/profile/setup";
                 break;
             } else if (role.equals("ROLE_INSTITUTIONAL_ADMIN")) {
                 redirectUrl = "/nexmeet/institution/dashboard";
