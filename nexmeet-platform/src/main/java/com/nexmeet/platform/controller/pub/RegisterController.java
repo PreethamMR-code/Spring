@@ -88,7 +88,13 @@ public class RegisterController {
 
         try {
             // All checks passed — create the user in database
-            userService.registerUser(dto.getFullName(), dto.getEmail().trim(), dto.getPassword());
+            userService.registerUser(
+                    dto.getFullName(),
+                    dto.getEmail().trim(),
+                    dto.getPassword(),
+                    dto.getPhone(),
+                    dto.getRole()
+            );
 
             /*
              * PRG Pattern (Post-Redirect-Get):
