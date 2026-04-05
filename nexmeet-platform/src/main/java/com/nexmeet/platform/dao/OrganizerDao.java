@@ -11,4 +11,8 @@ public interface OrganizerDao {
     void save(Organizer organizer);
 
     boolean existsByUserEmail(String email);
+
+    void update(Organizer organizer);
+
+    Optional<Organizer> findByOrganizerId(Long organizerId);
 }

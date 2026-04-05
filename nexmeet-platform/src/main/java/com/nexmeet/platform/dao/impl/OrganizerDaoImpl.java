@@ -48,4 +48,24 @@ public class OrganizerDaoImpl implements OrganizerDao {
         return count > 0;
     }
 
+    @Override
+    public void update(Organizer organizer) {
+        sessionFactory.getCurrentSession().update(organizer);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Organizer> findByOrganizerId(Long organizerId) {
+        try {
+            Organizer o = (Organizer) sessionFactory.getCurrentSession()
+                    .createQuery(
+                            "FROM Organizer o WHERE o.id = :id")
+                    .setParameter("id", organizerId)
+                    .getSingleResult();
+            return Optional.of(o);
+        } catch (javax.persistence.NoResultException e) {
+            return Optional.empty();
+        }
+    }
+
 }
