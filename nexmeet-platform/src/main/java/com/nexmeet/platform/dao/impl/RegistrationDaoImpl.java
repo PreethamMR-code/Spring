@@ -110,4 +110,23 @@ public class RegistrationDaoImpl implements RegistrationDao {
     }
 
 
+
+    @Override
+    public Optional<Registration> findByConferenceAndUser(
+            Long conferenceId, Long userId) {
+        try {
+            Registration r = (Registration) sessionFactory
+                    .getCurrentSession()
+                    .createQuery(
+                            "FROM Registration r " +
+                                    "WHERE r.conference.id = :confId " +
+                                    "AND r.user.id = :userId")
+                    .setParameter("confId", conferenceId)
+                    .setParameter("userId", userId)
+                    .getSingleResult();
+            return Optional.of(r);
+        } catch (javax.persistence.NoResultException e) {
+            return Optional.empty();
+        }
+    }
 }

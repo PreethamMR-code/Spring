@@ -30,5 +30,8 @@ public interface RegistrationDao {
 
     void cancel(Registration registration);
 
+    Optional<Registration> findByConferenceAndUser(Long conferenceId,
+                                                   Long userId);
+
 
 }
