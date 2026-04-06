@@ -54,6 +54,59 @@
                     </div>
                 </div>
 
+                <%-- Feedback Section --%>
+                <c:if test="${feedbackCount > 0}">
+                    <div class="card detail-card p-4 mt-3">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold mb-0">Delegate Feedback</h5>
+                            <div>
+                                <span style="font-size:1.3rem;color:#ffc107;">
+                                    <%-- Star display --%>
+                                    <c:forEach begin="1" end="5" var="star">
+                                        <c:choose>
+                                            <c:when test="${avgRating >= star}">★</c:when>
+                                            <c:otherwise>☆</c:otherwise>
+                                        </c:choose>
+                                    </c:forEach>
+                                </span>
+                                <span class="fw-bold ms-1">
+                                    <fmt:formatNumber value="${avgRating}"
+                                                      maxFractionDigits="1"/>
+                                </span>
+                                <span class="text-muted small">
+                                    (${feedbackCount} review<c:if
+                                        test="${feedbackCount != 1}">s</c:if>)
+                                </span>
+                            </div>
+                        </div>
+
+                        <c:forEach var="fb" items="${feedbackList}">
+                            <div class="border-bottom pb-3 mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <strong>${fb.user.fullName}</strong>
+                                    <span style="color:#ffc107;">
+                                        <c:forEach begin="1" end="5" var="s">
+                                            <c:choose>
+                                                <c:when test="${fb.overallRating >= s}">★</c:when>
+                                                <c:otherwise>☆</c:otherwise>
+                                            </c:choose>
+                                        </c:forEach>
+                                    </span>
+                                </div>
+                                <small class="text-muted">
+                                    ${fn:substringBefore(
+                                        fb.submittedAt.toString(),'T')}
+                                </small>
+                                <c:if test="${not empty fb.comments}">
+                                    <p class="mb-0 mt-1 text-muted small">
+                                        ${fb.comments}
+                                    </p>
+                                </c:if>
+                            </div>
+                        </c:forEach>
+                    </div>
+                </c:if>
+
                 <!-- Right: Registration Box -->
                 <div class="col-lg-4">
                     <div class="card detail-card p-4">
