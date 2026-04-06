@@ -107,6 +107,23 @@
                                                      </a>
                                                  </c:if>
 
+                                                 <%-- Feedback button: only after attended, conference ended --%>
+                                                 <c:if test="${attendedIds.contains(reg.id)}">
+                                                     <c:choose>
+                                                         <c:when test="${feedbackSubmitted.contains(reg.conference.id)}">
+                                                             <span class="badge bg-success ms-1">
+                                                                 ✓ Feedback Submitted
+                                                             </span>
+                                                         </c:when>
+                                                         <c:otherwise>
+                                                             <a href="${pageContext.request.contextPath}/delegate/conference/${reg.conference.id}/feedback"
+                                                                class="btn btn-outline-warning btn-sm ms-1">
+                                                                 ⭐ Feedback
+                                                             </a>
+                                                         </c:otherwise>
+                                                     </c:choose>
+                                                 </c:if>
+
                                         <c:if test="${reg.status == 'CANCELLED'}">
                                             <span class="text-muted">—</span>
                                         </c:if>
