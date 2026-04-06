@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -178,6 +179,95 @@
                 'bg-success' : 'bg-secondary'}">
                 Bulk Upload: ${conf.bulkUploadAllowed ? 'Yes' : 'No'}
             </span>
+        </div>
+    </div>
+
+    <%-- Feedback Section for Organizer --%>
+    <div class="card mb-4">
+        <div class="card-header fw-bold d-flex justify-content-between">
+            <span>Delegate Feedback</span>
+            <span class="text-muted">
+                ${feedbackCount} review<c:if
+                    test="${feedbackCount != 1}">s</c:if>
+                <c:if test="${feedbackCount > 0}">
+                    &nbsp;•&nbsp;
+                    Avg: <span style="color:#ffc107;">★</span>
+                    <fmt:formatNumber value="${avgRating}"
+                                      maxFractionDigits="1"/>
+                </c:if>
+            </span>
+        </div>
+        <div class="card-body">
+            <c:choose>
+                <c:when test="${empty feedbackList}">
+                    <p class="text-muted">
+                        No feedback submitted yet.
+                    </p>
+                </c:when>
+                <c:otherwise>
+                    <table class="table table-hover table-sm">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Delegate</th>
+                                <th>Overall</th>
+                                <th>Org.</th>
+                                <th>Content</th>
+                                <th>Speaker</th>
+                                <th>Comments</th>
+                                <th>Date</th>
+                                <th>Public</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <c:forEach var="fb" items="${feedbackList}">
+                                <tr>
+                                    <td>${fb.user.fullName}</td>
+                                    <td>
+                                        <span style="color:#ffc107;">
+                                            <c:forEach begin="1" end="5"
+                                                       var="s">
+                                                <c:choose>
+                                                    <c:when test="${fb.overallRating >= s}">★</c:when>
+                                                    <c:otherwise>☆</c:otherwise>
+                                                </c:choose>
+                                            </c:forEach>
+                                        </span>
+                                    </td>
+                                    <td>${fb.organizationRating != null ?
+                                        fb.organizationRating : '—'}</td>
+                                    <td>${fb.contentRating != null ?
+                                        fb.contentRating : '—'}</td>
+                                    <td>${fb.speakerRating != null ?
+                                        fb.speakerRating : '—'}</td>
+                                    <td class="text-muted small">
+                                        <c:choose>
+                                            <c:when test="${not empty fb.comments}">
+                                                ${fn:substring(fb.comments,0,60)}
+                                                <c:if test="${fn:length(fb.comments) > 60}">...</c:if>
+                                            </c:when>
+                                            <c:otherwise>—</c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                    <td class="small">
+                                        ${fn:substringBefore(
+                                            fb.submittedAt.toString(),'T')}
+                                    </td>
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${fb.public}">
+                                                <span class="badge bg-success">Yes</span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="badge bg-secondary">No</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                        </tbody>
+                    </table>
+                </c:otherwise>
+            </c:choose>
         </div>
     </div>
 
