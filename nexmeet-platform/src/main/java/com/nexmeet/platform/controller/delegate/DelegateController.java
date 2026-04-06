@@ -5,6 +5,7 @@ import com.nexmeet.platform.entity.Registration;
 import com.nexmeet.platform.enums.RegistrationStatus;
 import com.nexmeet.platform.service.AttendanceService;
 import com.nexmeet.platform.service.CertificateService;
+import com.nexmeet.platform.service.FeedbackService;
 import com.nexmeet.platform.service.RegistrationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -37,6 +38,9 @@ public class DelegateController {
     @Autowired
     private AttendanceService attendanceService;
 
+    @Autowired
+    private FeedbackService feedbackService;
+
 
 
     @GetMapping("/dashboard")
@@ -66,6 +70,19 @@ public class DelegateController {
 
         long attendedCount = attendedIds.size();
         long certificateCount = attendedIds.size(); // same — one cert per attendance
+
+        // After building attendedIds set, add this:
+        Set<Long> feedbackSubmitted = new HashSet<>();
+        for (Registration reg : registrations) {
+            if (reg.getStatus() == RegistrationStatus.CONFIRMED &&
+                    attendanceService.hasAttended(reg.getId())) {
+                if (feedbackService.hasSubmittedFeedback(
+                        reg.getConference().getId(), email)) {
+                    feedbackSubmitted.add(reg.getConference().getId());
+                }
+            }
+        }
+        model.addAttribute("feedbackSubmitted", feedbackSubmitted);
 
         model.addAttribute("attendedIds", attendedIds);
         model.addAttribute("attendedCount", attendedCount);
