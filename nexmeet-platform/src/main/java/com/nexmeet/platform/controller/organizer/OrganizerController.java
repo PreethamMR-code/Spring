@@ -6,10 +6,7 @@ import com.nexmeet.platform.dto.OrganizerProfileDto;
 import com.nexmeet.platform.entity.*;
 import com.nexmeet.platform.enums.ConferenceStatus;
 import com.nexmeet.platform.enums.RegistrationStatus;
-import com.nexmeet.platform.service.AttendanceService;
-import com.nexmeet.platform.service.ConferenceService;
-import com.nexmeet.platform.service.RegistrationService;
-import com.nexmeet.platform.service.UserService;
+import com.nexmeet.platform.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -38,6 +35,9 @@ public class OrganizerController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private FeedbackService feedbackService;
 
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication auth) {
@@ -335,6 +335,12 @@ public class OrganizerController {
 
         model.addAttribute("conf", conf);
         model.addAttribute("attendedCount", attendedCount);
+        model.addAttribute("feedbackList",
+                feedbackService.getAllFeedback(id));
+        model.addAttribute("avgRating",
+                feedbackService.getAverageRating(id));
+        model.addAttribute("feedbackCount",
+                feedbackService.getFeedbackCount(id));
         return "organizer/conference-detail";
     }
 

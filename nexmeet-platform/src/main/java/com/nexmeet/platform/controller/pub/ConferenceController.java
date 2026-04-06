@@ -2,6 +2,7 @@ package com.nexmeet.platform.controller.pub;
 
 import com.nexmeet.platform.entity.Conference;
 import com.nexmeet.platform.service.ConferenceService;
+import com.nexmeet.platform.service.FeedbackService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,6 +24,9 @@ public class ConferenceController {
 
     @Autowired
     private ConferenceService conferenceService;
+
+    @Autowired
+    private FeedbackService feedbackService;
 
 
     @GetMapping("/conferences")
@@ -82,7 +86,17 @@ public class ConferenceController {
 
     @GetMapping("/conference/{id}")
     public String conferenceDetail(@PathVariable Long id, Model model){
-        conferenceService.findById(id).ifPresent(c -> model.addAttribute("conference", c));
+        conferenceService.findById(id).ifPresent(c -> {
+
+
+            model.addAttribute("conference", c);
+            model.addAttribute("feedbackList",
+                    feedbackService.getPublicFeedback(id));
+            model.addAttribute("avgRating",
+                    feedbackService.getAverageRating(id));
+            model.addAttribute("feedbackCount",
+                    feedbackService.getFeedbackCount(id));
+        });
         return "pub/conference-detail";
     }
 }
