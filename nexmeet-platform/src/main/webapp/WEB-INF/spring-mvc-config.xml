@@ -89,4 +89,23 @@
         </property>
     </bean>
 
+    <!--
+    NOTIFICATION INTERCEPTOR
+    Adds unreadCount to every page's model so the
+    navbar bell badge always shows the correct count.
+    Must be declared as a bean first, then registered.
+-->
+    <bean id="notificationInterceptor"
+          class="com.nexmeet.platform.config.NotificationInterceptor"/>
+
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <!-- Apply to all URLs -->
+            <mvc:mapping path="/**"/>
+            <!-- Exclude static resources -->
+            <mvc:exclude-mapping path="/static/**"/>
+            <ref bean="notificationInterceptor"/>
+        </mvc:interceptor>
+    </mvc:interceptors>
+
 </beans>
