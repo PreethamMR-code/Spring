@@ -54,6 +54,12 @@
         <intercept-url pattern="/delegate/registration/*/certificate" access="hasRole('ROLE_DELEGATE')"/>
 
         <intercept-url pattern="/delegate/**"         access="hasRole('ROLE_DELEGATE')" />
+        <intercept-url pattern="/delegate/conference/*/feedback"    access="hasRole('ROLE_DELEGATE')"/>
+        <intercept-url pattern="/profile/**"            access="isAuthenticated()"/>
+        <intercept-url pattern="/profile"               access="isAuthenticated()"/>
+
+        <intercept-url pattern="/notifications/**"      access="isAuthenticated()"/>
+        <intercept-url pattern="/notifications"         access="isAuthenticated()"/>
 
         <intercept-url pattern="/**"                  access="isAuthenticated()" />
 
