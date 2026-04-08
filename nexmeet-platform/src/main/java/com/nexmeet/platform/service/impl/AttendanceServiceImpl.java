@@ -8,6 +8,7 @@ import com.nexmeet.platform.entity.Registration;
 import com.nexmeet.platform.entity.User;
 import com.nexmeet.platform.enums.RegistrationStatus;
 import com.nexmeet.platform.service.AttendanceService;
+import com.nexmeet.platform.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +30,9 @@ public class AttendanceServiceImpl implements AttendanceService {
 
     @Autowired
     private UserDao userDao;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @Override
     public String markAttendance(String registrationNumber,
@@ -71,6 +75,15 @@ public class AttendanceServiceImpl implements AttendanceService {
         attendance.setUser(reg.getUser());
         attendance.setCheckedInBy(organizer);
         attendanceDao.save(attendance);
+
+        notificationService.createNotification(
+                reg.getUser().getEmail(),
+                "Attendance Marked",
+                "Your attendance has been marked for: " +
+                        reg.getConference().getTitle() +
+                        ". You can now download your certificate!",
+                "IN_APP"
+        );
 
         return "SUCCESS";
     }
