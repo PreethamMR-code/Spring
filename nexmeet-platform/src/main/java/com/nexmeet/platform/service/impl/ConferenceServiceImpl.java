@@ -6,6 +6,7 @@ import com.nexmeet.platform.entity.Conference;
 import com.nexmeet.platform.entity.User;
 import com.nexmeet.platform.enums.ConferenceStatus;
 import com.nexmeet.platform.service.ConferenceService;
+import com.nexmeet.platform.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +26,9 @@ public class ConferenceServiceImpl implements ConferenceService {
 
     @Autowired
     private UserDao userDao;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @Override
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
@@ -62,6 +66,15 @@ public class ConferenceServiceImpl implements ConferenceService {
         conference.setApprovedBy(admin);
         conference.setApprovedAt(LocalDateTime.now());
         conference.setRejectionReason(null);
+
+        notificationService.createNotification(
+                conference.getOrganizer().getUser().getEmail(),
+                "Conference Approved",
+                "Your conference \"" + conference.getTitle() +
+                        "\" has been approved and is now live!",
+                "IN_APP"
+        );
+
         conferenceDao.update(conference);
     }
 
@@ -72,6 +85,14 @@ public class ConferenceServiceImpl implements ConferenceService {
 
         conference.setStatus(ConferenceStatus.REJECTED);
         conference.setRejectionReason(reason);
+
+        notificationService.createNotification(
+                conference.getOrganizer().getUser().getEmail(),
+                "Conference Rejected",
+                "Your conference \"" + conference.getTitle() +
+                        "\" was rejected. Reason: " + reason,
+                "IN_APP"
+        );
 
         conferenceDao.update(conference);
     }
