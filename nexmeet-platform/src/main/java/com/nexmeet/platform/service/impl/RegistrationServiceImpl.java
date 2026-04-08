@@ -9,6 +9,7 @@ import com.nexmeet.platform.entity.QrCode;
 import com.nexmeet.platform.entity.Registration;
 import com.nexmeet.platform.entity.User;
 import com.nexmeet.platform.enums.RegistrationStatus;
+import com.nexmeet.platform.service.NotificationService;
 import com.nexmeet.platform.service.QrCodeService;
 import com.nexmeet.platform.service.RegistrationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,9 @@ public class RegistrationServiceImpl implements RegistrationService {
 
     @Autowired
     private QrCodeService qrCodeService;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @Override
     @Transactional
@@ -82,6 +86,27 @@ public class RegistrationServiceImpl implements RegistrationService {
         qr.setQrToken(reg.getRegistrationNumber());   // <- was setQrData
         qr.setQrImageBase64(qrCodeService.generateQrCodeBase64(reg.getRegistrationNumber()));
         qrCodeDao.save(qr);
+
+        // Notify delegate
+        notificationService.createNotification(
+                userEmail,
+                "Registration Confirmed",
+                "You have successfully registered for: " +
+                        conference.getTitle() +
+                        ". Your registration number is " +
+                        reg.getRegistrationNumber(),
+                "IN_APP"
+        );
+
+// Notify organizer
+        notificationService.createNotification(
+                conference.getOrganizer().getUser().getEmail(),
+                "New Registration",
+                reg.getUser().getFullName() +
+                        " has registered for your conference: " +
+                        conference.getTitle(),
+                "IN_APP"
+        );
 
         return "SUCCESS";
     }
