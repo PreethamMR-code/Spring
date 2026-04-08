@@ -101,6 +101,44 @@
                             <sec:authentication property="name"/>
                         </span>
                     </li>
+
+                    <sec:authorize access="isAuthenticated()">
+                        <li class="nav-item me-1">
+                            <%--
+                                We need unread count here. Since navbar is included
+                                via <%@ include %> it shares the same request scope.
+                                We use a simple JSTL-friendly approach — link to
+                                notifications page. The count is loaded per-page
+                                via a request attribute set in a common place.
+                                For now we show the bell and rely on the page visit
+                                to show the count. See Step 9 for the count approach.
+                            --%>
+                            <a href="${pageContext.request.contextPath}/notifications"
+                               class="nav-link text-white position-relative"
+                               title="Notifications">
+                                🔔
+                                <c:if test="${unreadCount > 0}">
+                                    <span class="position-absolute top-0 start-100
+                                                 translate-middle badge rounded-pill
+                                                 bg-danger"
+                                          style="font-size:0.6rem; padding: 3px 5px;">
+                                        ${unreadCount}
+                                    </span>
+                                </c:if>
+                            </a>
+                        </li>
+                    </sec:authorize>
+
+                    <sec:authorize access="isAuthenticated()">
+                        <li class="nav-item me-2">
+                            <a href="${pageContext.request.contextPath}/profile"
+                               class="nav-link text-white-50">
+                                My Profile
+                            </a>
+                        </li>
+                    </sec:authorize>
+
+
                     <li class="nav-item">
                         <form action="${pageContext.request.contextPath}/logout"
                               method="post" class="d-inline">
