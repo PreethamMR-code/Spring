@@ -6,6 +6,7 @@ import com.nexmeet.platform.entity.*;
 import com.nexmeet.platform.enums.ConferenceStatus;
 import com.nexmeet.platform.enums.RegistrationStatus;
 import com.nexmeet.platform.service.FeedbackService;
+import com.nexmeet.platform.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +40,9 @@ public class FeedbackServiceImpl implements FeedbackService {
 
     @Autowired
     private OrganizerDao organizerDao;
+
+    @Autowired
+    private NotificationService notificationService;
 
 
     @Override
@@ -108,6 +112,15 @@ public class FeedbackServiceImpl implements FeedbackService {
 
         // Update organizer average rating
         updateOrganizerRating(conf.getOrganizer().getId());
+
+        notificationService.createNotification(
+                conf.getOrganizer().getUser().getEmail(),
+                "New Feedback Received",
+                user.getFullName() + " submitted " +
+                        dto.getOverallRating() + "-star feedback for: " +
+                        conf.getTitle(),
+                "IN_APP"
+        );
 
         return "SUCCESS";
     }
