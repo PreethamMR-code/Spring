@@ -117,4 +117,31 @@ public class UserServiceImpl implements UserService {
     public long countAllUsers() {
         return userDao.countAll();
     }
+
+    @Override
+    public void updateProfile(String email, String fullName, String phone) {
+        User user = userDao.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setFullName(fullName);
+        user.setPhone(phone);
+        userDao.update(user);
+    }
+
+    @Override
+    public boolean changePassword(String email, String currentPassword, String newPassword) {
+        User user = userDao.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Verify current password matches
+        if (!passwordEncoder.matches(currentPassword,
+                user.getPasswordHash())) {
+            return false;
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userDao.update(user);
+        return true;
+
+
+    }
 }

@@ -22,4 +22,9 @@ public interface UserService {
     List<User> getAllUsers();
 
     long countAllUsers();
+
+    void updateProfile(String email, String fullName, String phone);
+
+    boolean changePassword(String email, String currentPassword,
+                           String newPassword);
 }
