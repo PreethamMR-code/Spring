@@ -47,6 +47,14 @@ A full-stack conference management platform built with **Spring MVC**, **Hiberna
 ### 🏛️ Institution (ROLE_INSTITUTIONAL_ADMIN)
 - Institutional admin dashboard (bulk upload — planned)
 
+### Recent additions (Phase 21-25)
+- Organizer self-registration with profile setup form
+- Profile page for all roles with password change
+- Feedback and star rating system (1-5 stars, post-conference)
+- In-app notification system with bell badge on navbar
+- Admin organizer verification management
+- Real stats on home page (live conference and user counts)
+
 ---
 
 ## Core Flows
