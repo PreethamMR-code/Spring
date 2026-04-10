@@ -1,9 +1,12 @@
 package com.nexmeet.platform.controller.admin;
 
 
+import com.nexmeet.platform.dao.OrganizerDao;
 import com.nexmeet.platform.entity.Conference;
 import com.nexmeet.platform.enums.ConferenceStatus;
+import com.nexmeet.platform.enums.VerificationStatus;
 import com.nexmeet.platform.service.ConferenceService;
+import com.nexmeet.platform.service.NotificationService;
 import com.nexmeet.platform.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -24,12 +27,29 @@ public class AdminController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private OrganizerDao organizerDao;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication auth) {
-        List<Conference> pending = conferenceService.getPendingConferences();
+        List<Conference> pending =
+                conferenceService.getPendingConferences();
         long totalUsers = userService.countAllUsers();
-        long activeConferences = conferenceService.countByStatus(ConferenceStatus.APPROVED);
+        long activeConferences = conferenceService
+                .countByStatus(ConferenceStatus.APPROVED);
+
+        // Add currentUser for welcome message
+        userService.findByEmail(auth.getName())
+                .ifPresent(u -> model.addAttribute("currentUser", u));
+
+        long pendingOrganizersCount = organizerDao
+                .findByVerificationStatus(VerificationStatus.PENDING).size();
+
+        model.addAttribute("pendingOrganizersCount",
+                pendingOrganizersCount);
 
         model.addAttribute("pendingConferences", pending);
         model.addAttribute("pendingCount", pending.size());
@@ -37,7 +57,6 @@ public class AdminController {
         model.addAttribute("activeConferences", activeConferences);
         return "admin/dashboard";
     }
-
     @PostMapping("/conference/{id}/approve")
     public String approve(@PathVariable Long id,
                           Authentication auth,
@@ -84,5 +103,67 @@ public class AdminController {
     public String allUsers(Model model) {
         model.addAttribute("users", userService.getAllUsers());
         return "admin/users";
+    }
+
+
+
+    @GetMapping("/organizers")
+    public String allOrganizers(Model model) {
+        model.addAttribute("pendingOrganizers",
+                organizerDao.findByVerificationStatus(
+                        VerificationStatus.PENDING));
+        model.addAttribute("approvedOrganizers",
+                organizerDao.findByVerificationStatus(
+                        VerificationStatus.APPROVED));
+        return "admin/organizers";
+    }
+
+    @PostMapping("/organizer/{id}/approve")
+    public String approveOrganizer(
+            @PathVariable Long id,
+            Authentication auth,
+            RedirectAttributes flash) {
+        organizerDao.findByOrganizerId(id).ifPresent(org -> {
+            org.setVerificationStatus(VerificationStatus.APPROVED);
+            org.setVerifiedAt(java.time.LocalDateTime.now());
+            userService.findByEmail(auth.getName())
+                    .ifPresent(org::setVerifiedBy);
+            organizerDao.update(org);
+
+            // Notify organizer
+            notificationService.createNotification(
+                    org.getUser().getEmail(),
+                    "Account Verified",
+                    "Your organizer account has been verified! " +
+                            "You can now create and submit conferences.",
+                    "IN_APP"
+            );
+        });
+        flash.addFlashAttribute("success",
+                "Organizer approved successfully!");
+        return "redirect:/admin/organizers";
+    }
+
+    @PostMapping("/organizer/{id}/reject")
+    public String rejectOrganizer(
+            @PathVariable Long id,
+            @RequestParam String reason,
+            RedirectAttributes flash) {
+        organizerDao.findByOrganizerId(id).ifPresent(org -> {
+            org.setVerificationStatus(VerificationStatus.REJECTED);
+            org.setRejectionReason(reason);
+            organizerDao.update(org);
+
+            notificationService.createNotification(
+                    org.getUser().getEmail(),
+                    "Account Verification Rejected",
+                    "Your organizer account was not verified. " +
+                            "Reason: " + reason,
+                    "IN_APP"
+            );
+        });
+        flash.addFlashAttribute("error",
+                "Organizer rejected.");
+        return "redirect:/admin/organizers";
     }
 }
