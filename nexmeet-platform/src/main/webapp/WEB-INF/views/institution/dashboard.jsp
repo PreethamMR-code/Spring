@@ -13,7 +13,8 @@
 <div class="container mt-5">
     <div class="card p-4 shadow-sm">
         <h2 class="text-warning">Institution Dashboard</h2>
-        <p>Welcome, <strong><sec:authentication property="name"/></strong></p>
+        <p>Welcome, <strong>${currentUser.fullName}</strong></p>
+        <p class="text-muted small">${currentUser.email}</p>
         <p class="text-muted">Role: INSTITUTIONAL_ADMIN</p>
         <hr>
         <div class="row g-3">

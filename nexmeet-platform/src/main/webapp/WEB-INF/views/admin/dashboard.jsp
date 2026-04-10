@@ -16,7 +16,8 @@
 <div class="container mt-4">
     <div class="card p-4 shadow-sm">
         <h2 class="text-danger">Admin Dashboard</h2>
-        <p>Welcome, <strong><sec:authentication property="name"/></strong></p>
+        <p>Welcome, <strong>${currentUser.fullName}</strong></p>
+        <p class="text-muted small">${currentUser.email}</p>
         <p class="text-muted">Role: SUPER_ADMIN</p>
 
         <c:if test="${not empty success}">
@@ -54,6 +55,14 @@
                     <h2 class="text-warning">${revenue}</h2>
                 </div>
             </div>
+
+            <div class="col-md-3">
+                <div class="card text-center p-3 border-info">
+                    <h5>Pending Organizers</h5>
+                    <h2 class="text-info">${pendingOrganizersCount}</h2>
+                </div>
+            </div>
+
         </div>
 
         <div class="d-flex gap-2 mb-4">
@@ -104,6 +113,9 @@
                                     <!-- Reject -->
                                     <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
                                             data-bs-target="#rejectModal${conf.id}">Reject</button>
+
+                                    <a href="${pageContext.request.contextPath}/admin/organizers"
+                                           class="btn btn-outline-info">Organizer Verification</a>
 
                                     <!-- Reject Modal -->
                                     <div class="modal fade" id="rejectModal${conf.id}" tabindex="-1">

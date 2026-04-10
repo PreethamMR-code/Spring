@@ -24,7 +24,8 @@
     <div class="card p-4 shadow-sm">
         <h2 class="text-success">Organizer Dashboard</h2>
         <p>Welcome, <strong><sec:authentication property="name"/></strong></p>
-        <p class="text-muted">Role: ORGANIZER</p>
+        <p>Welcome, <strong>${currentUser.fullName}</strong></p>
+        <p class="text-muted small">${currentUser.email}</p>
         <hr>
         <div class="row g-3">
             <div class="col-md-4">

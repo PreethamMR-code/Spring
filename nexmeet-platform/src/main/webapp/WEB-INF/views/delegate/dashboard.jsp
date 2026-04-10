@@ -15,7 +15,8 @@
     <div class="container mt-4">
         <div class="card p-4 shadow-sm">
             <h2 class="text-primary">Delegate Dashboard</h2>
-            <p>Welcome, <strong>${email}</strong></p>
+            <p>Welcome, <strong>${currentUser.fullName}</strong></p>
+            <p class="text-muted small">${currentUser.email}</p>
             <p class="text-muted">Role: DELEGATE</p>
 
             <c:if test="${not empty success}">
