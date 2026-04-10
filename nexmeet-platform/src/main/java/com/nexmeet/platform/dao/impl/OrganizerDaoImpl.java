@@ -2,12 +2,14 @@ package com.nexmeet.platform.dao.impl;
 
 import com.nexmeet.platform.dao.OrganizerDao;
 import com.nexmeet.platform.entity.Organizer;
+import com.nexmeet.platform.enums.VerificationStatus;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.NoResultException;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -66,6 +68,20 @@ public class OrganizerDaoImpl implements OrganizerDao {
         } catch (javax.persistence.NoResultException e) {
             return Optional.empty();
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Organizer> findByVerificationStatus(
+            VerificationStatus status) {
+        return sessionFactory.getCurrentSession()
+                .createQuery(
+                        "FROM Organizer o " +
+                                "WHERE o.verificationStatus = :status " +
+                                "ORDER BY o.createdAt DESC",
+                        Organizer.class)
+                .setParameter("status", status)
+                .getResultList();
     }
 
 }
