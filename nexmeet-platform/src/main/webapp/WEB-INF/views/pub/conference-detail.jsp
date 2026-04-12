@@ -134,6 +134,28 @@
                             </div>
                         </c:if>
 
+                        <%-- Streaming link for online/hybrid --%>
+                        <c:if test="${conference.mode == 'ONLINE' ||
+                                     conference.mode == 'HYBRID'}">
+                            <c:if test="${not empty conference.streamingLink}">
+                                <div class="info-box mb-3">
+                                    <strong>🔗 Streaming Link</strong><br/>
+                                    <sec:authorize access="isAuthenticated()">
+                                        <a href="${conference.streamingLink}"
+                                           target="_blank"
+                                           class="text-break small">
+                                            ${conference.streamingLink}
+                                        </a>
+                                    </sec:authorize>
+                                    <sec:authorize access="isAnonymous()">
+                                        <span class="text-muted small">
+                                            Login to view streaming link
+                                        </span>
+                                    </sec:authorize>
+                                </div>
+                            </c:if>
+                        </c:if>
+
                         <div class="info-box mb-3">
                             <strong>👥 Seats</strong><br>
                             ${conference.registeredCount} / ${conference.maxDelegates} registered
