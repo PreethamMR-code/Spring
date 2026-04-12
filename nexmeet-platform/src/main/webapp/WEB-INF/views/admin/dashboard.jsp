@@ -65,11 +65,20 @@
 
         </div>
 
-        <div class="d-flex gap-2 mb-4">
+        <div class="d-flex gap-2 mb-4 flex-wrap">
             <a href="${pageContext.request.contextPath}/admin/conferences"
                class="btn btn-outline-danger">All Conferences</a>
             <a href="${pageContext.request.contextPath}/admin/users"
                class="btn btn-outline-primary">All Users</a>
+            <a href="${pageContext.request.contextPath}/admin/organizers"
+               class="btn btn-outline-info">
+                Organizer Verification
+                <c:if test="${pendingOrganizersCount > 0}">
+                    <span class="badge bg-danger ms-1">
+                        ${pendingOrganizersCount}
+                    </span>
+                </c:if>
+            </a>
         </div>
 
         <!-- Pending Conferences Table -->
@@ -114,8 +123,7 @@
                                     <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
                                             data-bs-target="#rejectModal${conf.id}">Reject</button>
 
-                                    <a href="${pageContext.request.contextPath}/admin/organizers"
-                                           class="btn btn-outline-info">Organizer Verification</a>
+
 
                                     <!-- Reject Modal -->
                                     <div class="modal fade" id="rejectModal${conf.id}" tabindex="-1">
