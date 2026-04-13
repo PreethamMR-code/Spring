@@ -29,26 +29,40 @@
                 </li>
 
                 <!-- Admin Links -->
-                <sec:authorize access="hasRole('ROLE_SUPER_ADMIN')">
-                    <li class="nav-item">
-                        <a class="nav-link"
-                           href="${pageContext.request.contextPath}/admin/dashboard">
-                            Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link"
-                           href="${pageContext.request.contextPath}/admin/conferences">
-                            All Conferences
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link"
-                           href="${pageContext.request.contextPath}/admin/users">
-                            All Users
-                        </a>
-                    </li>
-                </sec:authorize>
+               <sec:authorize access="hasRole('ROLE_SUPER_ADMIN')">
+                   <li class="nav-item">
+                       <a class="nav-link"
+                          href="${pageContext.request.contextPath}/admin/dashboard">
+                           Dashboard
+                       </a>
+                   </li>
+                   <li class="nav-item">
+                       <a class="nav-link"
+                          href="${pageContext.request.contextPath}/admin/conferences">
+                           All Conferences
+                       </a>
+                   </li>
+                   <li class="nav-item">
+                       <a class="nav-link"
+                          href="${pageContext.request.contextPath}/admin/users">
+                           All Users
+                       </a>
+                   </li>
+                   <li class="nav-item">
+                       <a class="nav-link position-relative"
+                          href="${pageContext.request.contextPath}/admin/organizers">
+                           Organizers
+                           <c:if test="${pendingOrganizersCount > 0}">
+                               <span class="position-absolute top-0 start-100
+                                            translate-middle badge rounded-pill
+                                            bg-danger"
+                                     style="font-size:0.6rem; padding: 3px 5px;">
+                                   ${pendingOrganizersCount}
+                               </span>
+                           </c:if>
+                       </a>
+                   </li>
+               </sec:authorize>
 
                 <!-- Organizer Links -->
                 <sec:authorize access="hasRole('ROLE_ORGANIZER')">
