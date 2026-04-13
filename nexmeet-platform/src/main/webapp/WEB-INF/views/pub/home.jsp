@@ -81,8 +81,10 @@
     <div class="container text-center">
         <div class="row g-4">
             <div class="col-md-3">
-                <div class="stat-number text-primary">∞</div>
-                <p class="text-muted">Conferences Hosted</p>
+                <div class="stat-number text-primary">
+                    ${totalConferences}
+                </div>
+                <p class="text-muted">Active Conferences</p>
             </div>
             <div class="col-md-3">
                 <div class="stat-number text-success">QR</div>
@@ -93,8 +95,10 @@
                 <p class="text-muted">Instant Tickets</p>
             </div>
             <div class="col-md-3">
-                <div class="stat-number text-danger">4</div>
-                <p class="text-muted">Role-Based Access</p>
+                <div class="stat-number text-danger">
+                    ${totalUsers}
+                </div>
+                <p class="text-muted">Registered Users</p>
             </div>
         </div>
     </div>
