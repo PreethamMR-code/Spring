@@ -3,10 +3,7 @@ package com.nexmeet.platform.controller.delegate;
 import com.nexmeet.platform.dao.QrCodeDao;
 import com.nexmeet.platform.entity.Registration;
 import com.nexmeet.platform.enums.RegistrationStatus;
-import com.nexmeet.platform.service.AttendanceService;
-import com.nexmeet.platform.service.CertificateService;
-import com.nexmeet.platform.service.FeedbackService;
-import com.nexmeet.platform.service.RegistrationService;
+import com.nexmeet.platform.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -41,6 +38,9 @@ public class DelegateController {
     @Autowired
     private FeedbackService feedbackService;
 
+    @Autowired
+    private UserService userService;
+
 
 
     @GetMapping("/dashboard")
@@ -50,6 +50,9 @@ public class DelegateController {
         long confirmedCount = registrations.stream()
                 .filter(r -> r.getStatus() == RegistrationStatus.CONFIRMED)
                 .count();
+
+        userService.findByEmail(email)
+                .ifPresent(u -> model.addAttribute("currentUser", u));
 
         // Load QR codes mapped by registration id
         Map<Long, String> qrCodes = new HashMap<>();
