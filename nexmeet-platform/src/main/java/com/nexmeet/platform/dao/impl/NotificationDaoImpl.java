@@ -30,11 +30,13 @@ public class NotificationDaoImpl implements NotificationDao {
         return sessionFactory.getCurrentSession()
                 .createQuery(
                         "FROM Notification n " +
-                                "WHERE n.user.email = :email " +
+                                "WHERE n.user.id = (" +
+                                "  SELECT u.id FROM User u WHERE u.email = :email" +
+                                ") " +
                                 "ORDER BY n.sentAt DESC",
                         Notification.class)
                 .setParameter("email", email)
-                .setMaxResults(50) // cap at 50 most recent
+                .setMaxResults(50)
                 .getResultList();
     }
 
@@ -44,8 +46,10 @@ public class NotificationDaoImpl implements NotificationDao {
         return sessionFactory.getCurrentSession()
                 .createQuery(
                         "SELECT COUNT(n) FROM Notification n " +
-                                "WHERE n.user.email = :email " +
-                                "AND n.isRead = false",
+                                "WHERE n.isRead = false " +
+                                "AND n.user.id = (" +
+                                "  SELECT u.id FROM User u WHERE u.email = :email" +
+                                ")",
                         Long.class)
                 .setParameter("email", email)
                 .getSingleResult();
@@ -61,12 +65,29 @@ public class NotificationDaoImpl implements NotificationDao {
 
     @Override
     public void markAllReadByUserEmail(String email) {
+
+        /*
+         * HQL UPDATE cannot use implicit joins like n.user.email
+         * because Hibernate generates broken SQL with CROSS JOIN.
+         *
+         * Fix: use a subquery to find the user id first,
+         * then update by user_id which is a direct column —
+         * no join needed.
+         */
+
         sessionFactory.getCurrentSession()
                 .createQuery(
                         "UPDATE Notification n SET n.isRead = true " +
-                                "WHERE n.user.email = :email " +
-                                "AND n.isRead = false")
+                                "WHERE n.isRead = false " +
+                                "AND n.user.id = (" +
+                                "  SELECT u.id FROM User u WHERE u.email = :email" +
+                                ")")
                 .setParameter("email", email)
                 .executeUpdate();
+    }
+
+    @Override
+    public void update(Notification notification) {
+        sessionFactory.getCurrentSession().update(notification);
     }
 }
