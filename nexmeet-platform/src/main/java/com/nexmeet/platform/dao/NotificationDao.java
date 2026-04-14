@@ -17,4 +17,6 @@ public interface NotificationDao {
 
     void markAllReadByUserEmail(String email);
 
+    void update(Notification notification);
+
 }
