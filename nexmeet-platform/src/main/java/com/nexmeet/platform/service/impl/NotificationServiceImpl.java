@@ -24,8 +24,8 @@ public class NotificationServiceImpl implements NotificationService {
     private UserDao userDao;
 
     // SessionFactory needed for markAsRead
-    @Autowired
-    private SessionFactory sessionFactory;
+//    @Autowired
+//    private SessionFactory sessionFactory;
 
     @Override
     public void createNotification(String userEmail, String title, String message, String type) {
@@ -60,13 +60,12 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public void markAsRead(Long notificationId, String userEmail) {
+    public void markAsRead(Long notificationId,
+                           String userEmail) {
         notificationDao.findById(notificationId).ifPresent(n -> {
-            // Security: only mark own notifications
             if (n.getUser().getEmail().equals(userEmail)) {
                 n.setRead(true);
-                // update via session — entity is managed
-                sessionFactory.getCurrentSession().update(n);
+                notificationDao.update(n);
             }
         });
     }
