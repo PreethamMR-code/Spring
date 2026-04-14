@@ -21,11 +21,25 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/*
+ * Adds unreadCount to every page model so navbar bell badge
+ * always shows the correct number.
+ *
+ * NotificationService is injected via setter (not @Autowired)
+ * because this interceptor is declared as a <bean> in XML,
+ * not component-scanned. XML injection uses setter methods.
+ */
 
 public class NotificationInterceptor implements HandlerInterceptor {
 
-    @Autowired
+
+    // Injected via XML setter injection — NOT @Autowired
     private NotificationService notificationService;
+
+    public void setNotificationService(
+            NotificationService notificationService) {
+        this.notificationService = notificationService;
+    }
 
     @Override
     public void postHandle(HttpServletRequest request,
@@ -33,25 +47,27 @@ public class NotificationInterceptor implements HandlerInterceptor {
                            Object handler,
                            ModelAndView modelAndView) {
 
-        // Only add to page requests (not redirects or REST)
         if (modelAndView == null) return;
         if (modelAndView.getViewName() == null) return;
-        if (modelAndView.getViewName().startsWith("redirect:")) return;
+        if (modelAndView.getViewName()
+                .startsWith("redirect:")) return;
 
-        Authentication auth = SecurityContextHolder.getContext()
-                .getAuthentication();
+        Authentication auth = SecurityContextHolder
+                .getContext().getAuthentication();
 
         if (auth != null && auth.isAuthenticated() &&
-                !"anonymousUser".equals(auth.getPrincipal())) {
+                !"anonymousUser".equals(
+                        auth.getPrincipal().toString())) {
             try {
                 long count = notificationService
                         .getUnreadCount(auth.getName());
                 modelAndView.addObject("unreadCount", count);
             } catch (Exception e) {
-                // Silently ignore — don't break pages
-                // if notification service fails
+                // Never crash pages due to notification error
                 modelAndView.addObject("unreadCount", 0L);
             }
+        } else {
+            modelAndView.addObject("unreadCount", 0L);
         }
     }
 }
