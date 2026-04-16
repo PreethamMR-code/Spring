@@ -53,6 +53,9 @@ public class OrganizerController {
             model.addAttribute("pendingApproval", pendingApproval);
         }
 
+        userService.findByEmail(email)
+                .ifPresent(u -> model.addAttribute("currentUser", u));
+
         model.addAttribute("organizer", email);
         return "organizer/dashboard";
     }
