@@ -38,4 +38,8 @@ public interface ConferenceService {
     List<Conference> findByStatus(ConferenceStatus conferenceStatus);
 
     void update(Conference conf);
+
+    void markAsCompleted(Long conferenceId, String userEmail);
+
+    void autoCompleteExpiredConferences();
 }

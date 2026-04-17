@@ -1,10 +1,13 @@
 package com.nexmeet.platform.service.impl;
 
 import com.nexmeet.platform.dao.ConferenceDao;
+import com.nexmeet.platform.dao.RegistrationDao;
 import com.nexmeet.platform.dao.UserDao;
 import com.nexmeet.platform.entity.Conference;
+import com.nexmeet.platform.entity.Registration;
 import com.nexmeet.platform.entity.User;
 import com.nexmeet.platform.enums.ConferenceStatus;
+import com.nexmeet.platform.enums.RegistrationStatus;
 import com.nexmeet.platform.service.ConferenceService;
 import com.nexmeet.platform.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +32,10 @@ public class ConferenceServiceImpl implements ConferenceService {
 
     @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private RegistrationDao registrationDao;
+
 
     @Override
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
@@ -135,5 +142,55 @@ public class ConferenceServiceImpl implements ConferenceService {
     @Override
     public void update(Conference conf) {
         conferenceDao.update(conf);
+    }
+
+    @Override
+    public void markAsCompleted(Long conferenceId,
+                                String userEmail) {
+        Conference conf = conferenceDao.findById(conferenceId)
+                .orElseThrow(() ->
+                        new RuntimeException("Conference not found"));
+
+        if (conf.getStatus() != ConferenceStatus.APPROVED) {
+            throw new RuntimeException(
+                    "Only APPROVED conferences can be completed.");
+        }
+
+        conf.setStatus(ConferenceStatus.COMPLETED);
+        conferenceDao.update(conf);
+
+        // Notify all confirmed registered delegates
+        List<Registration> registrations =
+                registrationDao.findByConferenceId(conferenceId);
+
+        for (Registration reg : registrations) {
+            if (reg.getStatus() == RegistrationStatus.CONFIRMED) {
+                notificationService.createNotification(
+                        reg.getUser().getEmail(),
+                        "Conference Completed",
+                        "\"" + conf.getTitle() + "\" has ended. " +
+                                "You can now submit your feedback" +
+                                (conf.isCertificateEnabled() ?
+                                        " and download your certificate." : "."),
+                        "IN_APP"
+                );
+            }
+        }
+    }
+
+    @Override
+    public void autoCompleteExpiredConferences() {
+        /*
+         * Find all APPROVED conferences whose end date
+         * has already passed and mark them COMPLETED.
+         * Called on dashboard load — lightweight check.
+         */
+        List<Conference> expired = conferenceDao
+                .findExpiredApproved();
+
+        for (Conference conf : expired) {
+            conf.setStatus(ConferenceStatus.COMPLETED);
+            conferenceDao.update(conf);
+        }
     }
 }
