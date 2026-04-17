@@ -132,4 +132,22 @@ public class ConferenceDaoImpl implements ConferenceDao {
                 .setParameter("status", status)
                 .getSingleResult();
     }
+
+    @Override
+    public List<Conference> findExpiredApproved() {
+        /*
+         * Find conferences that are still APPROVED but
+         * their end_date has already passed.
+         * These should be moved to COMPLETED automatically.
+         */
+        return getCurrentSession()
+                .createQuery(
+                        "FROM Conference c " +
+                                "WHERE c.status = :status " +
+                                "AND c.endDate < :now",
+                        Conference.class)
+                .setParameter("status", ConferenceStatus.APPROVED)
+                .setParameter("now", LocalDateTime.now())
+                .getResultList();
+    }
 }
