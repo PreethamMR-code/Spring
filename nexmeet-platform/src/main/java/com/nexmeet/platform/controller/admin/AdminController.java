@@ -35,6 +35,10 @@ public class AdminController {
 
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication auth) {
+
+        // Auto-complete any expired conferences first
+        conferenceService.autoCompleteExpiredConferences();
+
         List<Conference> pending =
                 conferenceService.getPendingConferences();
         long totalUsers = userService.countAllUsers();
@@ -77,13 +81,20 @@ public class AdminController {
     }
 
     @GetMapping("/conference/{id}")
-    public String viewConference(@PathVariable Long id, Model model) {
+    public String viewConference(@PathVariable Long id,
+                                 Model model) {
         Conference conf = conferenceService.findById(id)
-                .orElseThrow(() -> new RuntimeException("Not found"));
+                .orElseThrow(() ->
+                        new RuntimeException("Not found"));
         model.addAttribute("conf", conf);
+
+        // Pass flag whether end date has passed
+        boolean endDatePassed = conf.getEndDate()
+                .isBefore(java.time.LocalDateTime.now());
+        model.addAttribute("endDatePassed", endDatePassed);
+
         return "admin/conference-detail";
     }
-
     @GetMapping("/conferences")
     public String allConferences(@RequestParam(required = false) String status,
                                  Model model) {
@@ -165,5 +176,24 @@ public class AdminController {
         flash.addFlashAttribute("error",
                 "Organizer rejected.");
         return "redirect:/admin/organizers";
+    }
+
+//    Update AdminController to auto-complete and add manual button     //auto complete done in dashboard method
+//    Adding manual complete endpoint
+    @PostMapping("/conference/{id}/complete")
+    public String completeConference(
+            @PathVariable Long id,
+            Authentication auth,
+            RedirectAttributes flash) {
+        try {
+            conferenceService.markAsCompleted(id, auth.getName());
+            flash.addFlashAttribute("success",
+                    "Conference marked as completed. " +
+                            "Delegates have been notified.");
+        } catch (Exception e) {
+            flash.addFlashAttribute("error",
+                    "Could not complete: " + e.getMessage());
+        }
+        return "redirect:/admin/conference/" + id;
     }
 }
