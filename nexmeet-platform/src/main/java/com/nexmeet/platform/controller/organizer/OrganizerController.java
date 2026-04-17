@@ -41,6 +41,10 @@ public class OrganizerController {
 
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication auth) {
+
+        // Auto-complete any of this organizer's expired conferences
+        conferenceService.autoCompleteExpiredConferences();
+
         String email = auth.getName();
         Optional<Organizer> organizerOpt = organizerDao.findByUserEmail(email);
 
@@ -336,6 +340,10 @@ public class OrganizerController {
         long registeredCount = conf.getRegisteredCount();
         long attendedCount = attendanceService.getAttendanceByConference(id).size();
 
+        boolean endDatePassed = conf.getEndDate()
+                .isBefore(java.time.LocalDateTime.now());
+        model.addAttribute("endDatePassed", endDatePassed);
+
         model.addAttribute("conf", conf);
         model.addAttribute("attendedCount", attendedCount);
         model.addAttribute("feedbackList",
@@ -389,5 +397,36 @@ public class OrganizerController {
             flash.addFlashAttribute("error", "Error: " + e.getMessage());
             return "redirect:/organizer/profile/setup";
         }
+    }
+
+    @PostMapping("/conference/{id}/complete")
+    public String completeConference(
+            @PathVariable Long id,
+            Authentication auth,
+            RedirectAttributes flash) {
+        try {
+            // Security: only owning organizer
+            Conference conf = conferenceService.findById(id)
+                    .orElseThrow(() ->
+                            new RuntimeException("Not found"));
+
+            if (!conf.getOrganizer().getUser()
+                    .getEmail().equals(auth.getName())) {
+                flash.addFlashAttribute("error",
+                        "Unauthorized.");
+                return "redirect:/organizer/conferences";
+            }
+
+            conferenceService.markAsCompleted(
+                    id, auth.getName());
+            flash.addFlashAttribute("success",
+                    "Conference marked as completed! " +
+                            "Delegates have been notified.");
+
+        } catch (Exception e) {
+            flash.addFlashAttribute("error",
+                    "Error: " + e.getMessage());
+        }
+        return "redirect:/organizer/conference/" + id;
     }
 }
