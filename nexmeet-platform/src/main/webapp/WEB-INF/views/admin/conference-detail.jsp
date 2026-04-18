@@ -152,6 +152,41 @@
         </div>
     </c:if>
 
+    <c:if test="${conf.status == 'APPROVED'}">
+        <div class="mt-3">
+            <c:choose>
+                <c:when test="${endDatePassed}">
+                    <form action="${pageContext.request.contextPath}/admin/conference/${conf.id}/complete"
+                          method="post" class="d-inline">
+                        <input type="hidden"
+                               name="${_csrf.parameterName}"
+                               value="${_csrf.token}"/>
+                        <button class="btn btn-secondary btn-lg">
+                            ✓ Mark as Completed
+                        </button>
+                    </form>
+                    <small class="text-muted ms-2">
+                        Conference end date has passed.
+                    </small>
+                </c:when>
+                <c:otherwise>
+                    <div class="alert alert-info py-2 mt-2">
+                        Conference is live and active.
+                        Completion option appears after end date passes.
+                    </div>
+                </c:otherwise>
+            </c:choose>
+        </div>
+    </c:if>
+
+    <c:if test="${conf.status == 'COMPLETED'}">
+        <div class="alert alert-secondary mt-3">
+            This conference is <strong>COMPLETED</strong>.
+            Delegates can now submit feedback and
+            download certificates.
+        </div>
+    </c:if>
+
     <c:if test="${conf.status != 'SUBMITTED'}">
         <div class="alert alert-info mt-3">
             This conference has already been <strong>${conf.status}</strong>.
