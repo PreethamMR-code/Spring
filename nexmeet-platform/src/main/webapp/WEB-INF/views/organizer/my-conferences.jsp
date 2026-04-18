@@ -81,6 +81,9 @@
                                     <c:when test="${conf.status == 'REJECTED'}">
                                         <span class="badge bg-danger">REJECTED</span>
                                     </c:when>
+                                    <c:when test="${conf.status == 'COMPLETED'}">
+                                        <span class="badge bg-dark">COMPLETED</span>
+                                    </c:when>
                                 </c:choose>
                             </td>
                             <td>
