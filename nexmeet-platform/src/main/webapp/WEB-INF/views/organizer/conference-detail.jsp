@@ -83,6 +83,35 @@
         </div>
     </c:if>
 
+    <%-- Completion section --%>
+    <c:if test="${conf.status == 'APPROVED' && endDatePassed}">
+        <div class="alert alert-warning d-flex
+                    justify-content-between align-items-center">
+            <span>
+                <strong>Conference ended.</strong>
+                Mark it as completed to notify delegates
+                and unlock certificates.
+            </span>
+            <form action="${pageContext.request.contextPath}/organizer/conference/${conf.id}/complete"
+                  method="post" class="ms-3">
+                <input type="hidden"
+                       name="${_csrf.parameterName}"
+                       value="${_csrf.token}"/>
+                <button class="btn btn-warning btn-sm fw-bold">
+                    Mark as Completed
+                </button>
+            </form>
+        </div>
+    </c:if>
+
+    <c:if test="${conf.status == 'COMPLETED'}">
+        <div class="alert alert-success">
+            ✅ This conference is <strong>COMPLETED</strong>.
+            Delegates can download certificates and
+            submit feedback.
+        </div>
+    </c:if>
+
     <!-- Conference Details -->
     <div class="card mb-3">
         <div class="card-header fw-bold bg-success text-white">
