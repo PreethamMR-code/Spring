@@ -12,6 +12,7 @@ package com.nexmeet.platform.config;
  */
 
 import com.nexmeet.platform.service.NotificationService;
+import com.nexmeet.platform.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -36,9 +37,16 @@ public class NotificationInterceptor implements HandlerInterceptor {
     // Injected via XML setter injection — NOT @Autowired
     private NotificationService notificationService;
 
+    private UserService userService;
+
+
     public void setNotificationService(
             NotificationService notificationService) {
         this.notificationService = notificationService;
+    }
+
+    public void setUserService(UserService userService) {
+        this.userService = userService;
     }
 
     @Override
@@ -59,11 +67,21 @@ public class NotificationInterceptor implements HandlerInterceptor {
                 !"anonymousUser".equals(
                         auth.getPrincipal().toString())) {
             try {
+                // Add unread notification count
                 long count = notificationService
                         .getUnreadCount(auth.getName());
                 modelAndView.addObject("unreadCount", count);
+
+                // Add currentUser for navbar name display
+                // Only add if controller hasn't already set it
+                if (!modelAndView.getModel()
+                        .containsKey("currentUser")) {
+                    userService.findByEmail(auth.getName())
+                            .ifPresent(u ->
+                                    modelAndView.addObject(
+                                            "currentUser", u));
+                }
             } catch (Exception e) {
-                // Never crash pages due to notification error
                 modelAndView.addObject("unreadCount", 0L);
             }
         } else {
