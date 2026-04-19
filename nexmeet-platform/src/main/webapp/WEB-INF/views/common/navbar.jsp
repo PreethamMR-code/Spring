@@ -110,9 +110,13 @@
             <!-- Right Side — User Info + Logout -->
             <ul class="navbar-nav ms-auto align-items-center">
                 <sec:authorize access="isAuthenticated()">
-                    <li class="nav-item me-3">
+
+                    <li class="nav-item me-2">
                         <span class="navbar-text text-white-50 small">
-                            <sec:authentication property="name"/>
+                            ${currentUser.fullName}
+                            <c:if test="${empty currentUser.fullName}">
+                                <sec:authentication property="name"/>
+                            </c:if>
                         </span>
                     </li>
 
