@@ -101,6 +101,8 @@
           class="com.nexmeet.platform.config.NotificationInterceptor">
         <property name="notificationService"
                   ref="notificationServiceImpl"/>
+        <property name="userService"
+                  ref="userServiceImpl"/>
     </bean>
 
     <mvc:interceptors>
