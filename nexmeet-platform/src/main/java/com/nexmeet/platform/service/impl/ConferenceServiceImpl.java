@@ -193,4 +193,53 @@ public class ConferenceServiceImpl implements ConferenceService {
             conferenceDao.update(conf);
         }
     }
+
+    @Override
+    public void cancelConference(Long conferenceId,
+                                 String organizerEmail,
+                                 String reason) {
+        Conference conf = conferenceDao.findById(conferenceId)
+                .orElseThrow(() ->
+                        new RuntimeException("Conference not found"));
+
+        // Only APPROVED or SUBMITTED can be cancelled
+        if (conf.getStatus() != ConferenceStatus.APPROVED &&
+                conf.getStatus() != ConferenceStatus.SUBMITTED) {
+            throw new RuntimeException(
+                    "Only APPROVED or SUBMITTED conferences " +
+                            "can be cancelled.");
+        }
+
+        // Set cancelled status
+        conf.setStatus(ConferenceStatus.CANCELLED);
+        conferenceDao.update(conf);
+
+        // Cancel all confirmed registrations and notify delegates
+        List<Registration> registrations =
+                registrationDao.findByConferenceId(conferenceId);
+
+        for (Registration reg : registrations) {
+            if (reg.getStatus() == RegistrationStatus.CONFIRMED) {
+                // Cancel the registration
+                reg.setStatus(RegistrationStatus.CANCELLED);
+                reg.setCancelledAt(java.time.LocalDateTime.now());
+                registrationDao.update(reg);
+
+                // Notify each delegate
+                notificationService.createNotification(
+                        reg.getUser().getEmail(),
+                        "Conference Cancelled",
+                        "Unfortunately, \"" + conf.getTitle() +
+                                "\" has been cancelled by the organizer." +
+                                (reason != null && !reason.trim().isEmpty()
+                                        ? " Reason: " + reason : ""),
+                        "IN_APP"
+                );
+            }
+        }
+
+        // Reset registered count
+        conf.setRegisteredCount(0);
+        conferenceDao.update(conf);
+    }
 }

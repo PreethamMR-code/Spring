@@ -42,4 +42,8 @@ public interface ConferenceService {
     void markAsCompleted(Long conferenceId, String userEmail);
 
     void autoCompleteExpiredConferences();
+
+    void cancelConference(Long conferenceId,
+                          String organizerEmail,
+                          String reason);
 }
