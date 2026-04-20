@@ -187,11 +187,71 @@
         </div>
     </c:if>
 
-    <c:if test="${conf.status != 'SUBMITTED'}">
-        <div class="alert alert-info mt-3">
-            This conference has already been <strong>${conf.status}</strong>.
+
+    <%-- Admin cancel for APPROVED conferences --%>
+    <c:if test="${conf.status == 'APPROVED' ||
+                 conf.status == 'SUBMITTED'}">
+        <div class="mt-3">
+            <button class="btn btn-outline-danger"
+                    data-bs-toggle="modal"
+                    data-bs-target="#adminCancelModal">
+                Cancel This Conference
+            </button>
+        </div>
+
+        <div class="modal fade" id="adminCancelModal"
+             tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">
+                            Admin: Cancel Conference
+                        </h5>
+                    </div>
+                    <form action="${pageContext.request.contextPath}/admin/conference/${conf.id}/cancel"
+                          method="post">
+                        <input type="hidden"
+                               name="${_csrf.parameterName}"
+                               value="${_csrf.token}"/>
+                        <div class="modal-body">
+                            <div class="alert alert-warning">
+                                <strong>⚠ Warning:</strong>
+                                All registered delegates will be
+                                notified of the cancellation.
+                            </div>
+                            <label class="form-label fw-semibold">
+                                Reason *
+                            </label>
+                            <textarea name="reason"
+                                      class="form-control"
+                                      rows="3"
+                                      required></textarea>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button"
+                                    class="btn btn-secondary"
+                                    data-bs-dismiss="modal">
+                                Back
+                            </button>
+                            <button type="submit"
+                                    class="btn btn-danger">
+                                Cancel Conference
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </c:if>
+
+    <c:if test="${conf.status == 'CANCELLED'}">
+        <div class="alert alert-danger mt-3">
+            ❌ This conference has been
+            <strong>CANCELLED</strong>.
+        </div>
+    </c:if>
+
+
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
