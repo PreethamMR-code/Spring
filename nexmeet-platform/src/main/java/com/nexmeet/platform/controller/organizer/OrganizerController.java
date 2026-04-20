@@ -429,4 +429,37 @@ public class OrganizerController {
         }
         return "redirect:/organizer/conference/" + id;
     }
+
+    @PostMapping("/conference/{id}/cancel")
+    public String cancelConference(
+            @PathVariable Long id,
+            @RequestParam String reason,
+            Authentication auth,
+            RedirectAttributes flash) {
+        try {
+            Conference conf = conferenceService.findById(id)
+                    .orElseThrow(() ->
+                            new RuntimeException("Not found"));
+
+            // Security: only owning organizer
+            if (!conf.getOrganizer().getUser()
+                    .getEmail().equals(auth.getName())) {
+                flash.addFlashAttribute("error",
+                        "Unauthorized.");
+                return "redirect:/organizer/conferences";
+            }
+
+            conferenceService.cancelConference(
+                    id, auth.getName(), reason);
+
+            flash.addFlashAttribute("success",
+                    "Conference cancelled. All registered " +
+                            "delegates have been notified.");
+
+        } catch (Exception e) {
+            flash.addFlashAttribute("error",
+                    "Error: " + e.getMessage());
+        }
+        return "redirect:/organizer/conference/" + id;
+    }
 }
