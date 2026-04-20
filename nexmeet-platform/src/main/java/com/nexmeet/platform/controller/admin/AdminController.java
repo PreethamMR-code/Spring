@@ -196,4 +196,22 @@ public class AdminController {
         }
         return "redirect:/admin/conference/" + id;
     }
+
+    @PostMapping("/conference/{id}/cancel")
+    public String cancelConference(
+            @PathVariable Long id,
+            @RequestParam String reason,
+            Authentication auth,
+            RedirectAttributes flash) {
+        try {
+            conferenceService.cancelConference(
+                    id, auth.getName(), reason);
+            flash.addFlashAttribute("success",
+                    "Conference cancelled. All delegates notified.");
+        } catch (Exception e) {
+            flash.addFlashAttribute("error",
+                    "Error: " + e.getMessage());
+        }
+        return "redirect:/admin/conference/" + id;
+    }
 }
