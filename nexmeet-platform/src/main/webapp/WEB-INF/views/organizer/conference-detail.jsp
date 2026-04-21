@@ -21,9 +21,11 @@
         <div>
             <h2 class="text-success mb-1">${conf.title}</h2>
             <span class="badge
-                ${conf.status == 'APPROVED' ? 'bg-success' :
-                  conf.status == 'SUBMITTED' ? 'bg-warning text-dark' :
-                  conf.status == 'REJECTED' ? 'bg-danger' : 'bg-secondary'}
+                ${conf.status == 'APPROVED'   ? 'bg-success' :
+                  conf.status == 'SUBMITTED'  ? 'bg-warning text-dark' :
+                  conf.status == 'REJECTED'   ? 'bg-danger' :
+                  conf.status == 'CANCELLED'  ? 'bg-danger' :
+                  conf.status == 'COMPLETED'  ? 'bg-dark' : 'bg-secondary'}
                 fs-6">
                 ${conf.status}
             </span>
@@ -109,6 +111,82 @@
             ✅ This conference is <strong>COMPLETED</strong>.
             Delegates can download certificates and
             submit feedback.
+        </div>
+    </c:if>
+
+    <%-- Cancel section — only for APPROVED or SUBMITTED --%>
+    <c:if test="${conf.status == 'APPROVED' ||
+                 conf.status == 'SUBMITTED'}">
+        <div class="alert alert-danger d-flex
+                    justify-content-between align-items-center mt-3">
+            <span>
+                <strong>Cancel this conference?</strong>
+                This will notify all registered delegates
+                and cancel their registrations.
+            </span>
+            <button class="btn btn-danger btn-sm ms-3"
+                    data-bs-toggle="modal"
+                    data-bs-target="#cancelModal">
+                Cancel Conference
+            </button>
+        </div>
+
+        <%-- Cancel Modal --%>
+        <div class="modal fade" id="cancelModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">
+                            Cancel Conference
+                        </h5>
+                    </div>
+                    <form action="${pageContext.request.contextPath}/organizer/conference/${conf.id}/cancel"
+                          method="post">
+                        <input type="hidden"
+                               name="${_csrf.parameterName}"
+                               value="${_csrf.token}"/>
+                        <div class="modal-body">
+                            <div class="alert alert-warning">
+                                <strong>⚠ Warning:</strong>
+                                This action cannot be undone.
+                                All
+                                <strong>${conf.registeredCount}</strong>
+                                registered delegate(s) will be
+                                notified immediately.
+                            </div>
+                            <label class="form-label fw-semibold">
+                                Reason for cancellation *
+                            </label>
+                            <textarea name="reason"
+                                      class="form-control"
+                                      rows="3"
+                                      placeholder="e.g. Venue unavailable, speaker cancelled..."
+                                      required></textarea>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button"
+                                    class="btn btn-secondary"
+                                    data-bs-dismiss="modal">
+                                Keep Conference
+                            </button>
+                            <button type="submit"
+                                    class="btn btn-danger">
+                                Yes, Cancel Conference
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </c:if>
+
+    <%-- Cancelled status display --%>
+    <c:if test="${conf.status == 'CANCELLED'}">
+        <div class="alert alert-danger mt-3">
+            ❌ This conference has been
+            <strong>CANCELLED</strong>.
+            All delegate registrations were cancelled
+            and delegates were notified.
         </div>
     </c:if>
 
@@ -283,7 +361,7 @@
                                     </td>
                                     <td>
                                         <c:choose>
-                                            <c:when test="${fb.public}">
+                                            <c:when test="${fb.publiclyVisible}">
                                                 <span class="badge bg-success">Yes</span>
                                             </c:when>
                                             <c:otherwise>
