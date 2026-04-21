@@ -9,6 +9,9 @@
           rel="stylesheet"/>
 </head>
 <body class="bg-light">
+
+<%@ include file="/WEB-INF/views/common/navbar.jsp" %>
+
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="text-danger">All Conferences</h2>
@@ -75,14 +78,23 @@
                                     <td>${conf.registeredCount}/${conf.maxDelegates}</td>
                                     <td>
                                         <c:choose>
-                                            <c:when test="${conf.status == 'APPROVED'}">
-                                                <span class="badge bg-success">APPROVED</span>
+                                            <c:when test="${conf.status == 'DRAFT'}">
+                                                <span class="badge bg-secondary">DRAFT</span>
                                             </c:when>
                                             <c:when test="${conf.status == 'SUBMITTED'}">
                                                 <span class="badge bg-warning text-dark">PENDING</span>
                                             </c:when>
+                                            <c:when test="${conf.status == 'APPROVED'}">
+                                                <span class="badge bg-success">APPROVED</span>
+                                            </c:when>
                                             <c:when test="${conf.status == 'REJECTED'}">
                                                 <span class="badge bg-danger">REJECTED</span>
+                                            </c:when>
+                                            <c:when test="${conf.status == 'COMPLETED'}">
+                                                <span class="badge bg-dark">COMPLETED</span>
+                                            </c:when>
+                                            <c:when test="${conf.status == 'CANCELLED'}">
+                                                <span class="badge bg-danger">CANCELLED</span>
                                             </c:when>
                                             <c:otherwise>
                                                 <span class="badge bg-secondary">${conf.status}</span>

@@ -84,6 +84,12 @@
                                     <c:when test="${conf.status == 'COMPLETED'}">
                                         <span class="badge bg-dark">COMPLETED</span>
                                     </c:when>
+                                    <c:when test="${conf.status == 'CANCELLED'}">
+                                        <span class="badge bg-danger">CANCELLED</span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="badge bg-secondary">${conf.status}</span>
+                                    </c:otherwise>
                                 </c:choose>
                             </td>
                             <td>
