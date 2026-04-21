@@ -61,7 +61,7 @@ public class Feedback {
      * Admins can hide specific feedback if needed.
      */
     @Column(name = "is_public", nullable = false)
-    private boolean isPublic = true;
+    private boolean publiclyVisible = true;
 
     @Column(name = "submitted_at", nullable = false, updatable = false)
     private LocalDateTime submittedAt;
@@ -98,8 +98,10 @@ public class Feedback {
     public String getComments() { return comments; }
     public void setComments(String comments) { this.comments = comments; }
 
-    public boolean isPublic() { return isPublic; }
-    public void setPublic(boolean aPublic) { isPublic = aPublic; }
+    public boolean isPubliclyVisible() { return publiclyVisible; }
+    public void setPubliclyVisible(boolean publiclyVisible) {
+        this.publiclyVisible = publiclyVisible;
+    }
 
     public LocalDateTime getSubmittedAt() { return submittedAt; }
 }
