@@ -47,6 +47,7 @@
 
         <intercept-url pattern="/admin/**"            access="hasRole('ROLE_SUPER_ADMIN')" />
         <intercept-url pattern="/organizer/profile/setup" access="hasRole('ROLE_ORGANIZER')"/>
+        <intercept-url pattern="/organizer/conference/*/cancel" access="hasRole('ROLE_ORGANIZER')"/>
         <intercept-url pattern="/organizer/**"        access="hasRole('ROLE_ORGANIZER')" />
         <intercept-url pattern="/institution/**"      access="hasRole('ROLE_INSTITUTIONAL_ADMIN')" />
         <intercept-url pattern="/delegate/registration/*/cancel" access="hasRole('ROLE_DELEGATE')"/>
