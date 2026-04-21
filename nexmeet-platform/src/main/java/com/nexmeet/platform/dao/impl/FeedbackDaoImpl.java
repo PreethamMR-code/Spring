@@ -46,7 +46,7 @@ public class FeedbackDaoImpl implements FeedbackDao {
         return sessionFactory.getCurrentSession()
                 .createQuery(
                         "FROM Feedback f WHERE f.conference.id = :confId " +
-                                "AND f.isPublic = true " +
+                                "AND f.publiclyVisible = true " +
                                 "ORDER BY f.submittedAt DESC",
                         Feedback.class)
                 .setParameter("confId", conferenceId)
