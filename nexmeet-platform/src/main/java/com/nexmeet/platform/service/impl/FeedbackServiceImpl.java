@@ -107,7 +107,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         feedback.setContentRating(dto.getContentRating());
         feedback.setSpeakerRating(dto.getSpeakerRating());
         feedback.setComments(dto.getComments());
-        feedback.setPublic(dto.isPublic());
+        feedback.setPubliclyVisible(dto.isPublic());
         feedbackDao.save(feedback);
 
         // Update organizer average rating

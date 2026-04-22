@@ -85,6 +85,26 @@
         </div>
     </c:if>
 
+    <c:if test="${!conf.free &&
+                 (conf.status == 'APPROVED' ||
+                  conf.status == 'COMPLETED')}">
+        <div class="alert alert-success d-flex
+                    justify-content-between align-items-center">
+            <span>
+                <strong>💰 Your Expected Payout:</strong>
+                ₹${organizerPayout}
+                <small class="text-muted ms-2">
+                    (after ₹${baseFee} base +
+                    ₹${perDelegateFee}/delegate platform fee)
+                </small>
+            </span>
+            <span class="text-muted small">
+                ${conf.registeredCount} registrations
+                × ₹${conf.delegateFee}
+            </span>
+        </div>
+    </c:if>
+
     <%-- Completion section --%>
     <c:if test="${conf.status == 'APPROVED' && endDatePassed}">
         <div class="alert alert-warning d-flex
