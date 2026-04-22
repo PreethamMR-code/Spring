@@ -141,7 +141,18 @@ public class UserServiceImpl implements UserService {
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userDao.update(user);
         return true;
+    }
 
+    @Override
+    public void toggleUserActive(Long userId) {
+        userDao.findById(userId).ifPresent(user -> {
+            user.setActive(!user.isActive());
+            userDao.update(user);
+        });
+    }
 
+    @Override
+    public List<User> findAllUsers() {
+        return userDao.findAll();
     }
 }

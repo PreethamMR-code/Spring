@@ -41,4 +41,6 @@ public interface UserDao {
     void deactivate(Long id);
 
     long countAll();
+
+
 }

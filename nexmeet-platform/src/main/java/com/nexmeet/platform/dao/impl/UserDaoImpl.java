@@ -22,6 +22,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 
 import java.util.List;
@@ -56,11 +57,12 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public void update(User user) {
-        getCurrentSession().update(user);
+        sessionFactory.getCurrentSession().update(user);
 
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<User> findById(Long id) {
         /*
          * session.get() returns the object or NULL if not found.
@@ -93,6 +95,7 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<User> findAll() {
         return sessionFactory.getCurrentSession()
                 .createQuery("FROM User u ORDER BY u.createdAt DESC", User.class)

@@ -27,4 +27,9 @@ public interface UserService {
 
     boolean changePassword(String email, String currentPassword,
                            String newPassword);
+
+    void toggleUserActive(Long userId);
+
+    List<User> findAllUsers();
+
 }
