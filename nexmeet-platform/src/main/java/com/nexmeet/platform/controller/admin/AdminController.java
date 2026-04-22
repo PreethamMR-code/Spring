@@ -5,6 +5,7 @@ import com.nexmeet.platform.dao.OrganizerDao;
 import com.nexmeet.platform.entity.Conference;
 import com.nexmeet.platform.enums.ConferenceStatus;
 import com.nexmeet.platform.enums.VerificationStatus;
+import com.nexmeet.platform.service.CommissionService;
 import com.nexmeet.platform.service.ConferenceService;
 import com.nexmeet.platform.service.NotificationService;
 import com.nexmeet.platform.service.UserService;
@@ -33,6 +34,9 @@ public class AdminController {
     @Autowired
     private NotificationService notificationService;
 
+    @Autowired
+    private CommissionService commissionService;
+
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication auth) {
 
@@ -54,6 +58,9 @@ public class AdminController {
 
         model.addAttribute("pendingOrganizersCount",
                 pendingOrganizersCount);
+
+        model.addAttribute("totalRevenue",
+                commissionService.getTotalPlatformEarnings());
 
         model.addAttribute("pendingConferences", pending);
         model.addAttribute("pendingCount", pending.size());
@@ -93,8 +100,20 @@ public class AdminController {
                 .isBefore(java.time.LocalDateTime.now());
         model.addAttribute("endDatePassed", endDatePassed);
 
+        model.addAttribute("platformEarnings",
+                commissionService.calculatePlatformEarnings(id));
+        model.addAttribute("organizerPayout",
+                commissionService.calculateOrganizerPayout(id));
+        model.addAttribute("baseFee",
+                commissionService.getBaseFee(conf.getConferenceType()));
+        model.addAttribute("perDelegateFee",
+                commissionService.getPerDelegateFee(
+                        conf.getConferenceType()));
+
         return "admin/conference-detail";
     }
+
+
     @GetMapping("/conferences")
     public String allConferences(@RequestParam(required = false) String status,
                                  Model model) {
@@ -213,5 +232,35 @@ public class AdminController {
                     "Error: " + e.getMessage());
         }
         return "redirect:/admin/conference/" + id;
+    }
+
+    @PostMapping("/user/{id}/toggle-active")
+    public String toggleUserActive(
+            @PathVariable Long id,
+            Authentication auth,
+            RedirectAttributes flash) {
+        // Prevent admin from deactivating themselves
+        userService.findById(id).ifPresent(user -> {
+            if (user.getEmail().equals(auth.getName())) {
+                flash.addFlashAttribute("error",
+                        "You cannot deactivate your own account.");
+                return;
+            }
+            userService.toggleUserActive(id);
+            flash.addFlashAttribute("success",
+                    user.isActive()
+                            ? "User deactivated successfully."
+                            : "User activated successfully.");
+        });
+        return "redirect:/admin/users";
+    }
+
+    @GetMapping("/commission")
+    public String commissionSettings(Model model) {
+        model.addAttribute("settings",
+                commissionService.getAllCommissionSettings());
+        model.addAttribute("totalRevenue",
+                commissionService.getTotalPlatformEarnings());
+        return "admin/commission";
     }
 }
