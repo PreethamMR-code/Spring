@@ -45,24 +45,29 @@
         <intercept-url pattern="/login"               access="permitAll" />
         <intercept-url pattern="/error/**"            access="permitAll" />
 
-        <intercept-url pattern="/admin/**"            access="hasRole('ROLE_SUPER_ADMIN')" />
-        <intercept-url pattern="/organizer/profile/setup" access="hasRole('ROLE_ORGANIZER')"/>
-        <intercept-url pattern="/organizer/conference/*/cancel" access="hasRole('ROLE_ORGANIZER')"/>
-        <intercept-url pattern="/organizer/**"        access="hasRole('ROLE_ORGANIZER')" />
-        <intercept-url pattern="/institution/**"      access="hasRole('ROLE_INSTITUTIONAL_ADMIN')" />
-        <intercept-url pattern="/delegate/registration/*/cancel" access="hasRole('ROLE_DELEGATE')"/>
-        <intercept-url pattern="/delegate/registration/*/ticket" access="hasRole('ROLE_DELEGATE')"/>
+        <intercept-url pattern="/admin/user/*/toggle-active"        access="hasRole('ROLE_SUPER_ADMIN')"/>
+        <intercept-url pattern="/admin/commission"                  access="hasRole('ROLE_SUPER_ADMIN')"/>
+
+        <intercept-url pattern="/admin/**"                          access="hasRole('ROLE_SUPER_ADMIN')" />
+        <intercept-url pattern="/organizer/profile/setup"           access="hasRole('ROLE_ORGANIZER')"/>
+        <intercept-url pattern="/organizer/conference/*/cancel"     access="hasRole('ROLE_ORGANIZER')"/>
+        <intercept-url pattern="/organizer/conference/*/delegates/export" access="hasRole('ROLE_ORGANIZER')"/>
+        <intercept-url pattern="/organizer/**"                      access="hasRole('ROLE_ORGANIZER')" />
+        <intercept-url pattern="/institution/**"                    access="hasRole('ROLE_INSTITUTIONAL_ADMIN')" />
+        <intercept-url pattern="/delegate/registration/*/cancel"    access="hasRole('ROLE_DELEGATE')"/>
+        <intercept-url pattern="/delegate/registration/*/ticket"    access="hasRole('ROLE_DELEGATE')"/>
         <intercept-url pattern="/delegate/registration/*/certificate" access="hasRole('ROLE_DELEGATE')"/>
+        <intercept-url pattern="/delegate/profile/setup"              access="hasRole('ROLE_DELEGATE')"/>
 
-        <intercept-url pattern="/delegate/**"         access="hasRole('ROLE_DELEGATE')" />
+        <intercept-url pattern="/delegate/**"                       access="hasRole('ROLE_DELEGATE')" />
         <intercept-url pattern="/delegate/conference/*/feedback"    access="hasRole('ROLE_DELEGATE')"/>
-        <intercept-url pattern="/profile/**"            access="isAuthenticated()"/>
-        <intercept-url pattern="/profile"               access="isAuthenticated()"/>
+        <intercept-url pattern="/profile/**"                         access="isAuthenticated()"/>
+        <intercept-url pattern="/profile"                           access="isAuthenticated()"/>
 
-        <intercept-url pattern="/notifications/**"      access="isAuthenticated()"/>
-        <intercept-url pattern="/notifications"         access="isAuthenticated()"/>
+        <intercept-url pattern="/notifications/**"                  access="isAuthenticated()"/>
+        <intercept-url pattern="/notifications"                     access="isAuthenticated()"/>
 
-        <intercept-url pattern="/**"                  access="isAuthenticated()" />
+        <intercept-url pattern="/**"                                access="isAuthenticated()" />
 
         <!--
             ROLE-PROTECTED URLS
