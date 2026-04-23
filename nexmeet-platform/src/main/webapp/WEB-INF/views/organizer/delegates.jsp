@@ -32,6 +32,17 @@
         </div>
     </div>
 
+    <div class="d-flex gap-2 mb-3">
+        <a href="${pageContext.request.contextPath}/organizer/conference/${conf.id}/delegates/export?format=excel"
+           class="btn btn-success btn-sm">
+            📥 Export Excel
+        </a>
+        <a href="${pageContext.request.contextPath}/organizer/conference/${conf.id}/delegates/export?format=csv"
+           class="btn btn-outline-secondary btn-sm">
+            📄 Export CSV
+        </a>
+    </div>
+
     <!-- Stats -->
     <div class="row g-3 mb-4">
         <div class="col-md-3">
@@ -84,6 +95,8 @@
                                 <th>Full Name</th>
                                 <th>Email</th>
                                 <th>Phone</th>
+                                <th>Organization</th>
+                                <th>Designation</th>
                                 <th>Registered On</th>
                                 <th>Status</th>
                             </tr>
@@ -113,6 +126,29 @@
                                             </c:otherwise>
                                         </c:choose>
                                     </td>
+
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${not empty reg.user.delegate.organization}">
+                                                ${reg.user.delegate.organization}
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="text-muted">—</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${not empty reg.user.delegate.designation}">
+                                                ${reg.user.delegate.designation}
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="text-muted">—</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+
                                     <td>
                                         ${fn:substringBefore(
                                             reg.registeredAt.toString(),'T')}
