@@ -51,8 +51,11 @@
             </div>
             <div class="col-md-3">
                 <div class="card text-center p-3 border-warning">
-                    <h5>Revenue</h5>
-                    <h2 class="text-warning">${revenue}</h2>
+                    <h5>Platform Revenue</h5>
+                    <h2 class="text-warning">
+                        ₹${totalRevenue}
+                    </h2>
+                    <small class="text-muted">5% commission</small>
                 </div>
             </div>
 

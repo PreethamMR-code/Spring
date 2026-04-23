@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -94,6 +95,49 @@
             </span>
         </div>
     </div>
+
+    <c:if test="${!conf.free}">
+        <div class="card mb-3">
+            <div class="card-header fw-bold bg-warning text-dark">
+                Revenue Breakdown
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <h6 class="text-muted">Delegate Fee</h6>
+                        <h4>₹${conf.delegateFee}</h4>
+                        <small>per delegate</small>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="text-muted">
+                            Gross Revenue
+                        </h6>
+                        <h4 class="text-success">
+                            ₹<fmt:formatNumber
+                                value="${conf.registeredCount *
+                                    conf.delegateFee}"
+                                maxFractionDigits="0"/>
+                        </h4>
+                        <small>
+                            ${conf.registeredCount}
+                            delegate(s) × ₹${conf.delegateFee}
+                        </small>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="text-muted">Platform Commission</h6>
+                        <div class="small text-muted mb-1">
+                            Base: ₹${baseFee} +
+                            ₹${perDelegateFee}/delegate
+                        </div>
+                        <h4 class="text-danger">₹${platformEarnings}</h4>
+                        <small class="text-success">
+                            Organizer gets: ₹${organizerPayout}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </c:if>
 
     <!-- Organizer Info -->
     <div class="card mb-4">

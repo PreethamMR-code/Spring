@@ -53,6 +53,15 @@
         </div>
     </c:if>
 
+    <c:if test="${conf.status == 'APPROVED' ||
+                 conf.status == 'SUBMITTED' ||
+                 conf.status == 'DRAFT'}">
+        <a href="${pageContext.request.contextPath}/organizer/conference/${conf.id}/speakers"
+           class="btn btn-outline-success">
+            🎤 Speakers
+        </a>
+    </c:if>
+
     <!-- Stats Cards (only for APPROVED) -->
     <c:if test="${conf.status == 'APPROVED'}">
         <div class="row g-3 mb-4">
