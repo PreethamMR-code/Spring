@@ -1,17 +1,18 @@
 package com.nexmeet.platform.controller.delegate;
 
+import com.nexmeet.platform.dao.DelegateDao;
 import com.nexmeet.platform.dao.QrCodeDao;
+import com.nexmeet.platform.dto.DelegateProfileDto;
+import com.nexmeet.platform.entity.Delegate;
 import com.nexmeet.platform.entity.Registration;
+import com.nexmeet.platform.entity.User;
 import com.nexmeet.platform.enums.RegistrationStatus;
 import com.nexmeet.platform.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpServletResponse;
@@ -40,6 +41,9 @@ public class DelegateController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private DelegateDao delegateDao;
 
 
 
@@ -183,5 +187,44 @@ public class DelegateController {
         response.setContentLength(baos.size());
         response.getOutputStream().write(baos.toByteArray());
         response.getOutputStream().flush();
+    }
+
+    @GetMapping("/profile/setup")
+    public String showProfileSetup(Model model,
+                                   Authentication auth) {
+        if (delegateDao.existsByUserEmail(auth.getName())) {
+            return "redirect:/delegate/dashboard";
+        }
+        model.addAttribute("dto", new DelegateProfileDto());
+        return "delegate/profile-setup";
+    }
+
+    @PostMapping("/profile/setup")
+    public String saveProfileSetup(
+            @ModelAttribute("dto") DelegateProfileDto dto,
+            Authentication auth,
+            RedirectAttributes flash) {
+        try {
+            if (!delegateDao.existsByUserEmail(auth.getName())) {
+                User user = userService.findByEmail(auth.getName())
+                        .orElseThrow(() ->
+                                new RuntimeException("User not found"));
+
+                Delegate delegate = new Delegate();
+                delegate.setUser(user);
+                delegate.setOrganization(dto.getOrganization());
+                delegate.setDesignation(dto.getDesignation());
+                delegate.setCity(dto.getCity());
+                delegate.setState(dto.getState());
+                delegateDao.save(delegate);
+            }
+            flash.addFlashAttribute("success",
+                    "Profile completed!");
+            return "redirect:/delegate/dashboard";
+        } catch (Exception e) {
+            flash.addFlashAttribute("error",
+                    "Error: " + e.getMessage());
+            return "redirect:/delegate/profile/setup";
+        }
     }
 }
