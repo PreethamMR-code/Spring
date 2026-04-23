@@ -1,5 +1,7 @@
 package com.nexmeet.platform.config;
 
+import com.nexmeet.platform.dao.DelegateDao;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -15,6 +17,9 @@ import java.util.Collection;
 public class AuthSuccessHandler implements AuthenticationSuccessHandler {
 
 
+    @Autowired
+    private DelegateDao delegateDao;
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
                                         HttpServletResponse response,
@@ -22,8 +27,20 @@ public class AuthSuccessHandler implements AuthenticationSuccessHandler {
 
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
 
+        String contextPath = request.getContextPath();
         String redirectUrl = "/nexmeet/delegate/dashboard";  //default
 
+        //  Step 1: Check Delegate Profile Setup FIRST
+        if (authorities.stream().anyMatch(a ->
+                a.getAuthority().equals("ROLE_DELEGATE"))) {
+
+            if (!delegateDao.existsByUserEmail(authentication.getName())) {
+                response.sendRedirect(contextPath + "/delegate/profile/setup");
+                return; // VERY IMPORTANT
+            }
+        }
+
+        //  Step 2: Role-based redirection
         for (GrantedAuthority authority : authorities){
             String role = authority.getAuthority();
             if(role.equals("ROLE_SUPER_ADMIN")) {

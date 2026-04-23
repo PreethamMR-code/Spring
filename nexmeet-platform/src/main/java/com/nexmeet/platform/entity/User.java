@@ -43,6 +43,11 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
+    private Delegate delegate;
+
+
+
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @JoinTable(
@@ -142,6 +147,9 @@ public class User {
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
     }
+
+    public Delegate getDelegate() { return delegate; }
+    public void setDelegate(Delegate d) { delegate = d; }
 
     @Override
     public String toString() {
