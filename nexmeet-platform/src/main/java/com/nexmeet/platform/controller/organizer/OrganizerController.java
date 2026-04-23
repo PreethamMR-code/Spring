@@ -14,6 +14,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,6 +39,9 @@ public class OrganizerController {
 
     @Autowired
     private FeedbackService feedbackService;
+
+    @Autowired
+    private CommissionService commissionService;
 
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication auth) {
@@ -337,6 +341,15 @@ public class OrganizerController {
             return "redirect:/organizer/conferences";
         }
 
+        if (!conf.isFree()) {
+            model.addAttribute("organizerPayout",
+                    commissionService.calculateOrganizerPayout(id));
+            model.addAttribute("baseFee",
+                    commissionService.getBaseFee(conf.getConferenceType().name()));
+            model.addAttribute("perDelegateFee",
+                    commissionService.getPerDelegateFee(conf.getConferenceType().name()));
+        }
+
         long registeredCount = conf.getRegisteredCount();
         long attendedCount = attendanceService.getAttendanceByConference(id).size();
 
@@ -461,5 +474,146 @@ public class OrganizerController {
                     "Error: " + e.getMessage());
         }
         return "redirect:/organizer/conference/" + id;
+    }
+
+
+
+
+    @GetMapping("/conference/{id}/delegates/export")
+    public void exportDelegates(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "excel") String format,
+            Authentication auth,
+            HttpServletResponse response) throws Exception {
+
+        Conference conf = conferenceService.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Not found"));
+
+        // Security: only owning organizer
+        if (!conf.getOrganizer().getUser()
+                .getEmail().equals(auth.getName())) {
+            response.sendError(403);
+            return;
+        }
+
+        List<Registration> registrations =
+                registrationService.findByConferenceId(id);
+
+        if ("csv".equals(format)) {
+            exportCsv(response, conf, registrations);
+        } else {
+            exportExcel(response, conf, registrations);
+        }
+    }
+
+    private void exportExcel(
+            HttpServletResponse response,
+            Conference conf,
+            List<Registration> registrations)
+            throws Exception {
+
+        response.setContentType(
+                "application/vnd.openxmlformats-officedocument" +
+                        ".spreadsheetml.sheet");
+        response.setHeader("Content-Disposition",
+                "attachment; filename=\"delegates-" +
+                        conf.getId() + ".xlsx\"");
+
+        org.apache.poi.xssf.usermodel.XSSFWorkbook wb =
+                new org.apache.poi.xssf.usermodel.XSSFWorkbook();
+        org.apache.poi.ss.usermodel.Sheet sheet =
+                wb.createSheet("Delegates");
+
+        // Header row style
+        org.apache.poi.ss.usermodel.CellStyle headerStyle =
+                wb.createCellStyle();
+        org.apache.poi.ss.usermodel.Font headerFont =
+                wb.createFont();
+        headerFont.setBold(true);
+        headerStyle.setFont(headerFont);
+        headerStyle.setFillForegroundColor(
+                org.apache.poi.ss.usermodel.IndexedColors
+                        .LIGHT_BLUE.getIndex());
+        headerStyle.setFillPattern(
+                org.apache.poi.ss.usermodel.FillPatternType
+                        .SOLID_FOREGROUND);
+
+        // Header row
+        org.apache.poi.ss.usermodel.Row header =
+                sheet.createRow(0);
+        String[] cols = {"#", "Reg. Number", "Full Name",
+                "Email", "Phone", "Organization", "Designation", "Status", "Registered On"};
+        for (int i = 0; i < cols.length; i++) {
+            org.apache.poi.ss.usermodel.Cell cell =
+                    header.createCell(i);
+            cell.setCellValue(cols[i]);
+            cell.setCellStyle(headerStyle);
+            sheet.setColumnWidth(i, 20 * 256);
+        }
+
+        // Data rows
+        int rowNum = 1;
+        for (Registration reg : registrations) {
+            org.apache.poi.ss.usermodel.Row row =
+                    sheet.createRow(rowNum++);
+            row.createCell(0).setCellValue(rowNum - 1);
+            row.createCell(1).setCellValue(
+                    reg.getRegistrationNumber());
+            row.createCell(2).setCellValue(
+                    reg.getUser().getFullName());
+            row.createCell(3).setCellValue(
+                    reg.getUser().getEmail());
+            row.createCell(4).setCellValue(
+                    reg.getUser().getPhone() != null ?
+                            reg.getUser().getPhone() : "—");
+            row.createCell(5).setCellValue(
+                    reg.getUser().getDelegate() != null &&
+                            reg.getUser().getDelegate().getOrganization() != null
+                            ? reg.getUser().getDelegate().getOrganization() : "—");
+            row.createCell(6).setCellValue(
+                    reg.getUser().getDelegate() != null &&
+                            reg.getUser().getDelegate().getDesignation() != null
+                            ? reg.getUser().getDelegate().getDesignation() : "—");
+            row.createCell(7).setCellValue(
+                    reg.getStatus().name());
+            row.createCell(8).setCellValue(
+                    reg.getRegisteredAt().toString().substring(0, 10));
+
+        }
+
+        wb.write(response.getOutputStream());
+        wb.close();
+    }
+
+    private void exportCsv(
+            HttpServletResponse response,
+            Conference conf,
+            List<Registration> registrations)
+            throws Exception {
+
+        response.setContentType("text/csv");
+        response.setHeader("Content-Disposition",
+                "attachment; filename=\"delegates-" +
+                        conf.getId() + ".csv\"");
+
+        java.io.PrintWriter pw = response.getWriter();
+        pw.println("No,Reg Number,Full Name,Email," +
+                "Phone,Status,Registered On");
+
+        int i = 1;
+        for (Registration reg : registrations) {
+            pw.printf("%d,%s,%s,%s,%s,%s,%s%n",
+                    i++,
+                    reg.getRegistrationNumber(),
+                    reg.getUser().getFullName(),
+                    reg.getUser().getEmail(),
+                    reg.getUser().getPhone() != null ?
+                            reg.getUser().getPhone() : "",
+                    reg.getStatus().name(),
+                    reg.getRegisteredAt().toString()
+                            .substring(0, 10));
+        }
+        pw.flush();
     }
 }

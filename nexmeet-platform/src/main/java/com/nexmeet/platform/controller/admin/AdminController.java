@@ -105,10 +105,9 @@ public class AdminController {
         model.addAttribute("organizerPayout",
                 commissionService.calculateOrganizerPayout(id));
         model.addAttribute("baseFee",
-                commissionService.getBaseFee(conf.getConferenceType()));
+                commissionService.getBaseFee(conf.getConferenceType().name()));
         model.addAttribute("perDelegateFee",
-                commissionService.getPerDelegateFee(
-                        conf.getConferenceType()));
+                commissionService.getPerDelegateFee(conf.getConferenceType().name()));
 
         return "admin/conference-detail";
     }
