@@ -2,6 +2,8 @@ package com.nexmeet.platform.entity;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * A Session is one talk/workshop/panel inside a Conference.
@@ -55,6 +57,10 @@ public class Session {
     @Column(name = "capacity")
     private Integer capacity;
 
+    @OneToMany(mappedBy = "session", fetch = FetchType.LAZY)
+    private List<Speaker> speakers =
+            new ArrayList<>();
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -92,6 +98,13 @@ public class Session {
 
     public Integer getCapacity() { return capacity; }
     public void setCapacity(Integer capacity) { this.capacity = capacity; }
+
+    public java.util.List<Speaker> getSpeakers() {
+        return speakers;
+    }
+    public void setSpeakers(java.util.List<Speaker> s) {
+        speakers = s;
+    }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
 }
