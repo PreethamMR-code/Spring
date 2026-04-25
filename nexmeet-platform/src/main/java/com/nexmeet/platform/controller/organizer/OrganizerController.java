@@ -3,6 +3,8 @@ package com.nexmeet.platform.controller.organizer;
 import com.nexmeet.platform.dao.OrganizerDao;
 import com.nexmeet.platform.dto.ConferenceCreateDto;
 import com.nexmeet.platform.dto.OrganizerProfileDto;
+import com.nexmeet.platform.dto.SessionDto;
+import com.nexmeet.platform.dto.SpeakerDto;
 import com.nexmeet.platform.entity.*;
 import com.nexmeet.platform.enums.ConferenceStatus;
 import com.nexmeet.platform.enums.RegistrationStatus;
@@ -42,6 +44,12 @@ public class OrganizerController {
 
     @Autowired
     private CommissionService commissionService;
+
+    @Autowired
+    private SpeakerService speakerService;
+
+    @Autowired
+    private SessionService sessionService;
 
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication auth) {
@@ -477,8 +485,6 @@ public class OrganizerController {
     }
 
 
-
-
     @GetMapping("/conference/{id}/delegates/export")
     public void exportDelegates(
             @PathVariable Long id,
@@ -615,5 +621,148 @@ public class OrganizerController {
                             .substring(0, 10));
         }
         pw.flush();
+    }
+
+    @GetMapping("/conference/{id}/speakers")
+    public String manageSpeakers(@PathVariable Long id,
+                                 Model model,
+                                 Authentication auth) {
+        Conference conf = conferenceService.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Not found"));
+
+        if (!conf.getOrganizer().getUser()
+                .getEmail().equals(auth.getName())) {
+            return "redirect:/organizer/conferences";
+        }
+
+        model.addAttribute("conf", conf);
+        model.addAttribute("speakers",
+                speakerService.getSpeakersByConference(id));
+        model.addAttribute("dto", new SpeakerDto());
+        return "organizer/speakers";
+    }
+
+    @PostMapping("/conference/{id}/speakers/add")
+    public String addSpeaker(
+            @PathVariable Long id,
+            @ModelAttribute("dto") SpeakerDto dto,
+            Authentication auth,
+            RedirectAttributes flash) {
+        try {
+            speakerService.addSpeaker(dto, id);
+            flash.addFlashAttribute("success",
+                    "Speaker added successfully!");
+        } catch (Exception e) {
+            flash.addFlashAttribute("error",
+                    "Error: " + e.getMessage());
+        }
+        return "redirect:/organizer/conference/" + id +
+                "/speakers";
+    }
+
+    @PostMapping("/conference/{id}/speakers/{speakerId}/delete")
+    public String deleteSpeaker(
+            @PathVariable Long id,
+            @PathVariable Long speakerId,
+            Authentication auth,
+            RedirectAttributes flash) {
+        try {
+            speakerService.deleteSpeaker(
+                    speakerId, auth.getName());
+            flash.addFlashAttribute("success",
+                    "Speaker removed.");
+        } catch (Exception e) {
+            flash.addFlashAttribute("error",
+                    "Error: " + e.getMessage());
+        }
+        return "redirect:/organizer/conference/" + id +
+                "/speakers";
+    }
+
+    @GetMapping("/conference/{id}/schedule")
+    public String manageSchedule(@PathVariable Long id,
+                                 Model model,
+                                 Authentication auth) {
+        Conference conf = conferenceService.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Not found"));
+
+        if (!conf.getOrganizer().getUser()
+                .getEmail().equals(auth.getName())) {
+            return "redirect:/organizer/conferences";
+        }
+
+        model.addAttribute("conf", conf);
+        model.addAttribute("sessions",
+                sessionService.getSessionsByConference(id));
+        // All conference speakers for assignment dropdown
+        model.addAttribute("speakers",
+                speakerService.getSpeakersByConference(id));
+        model.addAttribute("dto", new SessionDto());
+        return "organizer/schedule";
+    }
+
+    @PostMapping("/conference/{id}/schedule/add")
+    public String addSession(
+            @PathVariable Long id,
+            @ModelAttribute("dto") SessionDto dto,
+            Authentication auth,
+            RedirectAttributes flash) {
+        try {
+            sessionService.addSession(
+                    dto, id, auth.getName());
+            flash.addFlashAttribute("success",
+                    "Session added to schedule!");
+        } catch (Exception e) {
+            flash.addFlashAttribute("error",
+                    "Error: " + e.getMessage());
+        }
+        return "redirect:/organizer/conference/" + id +
+                "/schedule";
+    }
+
+    @PostMapping("/conference/{id}/schedule/{sessionId}/delete")
+    public String deleteSession(
+            @PathVariable Long id,
+            @PathVariable Long sessionId,
+            Authentication auth,
+            RedirectAttributes flash) {
+        try {
+            sessionService.deleteSession(
+                    sessionId, auth.getName());
+            flash.addFlashAttribute("success",
+                    "Session removed.");
+        } catch (Exception e) {
+            flash.addFlashAttribute("error",
+                    "Error: " + e.getMessage());
+        }
+        return "redirect:/organizer/conference/" + id +
+                "/schedule";
+    }
+
+    /*
+     * Assign a speaker to a specific session.
+     * Called from schedule page when organizer
+     * selects a speaker for a session slot.
+     */
+    @PostMapping("/conference/{id}/schedule/{sessionId}/assign-speaker")
+    public String assignSpeaker(
+            @PathVariable Long id,
+            @PathVariable Long sessionId,
+            @RequestParam Long speakerId,
+            Authentication auth,
+            RedirectAttributes flash) {
+        try {
+            sessionService.assignSpeakerToSession(
+                    speakerId, sessionId, auth.getName());
+            flash.addFlashAttribute("success",
+                    "Speaker assigned to session.");
+        } catch (Exception e) {
+            flash.addFlashAttribute("error",
+                    "Error: " + e.getMessage());
+        }
+        return "redirect:/organizer/conference/" + id +
+                "/schedule";
     }
 }
