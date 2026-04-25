@@ -1,8 +1,12 @@
 package com.nexmeet.platform.controller.pub;
 
+import com.nexmeet.platform.dao.SessionDao;
+import com.nexmeet.platform.dao.SpeakerDao;
 import com.nexmeet.platform.entity.Conference;
 import com.nexmeet.platform.service.ConferenceService;
 import com.nexmeet.platform.service.FeedbackService;
+import com.nexmeet.platform.service.SessionService;
+import com.nexmeet.platform.service.SpeakerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,6 +31,12 @@ public class ConferenceController {
 
     @Autowired
     private FeedbackService feedbackService;
+
+    @Autowired
+    private SpeakerService speakerService;
+
+    @Autowired
+    private SessionService sessionService;
 
 
     @GetMapping("/conferences")
@@ -96,6 +106,12 @@ public class ConferenceController {
                     feedbackService.getAverageRating(id));
             model.addAttribute("feedbackCount",
                     feedbackService.getFeedbackCount(id));
+
+            model.addAttribute("speakers",
+                    speakerService.getSpeakersByConference(id));
+
+            model.addAttribute("sessions",
+                    sessionService.getSessionsByConference(id));
         });
         return "pub/conference-detail";
     }

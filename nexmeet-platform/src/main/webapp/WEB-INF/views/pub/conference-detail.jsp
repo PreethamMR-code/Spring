@@ -124,6 +124,81 @@
                            </div>
                        </div>
 
+                       <c:if test="${not empty speakers}">
+                           <div class="card detail-card p-4 mt-3">
+                               <h5 class="fw-bold mb-3">🎤 Speakers</h5>
+                               <div class="row g-3">
+                                   <c:forEach var="sp" items="${speakers}">
+                                       <div class="col-md-6">
+                                           <div class="d-flex gap-3 align-items-start">
+                                               <div style="width:44px;height:44px;
+                                                    border-radius:50%;background:
+                                                    linear-gradient(135deg,#667eea,#764ba2);
+                                                    color:white;display:flex;
+                                                    align-items:center;
+                                                    justify-content:center;
+                                                    font-weight:bold;flex-shrink:0;">
+                                                   ${sp.fullName.substring(0,1)}
+                                               </div>
+                                               <div>
+                                                   <strong>${sp.fullName}</strong>
+                                                   <c:if test="${not empty sp.designation}">
+                                                       <div class="small text-muted">
+                                                           ${sp.designation}
+                                                           <c:if test="${not empty sp.organization}">
+                                                               , ${sp.organization}
+                                                           </c:if>
+                                                       </div>
+                                                   </c:if>
+                                                   <c:if test="${not empty sp.topic}">
+                                                       <span class="badge bg-light
+                                                             text-success border
+                                                             border-success small mt-1">
+                                                           ${sp.topic}
+                                                       </span>
+                                                   </c:if>
+                                               </div>
+                                           </div>
+                                       </div>
+                                   </c:forEach>
+                               </div>
+                           </div>
+                       </c:if>
+
+                       <c:if test="${not empty sessions}">
+                           <div class="card detail-card p-4 mt-3">
+                               <h5 class="fw-bold mb-3">📅 Schedule</h5>
+                               <c:forEach var="sess" items="${sessions}">
+                                   <div class="d-flex gap-3 mb-3
+                                               align-items-start">
+                                       <div class="text-center"
+                                            style="min-width:70px">
+                                           <div class="small text-muted">
+                                               ${fn:replace(
+                                                   fn:substringBefore(
+                                                       sess.startTime.toString(),
+                                                       ':00'), 'T', ' ')}
+                                           </div>
+                                       </div>
+                                       <div class="flex-grow-1
+                                                   border-start ps-3">
+                                           <strong>${sess.title}</strong>
+                                           <c:if test="${sess.speaker != null}">
+                                               <div class="small text-muted">
+                                                   🎤 ${sess.speaker.fullName}
+                                               </div>
+                                           </c:if>
+                                           <c:if test="${not empty sess.roomOrLink}">
+                                               <div class="small text-muted">
+                                                   📍 ${sess.roomOrLink}
+                                               </div>
+                                           </c:if>
+                                       </div>
+                                   </div>
+                               </c:forEach>
+                           </div>
+                       </c:if>
+
 
                         <c:if test="${not empty conference.city}">
                             <div class="info-box mb-3">

@@ -53,7 +53,22 @@
         <intercept-url pattern="/organizer/conference/*/cancel"     access="hasRole('ROLE_ORGANIZER')"/>
         <intercept-url pattern="/organizer/conference/*/delegates/export" access="hasRole('ROLE_ORGANIZER')"/>
         <intercept-url pattern="/organizer/conference/*/speakers"           access="hasRole('ROLE_ORGANIZER')"/>
-        <intercept-url pattern="/organizer/conference/*/speakers/*" access="hasRole('ROLE_ORGANIZER')"/>
+        <intercept-url pattern="/organizer/conference/*/speakers/*"     access="hasRole('ROLE_ORGANIZER')"/>
+        <intercept-url pattern="/organizer/conference/*/schedule"       access="hasRole('ROLE_ORGANIZER')"/>
+        <intercept-url pattern="/organizer/conference/*/schedule/*"     access="hasRole('ROLE_ORGANIZER')"/>
+
+        <intercept-url
+                pattern="/organizer/conference/*/speakers"
+                access="hasRole('ROLE_ORGANIZER')"/>
+        <intercept-url
+                pattern="/organizer/conference/*/speakers/*"
+                access="hasRole('ROLE_ORGANIZER')"/>
+        <intercept-url
+                pattern="/organizer/conference/*/schedule"
+                access="hasRole('ROLE_ORGANIZER')"/>
+        <intercept-url
+                pattern="/organizer/conference/*/schedule/*"
+                access="hasRole('ROLE_ORGANIZER')"/>
 
 
         <intercept-url pattern="/organizer/**"                      access="hasRole('ROLE_ORGANIZER')" />

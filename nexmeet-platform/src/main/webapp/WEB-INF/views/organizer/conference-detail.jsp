@@ -62,6 +62,37 @@
         </a>
     </c:if>
 
+    <c:if test="${conf.status != 'CANCELLED'}">
+        <a href="${pageContext.request.contextPath}/organizer/conference/${conf.id}/schedule"
+           class="btn btn-outline-info">
+            📅 Schedule
+        </a>
+    </c:if>
+
+    <%-- Speakers and Schedule buttons --%>
+    <c:if test="${conf.status != 'CANCELLED' &&
+                 conf.status != 'COMPLETED'}">
+        <a href="${pageContext.request.contextPath}/organizer/conference/${conf.id}/speakers"
+           class="btn btn-outline-success">
+            🎤 Speakers
+        </a>
+        <a href="${pageContext.request.contextPath}/organizer/conference/${conf.id}/schedule"
+           class="btn btn-outline-info">
+            📅 Schedule
+        </a>
+    </c:if>
+    <%-- Also show for completed so they can review --%>
+    <c:if test="${conf.status == 'COMPLETED'}">
+        <a href="${pageContext.request.contextPath}/organizer/conference/${conf.id}/speakers"
+           class="btn btn-outline-secondary btn-sm">
+            🎤 View Speakers
+        </a>
+        <a href="${pageContext.request.contextPath}/organizer/conference/${conf.id}/schedule"
+           class="btn btn-outline-secondary btn-sm">
+            📅 View Schedule
+        </a>
+    </c:if>
+
     <!-- Stats Cards (only for APPROVED) -->
     <c:if test="${conf.status == 'APPROVED'}">
         <div class="row g-3 mb-4">
