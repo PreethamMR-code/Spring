@@ -1,5 +1,6 @@
 package com.nexmeet.platform.service.impl;
 
+import com.nexmeet.platform.dao.SessionDao;
 import com.nexmeet.platform.dao.SpeakerDao;
 import com.nexmeet.platform.dto.SessionDto;
 import com.nexmeet.platform.entity.Conference;
@@ -20,7 +21,7 @@ import java.util.Optional;
 public class SessionServiceImpl implements SessionService {
 
     @Autowired
-    private SpeakerDao sessionDao;
+    private SessionDao sessionDao;
 
     @Autowired
     private SpeakerDao speakerDao;
