@@ -50,24 +50,115 @@
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Conference Type *</label>
                         <select name="conferenceType" class="form-select" required>
-                            <option value="STUDENT"
-                                ${dto.conferenceType == 'STUDENT' ? 'selected' : ''}>
-                                Student</option>
-                            <option value="CORPORATE"
-                                ${dto.conferenceType == 'CORPORATE' ? 'selected' : ''}>
-                                Corporate</option>
-                            <option value="RESEARCH"
-                                ${dto.conferenceType == 'RESEARCH' ? 'selected' : ''}>
-                                Research</option>
-                            <option value="NGO"
-                                ${dto.conferenceType == 'NGO' ? 'selected' : ''}>
-                                NGO</option>
-                            <option value="GOVERNMENT"
-                                ${dto.conferenceType == 'GOVERNMENT' ? 'selected' : ''}>
-                                Government</option>
-                            <option value="GENERAL"
-                                ${dto.conferenceType == 'GENERAL' ? 'selected' : ''}>
-                                General</option>
+                            <option value="">-- Select Conference Type --</option>
+
+                            <optgroup label="📚 Academic &amp; Research">
+                                <option value="STUDENT"
+                                    ${dto.conferenceType == 'STUDENT' ? 'selected' : ''}>
+                                    Student Academic Conference</option>
+                                <option value="ACADEMIC"
+                                    ${dto.conferenceType == 'ACADEMIC' ? 'selected' : ''}>
+                                    Academic Conference</option>
+                                <option value="RESEARCH"
+                                    ${dto.conferenceType == 'RESEARCH' ? 'selected' : ''}>
+                                    Research Symposium</option>
+                                <option value="EDUCATION"
+                                    ${dto.conferenceType == 'EDUCATION' ? 'selected' : ''}>
+                                    Education Conference</option>
+                            </optgroup>
+
+                            <optgroup label="💻 Technical &amp; IT">
+                                <option value="TECHNICAL"
+                                    ${dto.conferenceType == 'TECHNICAL' ? 'selected' : ''}>
+                                    Technical Conference</option>
+                                <option value="AI_ML"
+                                    ${dto.conferenceType == 'AI_ML' ? 'selected' : ''}>
+                                    AI / Machine Learning</option>
+                                <option value="DATA_SCIENCE"
+                                    ${dto.conferenceType == 'DATA_SCIENCE' ? 'selected' : ''}>
+                                    Data Science</option>
+                                <option value="CYBERSECURITY"
+                                    ${dto.conferenceType == 'CYBERSECURITY' ? 'selected' : ''}>
+                                    Cybersecurity</option>
+                                <option value="CLOUD_COMPUTING"
+                                    ${dto.conferenceType == 'CLOUD_COMPUTING' ? 'selected' : ''}>
+                                    Cloud Computing</option>
+                            </optgroup>
+
+                            <optgroup label="💼 Business &amp; Management">
+                                <option value="CORPORATE"
+                                    ${dto.conferenceType == 'CORPORATE' ? 'selected' : ''}>
+                                    Corporate Conference</option>
+                                <option value="BUSINESS"
+                                    ${dto.conferenceType == 'BUSINESS' ? 'selected' : ''}>
+                                    Business Conference</option>
+                                <option value="STARTUP"
+                                    ${dto.conferenceType == 'STARTUP' ? 'selected' : ''}>
+                                    Startup / Entrepreneurship</option>
+                                <option value="FINANCE"
+                                    ${dto.conferenceType == 'FINANCE' ? 'selected' : ''}>
+                                    Finance &amp; Investment</option>
+                                <option value="MARKETING"
+                                    ${dto.conferenceType == 'MARKETING' ? 'selected' : ''}>
+                                    Marketing Conference</option>
+                                <option value="LEADERSHIP"
+                                    ${dto.conferenceType == 'LEADERSHIP' ? 'selected' : ''}>
+                                    Leadership Summit</option>
+                            </optgroup>
+
+                            <optgroup label="🏥 Industry Specific">
+                                <option value="HEALTHCARE"
+                                    ${dto.conferenceType == 'HEALTHCARE' ? 'selected' : ''}>
+                                    Healthcare / Medical</option>
+                                <option value="ENGINEERING"
+                                    ${dto.conferenceType == 'ENGINEERING' ? 'selected' : ''}>
+                                    Engineering Conference</option>
+                                <option value="LEGAL"
+                                    ${dto.conferenceType == 'LEGAL' ? 'selected' : ''}>
+                                    Legal Conference</option>
+                                <option value="ENVIRONMENTAL"
+                                    ${dto.conferenceType == 'ENVIRONMENTAL' ? 'selected' : ''}>
+                                    Environmental / Sustainability</option>
+                            </optgroup>
+
+                            <optgroup label="🌐 Civic &amp; Social">
+                                <option value="NGO"
+                                    ${dto.conferenceType == 'NGO' ? 'selected' : ''}>
+                                    NGO / Social Sector</option>
+                                <option value="GOVERNMENT"
+                                    ${dto.conferenceType == 'GOVERNMENT' ? 'selected' : ''}>
+                                    Government / Public Sector</option>
+                            </optgroup>
+
+                            <optgroup label="🎤 Event Formats">
+                                <option value="WORKSHOP"
+                                    ${dto.conferenceType == 'WORKSHOP' ? 'selected' : ''}>
+                                    Workshop</option>
+                                <option value="SEMINAR"
+                                    ${dto.conferenceType == 'SEMINAR' ? 'selected' : ''}>
+                                    Seminar</option>
+                                <option value="WEBINAR"
+                                    ${dto.conferenceType == 'WEBINAR' ? 'selected' : ''}>
+                                    Webinar</option>
+                                <option value="PANEL"
+                                    ${dto.conferenceType == 'PANEL' ? 'selected' : ''}>
+                                    Panel Discussion</option>
+                                <option value="BOOTCAMP"
+                                    ${dto.conferenceType == 'BOOTCAMP' ? 'selected' : ''}>
+                                    Bootcamp</option>
+                                <option value="TRAINING"
+                                    ${dto.conferenceType == 'TRAINING' ? 'selected' : ''}>
+                                    Training Program</option>
+                            </optgroup>
+
+                            <optgroup label="🌟 General">
+                                <option value="INNOVATION"
+                                    ${dto.conferenceType == 'INNOVATION' ? 'selected' : ''}>
+                                    Innovation Conference</option>
+                                <option value="GENERAL"
+                                    ${dto.conferenceType == 'GENERAL' ? 'selected' : ''}>
+                                    General / Multi-domain</option>
+                            </optgroup>
                         </select>
                     </div>
                     <div class="col-md-6 mb-3">
