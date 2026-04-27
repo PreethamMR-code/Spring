@@ -24,70 +24,56 @@ public class CommissionSetting {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Integer id;
+    private Long id;
 
     /*
-     * Each conference type has exactly ONE commission setting.
-     * unique = true enforces this — you can't have two rows
-     * for STUDENT conferences with different rates.
+     * This is NOT per-conference but per conference TYPE.
+     * e.g. "Technical" -> base_fee=500, per_delegate_fee=25
+     * Admin configures this globally.
      */
-    @Enumerated(EnumType.STRING)
-    @Column(name = "conference_type", nullable = false, unique = true, length = 20)
-    private ConferenceType conferenceType;
+    @Column(name = "conference_type", unique = true)
+    private String conferenceType;
 
-    @Column(name = "base_fee", nullable = false, precision = 10, scale = 2)
+    /*
+     * Fixed base fee the organizer pays to list
+     * a conference on the platform.
+     */
+    @Column(name = "base_fee")
     private BigDecimal baseFee = BigDecimal.ZERO;
 
-    @Column(name = "per_delegate_fee", nullable = false, precision = 10, scale = 2)
+    /*
+     * Per-delegate commission — platform earns this
+     * for every confirmed registration.
+     */
+    @Column(name = "per_delegate_fee")
     private BigDecimal perDelegateFee = BigDecimal.ZERO;
 
-    @Column(name = "description", length = 300)
+    @Column(name = "description")
     private String description;
 
-    @Column(name = "is_active", nullable = false)
-    private boolean isActive = true;
+    @Column(name = "is_active")
+    private boolean active = true;
 
-    /*
-     * updated_by tracks which admin last changed these rates.
-     * Important for accountability.
-     */
-    @ManyToOne(optional = true)
-    @JoinColumn(name = "updated_by", nullable = true)
-    private User updatedBy;
+    @Column(name = "updated_by")
+    private Long updatedBy;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @PrePersist
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
-
-    public CommissionSetting() {}
-
-    // Getters and Setters
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
-
-    public ConferenceType getConferenceType() { return conferenceType; }
-    public void setConferenceType(ConferenceType conferenceType) { this.conferenceType = conferenceType; }
-
+    // Getters and setters
+    public Long getId() { return id; }
+    public String getConferenceType() { return conferenceType; }
+    public void setConferenceType(String t) { conferenceType = t; }
     public BigDecimal getBaseFee() { return baseFee; }
-    public void setBaseFee(BigDecimal baseFee) { this.baseFee = baseFee; }
-
+    public void setBaseFee(BigDecimal f) { baseFee = f; }
     public BigDecimal getPerDelegateFee() { return perDelegateFee; }
-    public void setPerDelegateFee(BigDecimal perDelegateFee) { this.perDelegateFee = perDelegateFee; }
-
+    public void setPerDelegateFee(BigDecimal f) { perDelegateFee = f; }
     public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-
-    public boolean isActive() { return isActive; }
-    public void setActive(boolean active) { isActive = active; }
-
-    public User getUpdatedBy() { return updatedBy; }
-    public void setUpdatedBy(User updatedBy) { this.updatedBy = updatedBy; }
-
+    public void setDescription(String d) { description = d; }
+    public boolean isActive() { return active; }
+    public void setActive(boolean a) { active = a; }
+    public Long getUpdatedBy() { return updatedBy; }
+    public void setUpdatedBy(Long u) { updatedBy = u; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime t) { updatedAt = t; }
 }
