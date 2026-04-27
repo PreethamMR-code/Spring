@@ -62,6 +62,14 @@
                            </c:if>
                        </a>
                    </li>
+
+                   <li class="nav-item">
+                       <a class="nav-link"
+                          href="${pageContext.request.contextPath}/admin/commission">
+                           💰 Revenue
+                       </a>
+                   </li>
+
                </sec:authorize>
 
                 <!-- Organizer Links -->
