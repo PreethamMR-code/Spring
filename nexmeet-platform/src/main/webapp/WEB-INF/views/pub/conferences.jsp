@@ -100,28 +100,62 @@
                         <label class="form-label fw-semibold small text-muted">
                             CONFERENCE TYPE
                         </label>
-                        <select name="type" class="form-select form-select-sm"
-                                onchange="document.getElementById('filterForm').submit()">
+
+                        <select name="type" class="form-select form-select-sm">
                             <option value="">All Types</option>
                             <option value="STUDENT"
-                                ${selectedType == 'STUDENT' ? 'selected' : ''}>
-                                Student</option>
-                            <option value="CORPORATE"
-                                ${selectedType == 'CORPORATE' ? 'selected' : ''}>
-                                Corporate</option>
+                                ${selectedType == 'STUDENT' ? 'selected':''}>
+                                Student Academic</option>
+                            <option value="ACADEMIC"
+                                ${selectedType == 'ACADEMIC' ? 'selected':''}>
+                                Academic</option>
                             <option value="RESEARCH"
-                                ${selectedType == 'RESEARCH' ? 'selected' : ''}>
+                                ${selectedType == 'RESEARCH' ? 'selected':''}>
                                 Research</option>
+                            <option value="TECHNICAL"
+                                ${selectedType == 'TECHNICAL' ? 'selected':''}>
+                                Technical</option>
+                            <option value="AI_ML"
+                                ${selectedType == 'AI_ML' ? 'selected':''}>
+                                AI / ML</option>
+                            <option value="DATA_SCIENCE"
+                                ${selectedType == 'DATA_SCIENCE' ? 'selected':''}>
+                                Data Science</option>
+                            <option value="CORPORATE"
+                                ${selectedType == 'CORPORATE' ? 'selected':''}>
+                                Corporate</option>
+                            <option value="BUSINESS"
+                                ${selectedType == 'BUSINESS' ? 'selected':''}>
+                                Business</option>
+                            <option value="STARTUP"
+                                ${selectedType == 'STARTUP' ? 'selected':''}>
+                                Startup</option>
+                            <option value="HEALTHCARE"
+                                ${selectedType == 'HEALTHCARE' ? 'selected':''}>
+                                Healthcare</option>
+                            <option value="ENGINEERING"
+                                ${selectedType == 'ENGINEERING' ? 'selected':''}>
+                                Engineering</option>
+                            <option value="WORKSHOP"
+                                ${selectedType == 'WORKSHOP' ? 'selected':''}>
+                                Workshop</option>
+                            <option value="SEMINAR"
+                                ${selectedType == 'SEMINAR' ? 'selected':''}>
+                                Seminar</option>
+                            <option value="WEBINAR"
+                                ${selectedType == 'WEBINAR' ? 'selected':''}>
+                                Webinar</option>
                             <option value="NGO"
-                                ${selectedType == 'NGO' ? 'selected' : ''}>
+                                ${selectedType == 'NGO' ? 'selected':''}>
                                 NGO</option>
                             <option value="GOVERNMENT"
-                                ${selectedType == 'GOVERNMENT' ? 'selected' : ''}>
+                                ${selectedType == 'GOVERNMENT' ? 'selected':''}>
                                 Government</option>
                             <option value="GENERAL"
-                                ${selectedType == 'GENERAL' ? 'selected' : ''}>
+                                ${selectedType == 'GENERAL' ? 'selected':''}>
                                 General</option>
                         </select>
+
                     </div>
 
                     <!-- Mode Filter -->
