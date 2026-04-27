@@ -36,15 +36,59 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Conference Type *</label>
-                        <select name="conferenceType" class="form-select" required>
-                            <option value="">Select Type</option>
-                            <option value="STUDENT">Student</option>
-                            <option value="CORPORATE">Corporate</option>
-                            <option value="RESEARCH">Research</option>
-                            <option value="NGO">NGO</option>
-                            <option value="GOVERNMENT">Government</option>
-                            <option value="GENERAL">General</option>
-                        </select>
+                       <select name="conferenceType" class="form-select" required>
+                           <option value="">-- Select Conference Type --</option>
+
+                           <optgroup label="📚 Academic &amp; Research">
+                               <option value="STUDENT">Student Academic Conference</option>
+                               <option value="ACADEMIC">Academic Conference</option>
+                               <option value="RESEARCH">Research Symposium</option>
+                               <option value="EDUCATION">Education Conference</option>
+                           </optgroup>
+
+                           <optgroup label="💻 Technical &amp; IT">
+                               <option value="TECHNICAL">Technical Conference</option>
+                               <option value="AI_ML">AI / Machine Learning</option>
+                               <option value="DATA_SCIENCE">Data Science</option>
+                               <option value="CYBERSECURITY">Cybersecurity</option>
+                               <option value="CLOUD_COMPUTING">Cloud Computing</option>
+                           </optgroup>
+
+                           <optgroup label="💼 Business &amp; Management">
+                               <option value="CORPORATE">Corporate Conference</option>
+                               <option value="BUSINESS">Business Conference</option>
+                               <option value="STARTUP">Startup / Entrepreneurship</option>
+                               <option value="FINANCE">Finance &amp; Investment</option>
+                               <option value="MARKETING">Marketing Conference</option>
+                               <option value="LEADERSHIP">Leadership Summit</option>
+                           </optgroup>
+
+                           <optgroup label="🏥 Industry Specific">
+                               <option value="HEALTHCARE">Healthcare / Medical</option>
+                               <option value="ENGINEERING">Engineering Conference</option>
+                               <option value="LEGAL">Legal Conference</option>
+                               <option value="ENVIRONMENTAL">Environmental / Sustainability</option>
+                           </optgroup>
+
+                           <optgroup label="🌐 Civic &amp; Social">
+                               <option value="NGO">NGO / Social Sector</option>
+                               <option value="GOVERNMENT">Government / Public Sector</option>
+                           </optgroup>
+
+                           <optgroup label="🎤 Event Formats">
+                               <option value="WORKSHOP">Workshop</option>
+                               <option value="SEMINAR">Seminar</option>
+                               <option value="WEBINAR">Webinar</option>
+                               <option value="PANEL">Panel Discussion</option>
+                               <option value="BOOTCAMP">Bootcamp</option>
+                               <option value="TRAINING">Training Program</option>
+                           </optgroup>
+
+                           <optgroup label="🌟 General">
+                               <option value="INNOVATION">Innovation Conference</option>
+                               <option value="GENERAL">General / Multi-domain</option>
+                           </optgroup>
+                       </select>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Mode *</label>
