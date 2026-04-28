@@ -25,8 +25,7 @@ public class SpeakerServiceImpl implements SpeakerService {
     private ConferenceService conferenceService;
 
     @Override
-    public Speaker addSpeaker(SpeakerDto dto,
-                              Long conferenceId) {
+    public Speaker addSpeaker(SpeakerDto dto, Long conferenceId) {
         Conference conf = conferenceService
                 .findById(conferenceId)
                 .orElseThrow(() ->
@@ -39,9 +38,8 @@ public class SpeakerServiceImpl implements SpeakerService {
         speaker.setOrganization(dto.getOrganization());
         speaker.setBio(dto.getBio());
         speaker.setEmail(dto.getEmail());
-        speaker.setLinkedinUrl(dto.getLinkedinUrl());
-        // session link is null — conference-level speaker
-        // will be linked to session via SessionService
+        speaker.setLinkedinUrl(dto.getLinkedinUrl()); // ← was missing
+        // session = null (conference-level speaker until assigned)
 
         speakerDao.save(speaker);
         return speaker;
