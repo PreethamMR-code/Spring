@@ -123,11 +123,11 @@
                                    small fw-semibold">
                                 LinkedIn URL
                             </label>
-                            <input type="text"
-                                   name="linkedinUrl"
-                                   class="form-control
-                                          form-control-sm"
-                                   placeholder="https://linkedin.com/in/..."/>
+
+                           <input type="text"
+                                  name="linkedinUrl"
+                                  class="form-control form-control-sm"
+                                  placeholder="https://linkedin.com/in/..."/>
                         </div>
                         <div class="mb-3">
                             <label class="form-label
