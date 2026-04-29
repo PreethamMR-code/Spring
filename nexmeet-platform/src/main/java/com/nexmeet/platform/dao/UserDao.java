@@ -42,5 +42,8 @@ public interface UserDao {
 
     long countAll();
 
+    // UserDao interface — add:
+    long countByRole(String roleName);
+
 
 }

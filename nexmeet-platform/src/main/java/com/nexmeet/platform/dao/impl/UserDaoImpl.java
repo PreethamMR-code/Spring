@@ -131,4 +131,15 @@ public class UserDaoImpl implements UserDao {
                 .getSingleResult();
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public long countByRole(String roleName) {
+        return (Long) sessionFactory.getCurrentSession()
+                .createQuery(
+                        "SELECT COUNT(u) FROM User u " +
+                                "JOIN u.roles r WHERE r.name = :role")
+                .setParameter("role", roleName)
+                .uniqueResult();
+    }
+
 }
