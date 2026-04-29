@@ -7,6 +7,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -148,6 +149,24 @@ public class ConferenceDaoImpl implements ConferenceDao {
                         Conference.class)
                 .setParameter("status", ConferenceStatus.APPROVED)
                 .setParameter("now", LocalDateTime.now())
+                .getResultList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Conference> findUpcoming(int limit) {
+        return getCurrentSession()
+                .createQuery(
+                        "FROM Conference c " +
+                                "WHERE c.status = :status " +
+                                "AND c.startDate > :now " +
+                                "ORDER BY c.startDate ASC",
+                        Conference.class)
+                .setParameter("status",
+                        ConferenceStatus.APPROVED)
+                .setParameter("now",
+                        java.time.LocalDateTime.now())
+                .setMaxResults(limit)
                 .getResultList();
     }
 }

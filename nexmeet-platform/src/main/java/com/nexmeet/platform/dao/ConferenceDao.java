@@ -35,4 +35,6 @@ public interface ConferenceDao {
     long countByStatus(ConferenceStatus status);
 
     List<Conference> findExpiredApproved();
+
+    List<Conference> findUpcoming(int limit);
 }
