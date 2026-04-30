@@ -46,4 +46,6 @@ public interface ConferenceService {
     void cancelConference(Long conferenceId,
                           String organizerEmail,
                           String reason);
+
+    List<Conference> getUpcomingConferences(int limit);
 }

@@ -242,4 +242,15 @@ public class ConferenceServiceImpl implements ConferenceService {
         conf.setRegisteredCount(0);
         conferenceDao.update(conf);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Conference> getUpcomingConferences(int limit) {
+        /*
+         * Upcoming = APPROVED status + startDate in future.
+         * Ordered by startDate ASC — soonest conference first.
+         * Limit prevents loading all conferences on home page.
+         */
+        return conferenceDao.findUpcoming(limit);
+    }
 }
