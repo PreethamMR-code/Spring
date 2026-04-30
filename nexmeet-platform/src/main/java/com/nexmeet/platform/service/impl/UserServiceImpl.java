@@ -155,4 +155,10 @@ public class UserServiceImpl implements UserService {
     public List<User> findAllUsers() {
         return userDao.findAll();
     }
+
+    // UserServiceImpl — add:
+    @Override
+    public long countByRole(String roleName) {
+        return userDao.countByRole(roleName);
+    }
 }

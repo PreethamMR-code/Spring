@@ -32,4 +32,9 @@ public interface UserService {
 
     List<User> findAllUsers();
 
+    // UserService interface — add:
+    long countByRole(String roleName);
+
+
+
 }

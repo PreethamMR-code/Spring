@@ -1,8 +1,6 @@
 package com.nexmeet.platform.entity;
 
 
-import com.nexmeet.platform.enums.ConferenceType;
-
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
