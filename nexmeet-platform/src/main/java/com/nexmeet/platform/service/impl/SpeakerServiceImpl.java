@@ -38,8 +38,9 @@ public class SpeakerServiceImpl implements SpeakerService {
         speaker.setOrganization(dto.getOrganization());
         speaker.setBio(dto.getBio());
         speaker.setEmail(dto.getEmail());
-        speaker.setLinkedinUrl(dto.getLinkedinUrl()); // ← was missing
-        // session = null (conference-level speaker until assigned)
+        speaker.setLinkedinUrl(dto.getLinkedinUrl()); // <- was missing
+        // session link is null - conference-level speaker
+        // will be linked to session via SessionService
 
         speakerDao.save(speaker);
         return speaker;
