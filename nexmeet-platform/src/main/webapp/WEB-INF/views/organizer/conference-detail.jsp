@@ -70,8 +70,8 @@
     </c:if>
 
     <%-- Speakers and Schedule buttons --%>
-    <c:if test="${conf.status != 'CANCELLED' &&
-                 conf.status != 'COMPLETED'}">
+
+    <c:if test="${conf.status != 'CANCELLED'}">
         <a href="${pageContext.request.contextPath}/organizer/conference/${conf.id}/speakers"
            class="btn btn-outline-success">
             🎤 Speakers
@@ -81,7 +81,6 @@
             📅 Schedule
         </a>
     </c:if>
-    <%-- Also show for completed so they can review --%>
     <c:if test="${conf.status == 'COMPLETED'}">
         <a href="${pageContext.request.contextPath}/organizer/conference/${conf.id}/speakers"
            class="btn btn-outline-secondary btn-sm">
