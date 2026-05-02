@@ -637,10 +637,37 @@
                             Browse Conferences
                         </a>
                     </sec:authorize>
-                    <sec:authorize access="isAuthenticated()">
+
+                    <sec:authorize access="hasRole('ROLE_DELEGATE')">
                         <a href="${pageContext.request.contextPath}/conferences"
                            class="btn-hero-primary">
                             Browse Conferences →
+                        </a>
+                        <a href="${pageContext.request.contextPath}/delegate/dashboard"
+                           class="btn-hero-secondary">
+                            My Registrations
+                        </a>
+                    </sec:authorize>
+
+                    <sec:authorize access="hasRole('ROLE_ORGANIZER')">
+                        <a href="${pageContext.request.contextPath}/organizer/conference/create"
+                           class="btn-hero-primary">
+                            + Create Conference
+                        </a>
+                        <a href="${pageContext.request.contextPath}/conferences"
+                           class="btn-hero-secondary">
+                            Browse Conferences
+                        </a>
+                    </sec:authorize>
+
+                    <sec:authorize access="hasRole('ROLE_SUPER_ADMIN')">
+                        <a href="${pageContext.request.contextPath}/admin/dashboard"
+                           class="btn-hero-primary">
+                            Admin Dashboard →
+                        </a>
+                        <a href="${pageContext.request.contextPath}/conferences"
+                           class="btn-hero-secondary">
+                            Browse Conferences
                         </a>
                     </sec:authorize>
                 </div>
@@ -1069,8 +1096,8 @@
                     Join hundreds of organizers who trust NexMeet
                     for professional event management.
                 </p>
-                <div class="d-flex gap-3 justify-content-center
-                            flex-wrap">
+
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
                     <sec:authorize access="isAnonymous()">
                         <a href="${pageContext.request.contextPath}/register"
                            class="btn-hero-primary">
@@ -1081,10 +1108,33 @@
                             Browse Conferences
                         </a>
                     </sec:authorize>
-                    <sec:authorize access="isAuthenticated()">
+
+                    <sec:authorize access="hasRole('ROLE_DELEGATE')">
                         <a href="${pageContext.request.contextPath}/conferences"
                            class="btn-hero-primary">
                             Browse Conferences →
+                        </a>
+                        <a href="${pageContext.request.contextPath}/delegate/dashboard"
+                           class="btn-hero-secondary">
+                            My Dashboard
+                        </a>
+                    </sec:authorize>
+
+                    <sec:authorize access="hasRole('ROLE_ORGANIZER')">
+                        <a href="${pageContext.request.contextPath}/organizer/conference/create"
+                           class="btn-hero-primary">
+                            Create New Conference →
+                        </a>
+                        <a href="${pageContext.request.contextPath}/organizer/conferences"
+                           class="btn-hero-secondary">
+                            My Conferences
+                        </a>
+                    </sec:authorize>
+
+                    <sec:authorize access="hasRole('ROLE_SUPER_ADMIN')">
+                        <a href="${pageContext.request.contextPath}/admin/dashboard"
+                           class="btn-hero-primary">
+                            Go to Dashboard →
                         </a>
                     </sec:authorize>
                 </div>
@@ -1097,56 +1147,88 @@
 <!-- FOOTER                                         -->
 <!-- ══════════════════════════════════════════════ -->
 <footer>
-    <div class="container">
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="footer-brand">NexMeet</div>
-                <div class="footer-tagline">
-                    Professional Conference Management Platform
-                </div>
-                <div class="mt-3" style="font-size:0.85rem;
-                     color:rgba(255,255,255,0.4)">
-                    Built with Spring MVC · Hibernate · MySQL
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="footer-heading">Platform</div>
-                <a href="${pageContext.request.contextPath}/conferences"
-                   class="footer-link">
-                    Browse Conferences
-                </a>
-                <a href="${pageContext.request.contextPath}/register"
-                   class="footer-link">
-                    Register
-                </a>
-                <a href="${pageContext.request.contextPath}/login"
-                   class="footer-link">
-                    Login
-                </a>
-            </div>
-            <div class="col-md-3">
-                <div class="footer-heading">For Organizers</div>
-                <a href="${pageContext.request.contextPath}/register"
-                   class="footer-link">
-                    Create Conference
-                </a>
-                <a href="${pageContext.request.contextPath}/organizer/dashboard"
-                   class="footer-link">
-                    Organizer Dashboard
-                </a>
-            </div>
-            <div class="col-md-3">
-                <div class="footer-heading">For Delegates</div>
-                <a href="${pageContext.request.contextPath}/conferences"
-                   class="footer-link">
-                    Find Conferences
-                </a>
-                <a href="${pageContext.request.contextPath}/delegate/dashboard"
-                   class="footer-link">
-                    My Registrations
-                </a>
-            </div>
-        </div>
+   <!-- Footer — replace the last two columns with this -->
+   <div class="col-md-3">
+       <div class="footer-heading">For Organizers</div>
+       <sec:authorize access="hasRole('ROLE_ORGANIZER')">
+           <a href="${pageContext.request.contextPath}/organizer/conference/create"
+              class="footer-link">
+               Create Conference
+           </a>
+           <a href="${pageContext.request.contextPath}/organizer/dashboard"
+              class="footer-link">
+               Organizer Dashboard
+           </a>
+           <a href="${pageContext.request.contextPath}/organizer/conferences"
+              class="footer-link">
+               My Conferences
+           </a>
+       </sec:authorize>
+       <sec:authorize access="isAnonymous()">
+           <a href="${pageContext.request.contextPath}/register"
+              class="footer-link">
+               Register as Organizer
+           </a>
+           <a href="${pageContext.request.contextPath}/login"
+              class="footer-link">
+               Organizer Login
+           </a>
+       </sec:authorize>
+       <sec:authorize access="hasRole('ROLE_SUPER_ADMIN')">
+           <a href="${pageContext.request.contextPath}/admin/dashboard"
+              class="footer-link">
+               Admin Dashboard
+           </a>
+           <a href="${pageContext.request.contextPath}/admin/conferences"
+              class="footer-link">
+               All Conferences
+           </a>
+       </sec:authorize>
+   </div>
+
+   <div class="col-md-3">
+       <div class="footer-heading">For Delegates</div>
+       <sec:authorize access="hasRole('ROLE_DELEGATE')">
+           <a href="${pageContext.request.contextPath}/conferences"
+              class="footer-link">
+               Find Conferences
+           </a>
+           <a href="${pageContext.request.contextPath}/delegate/dashboard"
+              class="footer-link">
+               My Registrations
+           </a>
+           <a href="${pageContext.request.contextPath}/profile"
+              class="footer-link">
+               My Profile
+           </a>
+       </sec:authorize>
+       <sec:authorize access="isAnonymous()">
+           <a href="${pageContext.request.contextPath}/conferences"
+              class="footer-link">
+               Find Conferences
+           </a>
+           <a href="${pageContext.request.contextPath}/register"
+              class="footer-link">
+               Register Free
+           </a>
+       </sec:authorize>
+       <sec:authorize access="hasRole('ROLE_ORGANIZER')">
+           <a href="${pageContext.request.contextPath}/conferences"
+              class="footer-link">
+               Browse Conferences
+           </a>
+       </sec:authorize>
+       <sec:authorize access="hasRole('ROLE_SUPER_ADMIN')">
+           <a href="${pageContext.request.contextPath}/admin/users"
+              class="footer-link">
+               Manage Users
+           </a>
+           <a href="${pageContext.request.contextPath}/admin/commission"
+              class="footer-link">
+               Revenue Settings
+           </a>
+       </sec:authorize>
+   </div>
 
         <div class="footer-divider"></div>
 
