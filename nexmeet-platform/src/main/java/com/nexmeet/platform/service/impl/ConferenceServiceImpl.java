@@ -9,6 +9,7 @@ import com.nexmeet.platform.entity.User;
 import com.nexmeet.platform.enums.ConferenceStatus;
 import com.nexmeet.platform.enums.RegistrationStatus;
 import com.nexmeet.platform.service.ConferenceService;
+import com.nexmeet.platform.service.EmailService;
 import com.nexmeet.platform.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,9 @@ public class ConferenceServiceImpl implements ConferenceService {
 
     @Autowired
     private RegistrationDao registrationDao;
+
+    @Autowired
+    private EmailService emailService;
 
 
     @Override
@@ -82,6 +86,13 @@ public class ConferenceServiceImpl implements ConferenceService {
                 "IN_APP"
         );
 
+
+        emailService.sendConferenceApproved(
+                conference.getOrganizer().getUser().getEmail(),
+                conference.getOrganizer().getUser().getFullName(),
+                conference.getTitle()
+        );
+
         conferenceDao.update(conference);
     }
 
@@ -99,6 +110,13 @@ public class ConferenceServiceImpl implements ConferenceService {
                 "Your conference \"" + conference.getTitle() +
                         "\" was rejected. Reason: " + reason,
                 "IN_APP"
+        );
+
+        emailService.sendConferenceRejected(
+                conference.getOrganizer().getUser().getEmail(),
+                conference.getOrganizer().getUser().getFullName(),
+                conference.getTitle(),
+                reason
         );
 
         conferenceDao.update(conference);
@@ -174,6 +192,13 @@ public class ConferenceServiceImpl implements ConferenceService {
                                         " and download your certificate." : "."),
                         "IN_APP"
                 );
+
+                emailService.sendConferenceCompleted(
+                        registration.getUser().getEmail(),
+                        registration.getUser().getFullName(),
+                        conference.getTitle()
+                );
+
             }
         }
     }
@@ -234,6 +259,13 @@ public class ConferenceServiceImpl implements ConferenceService {
                                 (reason != null && !reason.trim().isEmpty()
                                         ? " Reason: " + reason : ""),
                         "IN_APP"
+                );
+
+                emailService.sendConferenceCancelled(
+                        registration.getUser().getEmail(),
+                        registration.getUser().getFullName(),
+                        conference.getTitle(),
+                        reason
                 );
             }
         }
