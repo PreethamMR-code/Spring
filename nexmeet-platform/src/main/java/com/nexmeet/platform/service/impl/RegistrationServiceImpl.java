@@ -9,6 +9,7 @@ import com.nexmeet.platform.entity.QrCode;
 import com.nexmeet.platform.entity.Registration;
 import com.nexmeet.platform.entity.User;
 import com.nexmeet.platform.enums.RegistrationStatus;
+import com.nexmeet.platform.service.EmailService;
 import com.nexmeet.platform.service.NotificationService;
 import com.nexmeet.platform.service.QrCodeService;
 import com.nexmeet.platform.service.RegistrationService;
@@ -44,6 +45,9 @@ public class RegistrationServiceImpl implements RegistrationService {
     @Autowired
     private NotificationService notificationService;
 
+    @Autowired
+    private EmailService emailService;
+
     @Override
     @Transactional
     public String registerForConference(Long conferenceId, String userEmail) {
@@ -75,6 +79,22 @@ public class RegistrationServiceImpl implements RegistrationService {
 
 
         registrationDao.save(reg);
+
+        // After registrationDao.save(registration) — add:
+        try {
+            emailService.sendRegistrationConfirmation(
+                    user.getEmail(),
+                    user.getFullName(),
+                    conference.getTitle(),
+                    registration.getRegistrationNumber(),
+                    conference.getStartDate().toString()
+                            .substring(0, 10),
+                    conference.getVenueName() != null
+                            ? conference.getVenueName() : conference.getMode().name()
+            );
+        } catch (Exception e) {
+            // Email failure doesn't break registration
+        }
 
         // 5. Increment registered count
         conference.setRegisteredCount(conference.getRegisteredCount() + 1);
