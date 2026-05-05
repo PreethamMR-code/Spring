@@ -194,9 +194,9 @@ public class ConferenceServiceImpl implements ConferenceService {
                 );
 
                 emailService.sendConferenceCompleted(
-                        registration.getUser().getEmail(),
-                        registration.getUser().getFullName(),
-                        conference.getTitle()
+                        reg.getUser().getEmail(),
+                        reg.getUser().getFullName(),
+                        conf.getTitle()
                 );
 
             }
@@ -262,9 +262,9 @@ public class ConferenceServiceImpl implements ConferenceService {
                 );
 
                 emailService.sendConferenceCancelled(
-                        registration.getUser().getEmail(),
-                        registration.getUser().getFullName(),
-                        conference.getTitle(),
+                        reg.getUser().getEmail(),
+                        reg.getUser().getFullName(),
+                        conf.getTitle(),
                         reason
                 );
             }
