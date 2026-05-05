@@ -9,6 +9,7 @@ import com.nexmeet.platform.entity.QrCode;
 import com.nexmeet.platform.entity.Registration;
 import com.nexmeet.platform.entity.User;
 import com.nexmeet.platform.enums.RegistrationStatus;
+import com.nexmeet.platform.enums.RegistrationType;
 import com.nexmeet.platform.service.EmailService;
 import com.nexmeet.platform.service.NotificationService;
 import com.nexmeet.platform.service.QrCodeService;
@@ -75,18 +76,18 @@ public class RegistrationServiceImpl implements RegistrationService {
         reg.setUser(user);
         reg.setRegistrationNumber("NM-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         reg.setStatus(RegistrationStatus.CONFIRMED);
-        reg.setRegistrationType(RegistrationStatus.CONFIRMED);
+        reg.setRegistrationType(RegistrationType.INDIVIDUAL);
 
 
         registrationDao.save(reg);
 
-        // After registrationDao.save(registration) — add:
+
         try {
             emailService.sendRegistrationConfirmation(
                     user.getEmail(),
                     user.getFullName(),
                     conference.getTitle(),
-                    registration.getRegistrationNumber(),
+                    reg.getRegistrationNumber(),
                     conference.getStartDate().toString()
                             .substring(0, 10),
                     conference.getVenueName() != null
