@@ -5,10 +5,7 @@ import com.nexmeet.platform.dao.OrganizerDao;
 import com.nexmeet.platform.entity.Conference;
 import com.nexmeet.platform.enums.ConferenceStatus;
 import com.nexmeet.platform.enums.VerificationStatus;
-import com.nexmeet.platform.service.CommissionService;
-import com.nexmeet.platform.service.ConferenceService;
-import com.nexmeet.platform.service.NotificationService;
-import com.nexmeet.platform.service.UserService;
+import com.nexmeet.platform.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -36,6 +33,10 @@ public class AdminController {
 
     @Autowired
     private CommissionService commissionService;
+
+    @Autowired
+    private EmailService emailService;
+
 
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication auth) {
@@ -167,6 +168,12 @@ public class AdminController {
                             "You can now create and submit conferences.",
                     "IN_APP"
             );
+
+            emailService.sendOrganizerVerified(
+                    org.getUser().getEmail(),
+                    org.getUser().getFullName()
+            );
+
         });
         flash.addFlashAttribute("success",
                 "Organizer approved successfully!");
