@@ -2,6 +2,7 @@ package com.nexmeet.platform.entity;
 
 
 import com.nexmeet.platform.enums.RegistrationStatus;
+import com.nexmeet.platform.enums.RegistrationType;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -58,7 +59,7 @@ public class Registration {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "registration_type", nullable = false, length = 20)
-    private RegistrationStatus registrationType = RegistrationStatus.CONFIRMED;
+    private RegistrationType registrationType = RegistrationType.INDIVIDUAL;
 
     /*
      * bulk_upload_id links this registration to a BulkUpload record
@@ -100,8 +101,10 @@ public class Registration {
     public String getRegistrationNumber() { return registrationNumber; }
     public void setRegistrationNumber(String registrationNumber) { this.registrationNumber = registrationNumber; }
 
-    public RegistrationStatus getRegistrationType() { return registrationType; }
-    public void setRegistrationType(RegistrationStatus registrationType) { this.registrationType = registrationType; }
+    public RegistrationType getRegistrationType() { return registrationType; }
+    public void setRegistrationType(RegistrationType t) {
+        this.registrationType = t;
+    }
 
     public Long getBulkUploadId() { return bulkUploadId; }
     public void setBulkUploadId(Long bulkUploadId) { this.bulkUploadId = bulkUploadId; }
