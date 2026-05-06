@@ -14,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpServletResponse;
@@ -50,6 +51,9 @@ public class OrganizerController {
 
     @Autowired
     private SessionService sessionService;
+
+    @Autowired
+    private BulkUploadService bulkUploadService;
 
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication auth) {
@@ -764,5 +768,88 @@ public class OrganizerController {
         }
         return "redirect:/organizer/conference/" + id +
                 "/schedule";
+    }
+
+
+    /*
+     * GET: Show bulk upload page for a conference.
+     * Shows upload form + history of previous uploads.
+     */
+    @GetMapping("/conference/{id}/bulk-upload")
+    public String showBulkUpload(
+            @PathVariable Long id,
+            Model model,
+            Authentication auth,
+            RedirectAttributes flash) {
+
+        Conference conf = conferenceService.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Not found"));
+
+        if (!conf.getOrganizer().getUser()
+                .getEmail().equals(auth.getName())) {
+            return "redirect:/organizer/conferences";
+        }
+
+        if (!conf.isBulkUploadAllowed()) {
+            flash.addFlashAttribute("error",
+                    "Bulk upload is not enabled for " +
+                            "this conference.");
+            return "redirect:/organizer/conference/" + id;
+        }
+
+        model.addAttribute("conf", conf);
+        model.addAttribute("uploadHistory",
+                bulkUploadService.getUploadHistory(id));
+        return "organizer/bulk-upload";
+    }
+
+    /*
+     * POST: Process the uploaded CSV file.
+     */
+    @PostMapping("/conference/{id}/bulk-upload")
+    public String processBulkUpload(
+            @PathVariable Long id,
+            @RequestParam("file") MultipartFile file,
+            Authentication auth,
+            RedirectAttributes flash) {
+
+        if (file.isEmpty()) {
+            flash.addFlashAttribute("error",
+                    "Please select a CSV file to upload.");
+            return "redirect:/organizer/conference/"
+                    + id + "/bulk-upload";
+        }
+
+        String filename = file.getOriginalFilename();
+        if (filename == null ||
+                (!filename.endsWith(".csv") &&
+                        !filename.endsWith(".CSV"))) {
+            flash.addFlashAttribute("error",
+                    "Only CSV files are accepted. " +
+                            "Please upload a .csv file.");
+            return "redirect:/organizer/conference/"
+                    + id + "/bulk-upload";
+        }
+
+        try {
+            com.nexmeet.platform.entity.BulkUpload result =
+                    bulkUploadService.processBulkUpload(
+                            id, auth.getName(), file);
+
+            flash.addFlashAttribute("uploadResult", result);
+            flash.addFlashAttribute("success",
+                    "Upload complete: " +
+                            result.getSuccessfulRows() +
+                            " registered, " +
+                            result.getFailedRows() + " failed.");
+
+        } catch (Exception e) {
+            flash.addFlashAttribute("error",
+                    "Upload failed: " + e.getMessage());
+        }
+
+        return "redirect:/organizer/conference/"
+                + id + "/bulk-upload";
     }
 }
