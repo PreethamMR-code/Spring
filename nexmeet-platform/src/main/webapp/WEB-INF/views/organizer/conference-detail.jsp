@@ -69,6 +69,14 @@
         </a>
     </c:if>
 
+    <c:if test="${conf.bulkUploadAllowed &&
+                 conf.status == 'APPROVED'}">
+        <a href="${pageContext.request.contextPath}/organizer/conference/${conf.id}/bulk-upload"
+           class="btn btn-outline-warning">
+            📋 Bulk Upload
+        </a>
+    </c:if>
+
     <%-- Speakers and Schedule buttons --%>
 
     <c:if test="${conf.status != 'CANCELLED'}">
