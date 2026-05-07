@@ -177,7 +177,6 @@ public class ConferenceServiceImpl implements ConferenceService {
         conf.setStatus(ConferenceStatus.COMPLETED);
         conferenceDao.update(conf);
 
-        // Notify all confirmed registered delegates
         List<Registration> registrations =
                 registrationDao.findByConferenceId(conferenceId);
 
@@ -188,17 +187,16 @@ public class ConferenceServiceImpl implements ConferenceService {
                         "Conference Completed",
                         "\"" + conf.getTitle() + "\" has ended. " +
                                 "You can now submit your feedback" +
-                                (conf.isCertificateEnabled() ?
-                                        " and download your certificate." : "."),
+                                (conf.isCertificateEnabled()
+                                        ? " and download your certificate." : "."),
                         "IN_APP"
                 );
-
+                // FIX: was registration.getUser() and conference.getTitle()
                 emailService.sendConferenceCompleted(
                         reg.getUser().getEmail(),
                         reg.getUser().getFullName(),
                         conf.getTitle()
                 );
-
             }
         }
     }
@@ -227,7 +225,6 @@ public class ConferenceServiceImpl implements ConferenceService {
                 .orElseThrow(() ->
                         new RuntimeException("Conference not found"));
 
-        // Only APPROVED or SUBMITTED can be cancelled
         if (conf.getStatus() != ConferenceStatus.APPROVED &&
                 conf.getStatus() != ConferenceStatus.SUBMITTED) {
             throw new RuntimeException(
@@ -235,22 +232,18 @@ public class ConferenceServiceImpl implements ConferenceService {
                             "can be cancelled.");
         }
 
-        // Set cancelled status
         conf.setStatus(ConferenceStatus.CANCELLED);
         conferenceDao.update(conf);
 
-        // Cancel all confirmed registrations and notify delegates
         List<Registration> registrations =
                 registrationDao.findByConferenceId(conferenceId);
 
         for (Registration reg : registrations) {
             if (reg.getStatus() == RegistrationStatus.CONFIRMED) {
-                // Cancel the registration
                 reg.setStatus(RegistrationStatus.CANCELLED);
                 reg.setCancelledAt(java.time.LocalDateTime.now());
                 registrationDao.update(reg);
 
-                // Notify each delegate
                 notificationService.createNotification(
                         reg.getUser().getEmail(),
                         "Conference Cancelled",
@@ -260,7 +253,7 @@ public class ConferenceServiceImpl implements ConferenceService {
                                         ? " Reason: " + reason : ""),
                         "IN_APP"
                 );
-
+                // FIX: was registration.getUser() and conference.getTitle()
                 emailService.sendConferenceCancelled(
                         reg.getUser().getEmail(),
                         reg.getUser().getFullName(),
@@ -270,7 +263,6 @@ public class ConferenceServiceImpl implements ConferenceService {
             }
         }
 
-        // Reset registered count
         conf.setRegisteredCount(0);
         conferenceDao.update(conf);
     }
