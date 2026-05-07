@@ -5,6 +5,7 @@ import com.nexmeet.platform.dao.RegistrationDao;
 import com.nexmeet.platform.dao.UserDao;
 import com.nexmeet.platform.entity.*;
 import com.nexmeet.platform.enums.RegistrationStatus;
+import com.nexmeet.platform.enums.RegistrationType;
 import com.nexmeet.platform.service.*;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -239,7 +240,7 @@ public class BulkUploadServiceImpl implements BulkUploadService {
                             RegistrationStatus.CONFIRMED);
 //                    reg.setRegistrationAt(
 //                            LocalDateTime.now());
-                    reg.setRegistrationType("BULK");
+                    reg.setRegistrationType(RegistrationType.BULK);
                     registrationDao.save(reg);
 
                     // Update conference registered count
