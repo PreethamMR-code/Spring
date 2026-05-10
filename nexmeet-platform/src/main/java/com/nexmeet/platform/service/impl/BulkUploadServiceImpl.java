@@ -86,7 +86,7 @@ public class BulkUploadServiceImpl implements BulkUploadService {
         int failCount = 0;
         StringBuilder errorLog = new StringBuilder();
 
-        try {
+
             /*
              * Parse CSV using Apache Commons CSV.
              * We use withFirstRecordAsHeader() so organizers
@@ -100,222 +100,191 @@ public class BulkUploadServiceImpl implements BulkUploadService {
              * Column 0 = name, Column 1 = email,
              * Column 2 = phone (optional)
              */
-            InputStreamReader reader =
-                    new InputStreamReader(
-                            file.getInputStream(),
-                            StandardCharsets.UTF_8);
+            try {
+                String originalFilename = file.getOriginalFilename();
 
-            CSVParser parser = CSVFormat.DEFAULT
-                    .withFirstRecordAsHeader()
-                    .withIgnoreEmptyLines()
-                    .withTrim()
-                    .parse(reader);
+                if (isExcelFile(originalFilename)) {
+                    // ── EXCEL PARSING PATH ──────────────────────
+                    org.apache.poi.ss.usermodel.Workbook workbook;
 
-            Map<String, Integer> headerMap =
-                    parser.getHeaderMap();
-
-            // Detect column mapping
-            boolean hasHeaders = headerMap != null
-                    && !headerMap.isEmpty();
-
-            for (CSVRecord record : parser) {
-                totalRows++;
-                int rowNum = (int) record.getRecordNumber();
-
-                try {
-                    String fullName, email, phone;
-
-                    if (hasHeaders) {
-                        // Case-insensitive header lookup
-                        fullName = getColumnValue(
-                                record, headerMap,
-                                "full_name", "fullname",
-                                "name", "Full Name", "Name");
-                        email = getColumnValue(
-                                record, headerMap,
-                                "email", "Email",
-                                "email_address");
-                        phone = getColumnValue(
-                                record, headerMap,
-                                "phone", "Phone",
-                                "mobile", "phone_number");
+                    String lower = originalFilename.toLowerCase();
+                    if (lower.endsWith(".xlsx")) {
+                        workbook = new org.apache.poi.xssf.usermodel
+                                .XSSFWorkbook(file.getInputStream());
                     } else {
-                        fullName = record.get(0).trim();
-                        email = record.size() > 1
-                                ? record.get(1).trim() : "";
-                        phone = record.size() > 2
-                                ? record.get(2).trim() : "";
+                        workbook = new org.apache.poi.hssf.usermodel
+                                .HSSFWorkbook(file.getInputStream());
                     }
 
-                    // Validate required fields
-                    if (fullName == null ||
-                            fullName.isEmpty()) {
-                        errorLog.append("Row ").append(rowNum)
-                                .append(": Full name is required\n");
-                        failCount++;
-                        continue;
-                    }
+                    org.apache.poi.ss.usermodel.Sheet sheet =
+                            workbook.getSheetAt(0);
 
-                    if (email == null || email.isEmpty() ||
-                            !email.contains("@")) {
-                        errorLog.append("Row ").append(rowNum)
-                                .append(": Invalid email: ")
-                                .append(email).append("\n");
-                        failCount++;
-                        continue;
-                    }
+                    /*
+                     * Read header row to find column indices.
+                     * Excel headers: full_name, email, phone
+                     * (case-insensitive, same as CSV)
+                     */
+                    org.apache.poi.ss.usermodel.Row headerRow =
+                            sheet.getRow(0);
 
-                    email = email.toLowerCase().trim();
+                    int nameCol = -1, emailCol = -1, phoneCol = -1;
 
-                    // Check seat capacity
-                    if (conference.getRegisteredCount()
-                            >= conference.getMaxDelegates()) {
-                        errorLog.append("Row ").append(rowNum)
-                                .append(": Conference is full. " +
-                                        "No more seats available.\n");
-                        failCount++;
-                        continue;
-                    }
-
-                    // Find or create user
-                    String tempPassword = null;
-                    boolean isNewUser = false;
-
-                    Optional<User> existingUser =
-                            userDao.findByEmail(email);
-                    User delegateUser;
-
-                    if (existingUser.isPresent()) {
-                        delegateUser = existingUser.get();
-                    } else {
-                        // Create new account with
-                        // a temporary password
-                        tempPassword =
-                                generateTempPassword();
-                        delegateUser = new User();
-                        delegateUser.setFullName(fullName);
-                        delegateUser.setEmail(email);
-                        delegateUser.setPhone(
-                                phone != null &&
-                                        !phone.isEmpty() ? phone : null);
-                        delegateUser.setPasswordHash(
-                                passwordEncoder.encode(
-                                        tempPassword));
-                        delegateUser.setActive(true);
-
-                        // Assign DELEGATE role
-                        Role delegateRole = getDelegateRole();
-                        if (delegateRole != null) {
-                            delegateUser.setRoles(
-                                    new HashSet<>(
-                                            Arrays.asList(
-                                                    delegateRole)));
+                    if (headerRow != null) {
+                        for (int c = 0; c < headerRow.getLastCellNum();
+                             c++) {
+                            org.apache.poi.ss.usermodel.Cell cell =
+                                    headerRow.getCell(c);
+                            if (cell == null) continue;
+                            String h = cell.getStringCellValue()
+                                    .trim().toLowerCase();
+                            if (h.equals("full_name") ||
+                                    h.equals("fullname") ||
+                                    h.equals("name")) {
+                                nameCol = c;
+                            } else if (h.equals("email") ||
+                                    h.equals("email_address")) {
+                                emailCol = c;
+                            } else if (h.equals("phone") ||
+                                    h.equals("mobile") ||
+                                    h.equals("phone_number")) {
+                                phoneCol = c;
+                            }
                         }
-
-                        userDao.save(delegateUser);
-                        isNewUser = true;
                     }
 
-                    // Check if already registered
-                    if (registrationDao
-                            .existsByConferenceAndUser(
-                                    conferenceId,
-                                    delegateUser.getId())) {
-                        errorLog.append("Row ")
-                                .append(rowNum)
-                                .append(": ")
-                                .append(email)
-                                .append(" already registered\n");
-                        failCount++;
-                        continue;
-                    }
+                    // Default column positions if no header found
+                    if (nameCol == -1) nameCol = 0;
+                    if (emailCol == -1) emailCol = 1;
+                    if (phoneCol == -1) phoneCol = 2;
 
-                    // Create registration
-                    Registration reg = new Registration();
-                    reg.setConference(conference);
-                    reg.setUser(delegateUser);
-                    reg.setRegistrationNumber(
-                            generateRegistrationNumber());
-                    reg.setStatus(
-                            RegistrationStatus.CONFIRMED);
-//                    reg.setRegistrationAt(
-//                            LocalDateTime.now());
-                    reg.setRegistrationType(RegistrationType.BULK);
-                    registrationDao.save(reg);
+                    /*
+                     * Start from row index 1 to skip header row.
+                     * getLastRowNum() is 0-indexed.
+                     */
+                    int startRow = (headerRow != null) ? 1 : 0;
 
-                    // Update conference registered count
-                    conference.setRegisteredCount(
-                            conference.getRegisteredCount() + 1);
-                    conferenceService.update(conference);
+                    for (int r = startRow;
+                         r <= sheet.getLastRowNum(); r++) {
+                        org.apache.poi.ss.usermodel.Row row =
+                                sheet.getRow(r);
 
-                    // Send in-app notification
-                    notificationService.createNotification(
-                            email,
-                            "Conference Registration",
-                            "You have been registered for: " +
-                                    conference.getTitle() +
-                                    ". Registration No: " +
-                                    reg.getRegistrationNumber(),
-                            "IN_APP"
-                    );
+                        // Skip completely empty rows
+                        if (row == null) continue;
 
-                    // Send email
-                    String finalTemp = tempPassword;
-                    boolean finalIsNew = isNewUser;
-                    String regNum =
-                            reg.getRegistrationNumber();
+                        totalRows++;
+                        int rowNum = r + 1; // 1-based for error log
 
-                    try {
-                        if (finalIsNew) {
-                            sendBulkWelcomeEmail(
-                                    email, fullName,
-                                    conference.getTitle(),
-                                    regNum, finalTemp);
-                        } else {
-                            emailService
-                                    .sendRegistrationConfirmation(
-                                            email, fullName,
-                                            conference.getTitle(),
-                                            regNum,
-                                            conference.getStartDate()
-                                                    .toString()
-                                                    .substring(0, 10),
-                                            conference.getVenueName()
-                                                    != null
-                                                    ? conference
-                                                    .getVenueName()
-                                                    : conference.getMode()
-                                                    .name());
+                        try {
+                            String fullName = getCellString(
+                                    row, nameCol);
+                            String email   = getCellString(
+                                    row, emailCol);
+                            String phone   = getCellString(
+                                    row, phoneCol);
+
+                            // Reuse the same validation and
+                            // registration logic as CSV path
+                            String result = processOneRow(
+                                    fullName, email, phone,
+                                    rowNum, conference,
+                                    conferenceId, errorLog);
+
+                            if ("SUCCESS".equals(result)) {
+                                successCount++;
+                            } else {
+                                failCount++;
+                            }
+
+                        } catch (Exception rowEx) {
+                            errorLog.append("Row ").append(rowNum)
+                                    .append(": Unexpected error: ")
+                                    .append(rowEx.getMessage())
+                                    .append("\n");
+                            failCount++;
                         }
-                    } catch (Exception e) {
-                        // Email failure doesn't fail row
                     }
 
-                    successCount++;
+                    workbook.close();
 
-                } catch (Exception rowEx) {
-                    errorLog.append("Row ").append(rowNum)
-                            .append(": Unexpected error: ")
-                            .append(rowEx.getMessage())
-                            .append("\n");
-                    failCount++;
+                } else {
+                    // ── CSV PARSING PATH ─────────────────────────
+                    InputStreamReader reader =
+                            new InputStreamReader(
+                                    file.getInputStream(),
+                                    StandardCharsets.UTF_8);
+
+                    CSVParser parser = CSVFormat.DEFAULT
+                            .withFirstRecordAsHeader()
+                            .withIgnoreEmptyLines()
+                            .withTrim()
+                            .parse(reader);
+
+                    Map<String, Integer> headerMap =
+                            parser.getHeaderMap();
+                    boolean hasHeaders = headerMap != null
+                            && !headerMap.isEmpty();
+
+                    for (CSVRecord record : parser) {
+                        totalRows++;
+                        int rowNum = (int) record.getRecordNumber();
+
+                        try {
+                            String fullName, email, phone;
+
+                            if (hasHeaders) {
+                                fullName = getColumnValue(record,
+                                        headerMap, "full_name",
+                                        "fullname", "name",
+                                        "Full Name", "Name");
+                                email = getColumnValue(record,
+                                        headerMap, "email", "Email",
+                                        "email_address");
+                                phone = getColumnValue(record,
+                                        headerMap, "phone", "Phone",
+                                        "mobile", "phone_number");
+                            } else {
+                                fullName = record.get(0).trim();
+                                email    = record.size() > 1
+                                        ? record.get(1).trim() : "";
+                                phone    = record.size() > 2
+                                        ? record.get(2).trim() : "";
+                            }
+
+                            String result = processOneRow(
+                                    fullName, email, phone,
+                                    rowNum, conference,
+                                    conferenceId, errorLog);
+
+                            if ("SUCCESS".equals(result)) {
+                                successCount++;
+                            } else {
+                                failCount++;
+                            }
+
+                        } catch (Exception rowEx) {
+                            errorLog.append("Row ").append(rowNum)
+                                    .append(": Unexpected error: ")
+                                    .append(rowEx.getMessage())
+                                    .append("\n");
+                            failCount++;
+                        }
+                    }
+
+                    parser.close();
                 }
+
+            } catch (Exception e) {
+                upload.setStatus("FAILED");
+                upload.setErrorLog(
+                        "File parsing failed: " + e.getMessage());
+                upload.setTotalRows(0);
+                upload.setSuccessfulRows(0);
+                upload.setFailedRows(0);
+                upload.setCompletedAt(LocalDateTime.now());
+                bulkUploadDao.update(upload);
+                throw new RuntimeException(
+                        "File parsing failed: " + e.getMessage());
             }
-
-            parser.close();
-
-        } catch (Exception e) {
-            upload.setStatus("FAILED");
-            upload.setErrorLog(
-                    "File parsing failed: " + e.getMessage());
-            upload.setTotalRows(0);
-            upload.setSuccessfulRows(0);
-            upload.setFailedRows(0);
-            upload.setCompletedAt(LocalDateTime.now());
-            bulkUploadDao.update(upload);
-            throw new RuntimeException(
-                    "CSV parsing failed: " + e.getMessage());
-        }
 
         // Update upload record with results
         upload.setTotalRows(totalRows);
@@ -354,6 +323,18 @@ public class BulkUploadServiceImpl implements BulkUploadService {
         return null;
     }
 
+    /*
+     * Determines if the uploaded file is Excel based
+     * on the original filename extension.
+     */
+    private boolean isExcelFile(String filename) {
+        if (filename == null) return false;
+        String lower = filename.toLowerCase();
+        return lower.endsWith(".xlsx") || lower.endsWith(".xls");
+    }
+
+
+
     private String generateRegistrationNumber() {
         return "NM-" + Long.toHexString(
                         System.currentTimeMillis()).toUpperCase()
@@ -369,6 +350,180 @@ public class BulkUploadServiceImpl implements BulkUploadService {
     private String generateTempPassword() {
         int num = new Random().nextInt(9000) + 1000;
         return "NexMeet" + num;
+    }
+
+    /*
+     * Reads a cell value as String regardless of cell type.
+     * Excel cells can be NUMERIC, STRING, FORMULA, BLANK.
+     * We handle all cases and return clean trimmed String.
+     */
+    private String getCellString(
+            org.apache.poi.ss.usermodel.Row row,
+            int colIndex) {
+        if (colIndex < 0) return "";
+        org.apache.poi.ss.usermodel.Cell cell =
+                row.getCell(colIndex);
+        if (cell == null) return "";
+
+        switch (cell.getCellType()) {
+            case STRING:
+                return cell.getStringCellValue().trim();
+            case NUMERIC:
+                // Phone numbers stored as numbers in Excel
+                // Convert to long to remove decimal point
+                return String.valueOf(
+                        (long) cell.getNumericCellValue());
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            case FORMULA:
+                try {
+                    return cell.getStringCellValue().trim();
+                } catch (Exception e) {
+                    return String.valueOf(
+                            (long) cell.getNumericCellValue());
+                }
+            default:
+                return "";
+        }
+    }
+
+    /*
+     * Core per-row processing logic — shared between
+     * CSV and Excel paths.
+     *
+     * Returns "SUCCESS" or an error reason string.
+     * Appends error messages to errorLog.
+     * Handles: validate → find/create user →
+     *          check duplicate → register →
+     *          notify → email
+     */
+    private String processOneRow(
+            String fullName,
+            String email,
+            String phone,
+            int rowNum,
+            Conference conference,
+            Long conferenceId,
+            StringBuilder errorLog) {
+
+        // Validate name
+        if (fullName == null || fullName.isEmpty()) {
+            errorLog.append("Row ").append(rowNum)
+                    .append(": Full name is required\n");
+            return "FAIL";
+        }
+
+        // Validate email
+        if (email == null || email.isEmpty()
+                || !email.contains("@")) {
+            errorLog.append("Row ").append(rowNum)
+                    .append(": Invalid email: ")
+                    .append(email).append("\n");
+            return "FAIL";
+        }
+
+        email = email.toLowerCase().trim();
+
+        // Check seat capacity
+        if (conference.getRegisteredCount()
+                >= conference.getMaxDelegates()) {
+            errorLog.append("Row ").append(rowNum)
+                    .append(": Conference is full.\n");
+            return "FAIL";
+        }
+
+        // Find or create user
+        String tempPassword = null;
+        boolean isNewUser = false;
+
+        Optional<User> existingUser =
+                userDao.findByEmail(email);
+        User delegateUser;
+
+        if (existingUser.isPresent()) {
+            delegateUser = existingUser.get();
+        } else {
+            tempPassword = generateTempPassword();
+            delegateUser = new User();
+            delegateUser.setFullName(fullName);
+            delegateUser.setEmail(email);
+            delegateUser.setPhone(
+                    phone != null && !phone.isEmpty()
+                            ? phone : null);
+            delegateUser.setPasswordHash(
+                    passwordEncoder.encode(tempPassword));
+            delegateUser.setActive(true);
+
+            Role delegateRole = getDelegateRole();
+            if (delegateRole != null) {
+                delegateUser.setRoles(
+                        new HashSet<>(Arrays.asList(
+                                delegateRole)));
+            }
+
+            userDao.save(delegateUser);
+            isNewUser = true;
+        }
+
+        // Check duplicate registration
+        if (registrationDao.existsByConferenceAndUser(
+                conferenceId, delegateUser.getId())) {
+            errorLog.append("Row ").append(rowNum)
+                    .append(": ").append(email)
+                    .append(" already registered\n");
+            return "FAIL";
+        }
+
+        // Create registration
+        Registration reg = new Registration();
+        reg.setConference(conference);
+        reg.setUser(delegateUser);
+        reg.setRegistrationNumber(
+                generateRegistrationNumber());
+        reg.setStatus(RegistrationStatus.CONFIRMED);
+        reg.setRegistrationType(RegistrationType.BULK);
+        registrationDao.save(reg);
+
+        // Update seat count
+        conference.setRegisteredCount(
+                conference.getRegisteredCount() + 1);
+        conferenceService.update(conference);
+
+        // In-app notification
+        notificationService.createNotification(
+                email,
+                "Conference Registration",
+                "You have been registered for: " +
+                        conference.getTitle() +
+                        ". Registration No: " +
+                        reg.getRegistrationNumber(),
+                "IN_APP"
+        );
+
+        // Email
+        try {
+            if (isNewUser) {
+                sendBulkWelcomeEmail(
+                        email, fullName,
+                        conference.getTitle(),
+                        reg.getRegistrationNumber(),
+                        tempPassword);
+            } else {
+                emailService.sendRegistrationConfirmation(
+                        email, fullName,
+                        conference.getTitle(),
+                        reg.getRegistrationNumber(),
+                        conference.getStartDate()
+                                .toString().substring(0, 10),
+                        conference.getVenueName() != null
+                                ? conference.getVenueName()
+                                : conference.getMode().name());
+            }
+        } catch (Exception e) {
+            // Email failure never fails registration
+        }
+
+        return "SUCCESS";
     }
 
     private Role getDelegateRole() {
