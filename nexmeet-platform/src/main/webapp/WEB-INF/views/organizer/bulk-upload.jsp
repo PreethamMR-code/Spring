@@ -305,13 +305,12 @@
                         </div>
                     </div>
 
-                    <form action="${pageContext.request.contextPath}/organizer/conference/${conf.id}/bulk-upload"
+                    <%-- AFTER — CSRF in URL query param (works with multipart) --%>
+                    <form action="${pageContext.request.contextPath}/organizer/conference/${conf.id}/bulk-upload?${_csrf.parameterName}=${_csrf.token}"
                           method="post"
                           enctype="multipart/form-data"
                           id="uploadForm">
-                        <input type="hidden"
-                               name="${_csrf.parameterName}"
-                               value="${_csrf.token}"/>
+                        <%-- No hidden CSRF field needed — its in the URL now --%>
 
                         <!-- Drop zone -->
                         <div class="upload-zone"
