@@ -816,18 +816,26 @@ public class OrganizerController {
 
         if (file.isEmpty()) {
             flash.addFlashAttribute("error",
-                    "Please select a CSV file to upload.");
+                    "Please select a file to upload.");
             return "redirect:/organizer/conference/"
                     + id + "/bulk-upload";
         }
 
         String filename = file.getOriginalFilename();
-        if (filename == null ||
-                (!filename.endsWith(".csv") &&
-                        !filename.endsWith(".CSV"))) {
+        if (filename == null) {
+            flash.addFlashAttribute("error", "Invalid file.");
+            return "redirect:/organizer/conference/"
+                    + id + "/bulk-upload";
+        }
+
+        // Accept both CSV and Excel
+        String lower = filename.toLowerCase();
+        if (!lower.endsWith(".csv") &&
+                !lower.endsWith(".xlsx") &&
+                !lower.endsWith(".xls")) {
             flash.addFlashAttribute("error",
-                    "Only CSV files are accepted. " +
-                            "Please upload a .csv file.");
+                    "Only CSV or Excel (.xlsx, .xls) " +
+                            "files are accepted.");
             return "redirect:/organizer/conference/"
                     + id + "/bulk-upload";
         }
