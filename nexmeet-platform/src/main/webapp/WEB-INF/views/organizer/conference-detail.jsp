@@ -53,31 +53,9 @@
         </div>
     </c:if>
 
-    <c:if test="${conf.status == 'APPROVED' ||
-                 conf.status == 'SUBMITTED' ||
-                 conf.status == 'DRAFT'}">
-        <a href="${pageContext.request.contextPath}/organizer/conference/${conf.id}/speakers"
-           class="btn btn-outline-success">
-            🎤 Speakers
-        </a>
-    </c:if>
 
-    <c:if test="${conf.status != 'CANCELLED'}">
-        <a href="${pageContext.request.contextPath}/organizer/conference/${conf.id}/schedule"
-           class="btn btn-outline-info">
-            📅 Schedule
-        </a>
-    </c:if>
+        <%-- Speakers and Schedule buttons --%>
 
-    <c:if test="${conf.bulkUploadAllowed &&
-                 conf.status == 'APPROVED'}">
-        <a href="${pageContext.request.contextPath}/organizer/conference/${conf.id}/bulk-upload"
-           class="btn btn-outline-warning">
-            📋 Bulk Upload
-        </a>
-    </c:if>
-
-    <%-- Speakers and Schedule buttons --%>
 
     <c:if test="${conf.status != 'CANCELLED'}">
         <a href="${pageContext.request.contextPath}/organizer/conference/${conf.id}/speakers"
@@ -99,6 +77,15 @@
             📅 View Schedule
         </a>
     </c:if>
+
+    <c:if test="${conf.bulkUploadAllowed &&
+                 conf.status == 'APPROVED'}">
+        <a href="${pageContext.request.contextPath}/organizer/conference/${conf.id}/bulk-upload"
+           class="btn btn-outline-warning">
+            📋 Bulk Upload
+        </a>
+    </c:if>
+
 
     <!-- Stats Cards (only for APPROVED) -->
     <c:if test="${conf.status == 'APPROVED'}">
