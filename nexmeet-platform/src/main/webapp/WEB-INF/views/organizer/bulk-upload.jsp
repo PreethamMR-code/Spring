@@ -325,14 +325,14 @@
                                 &amp; drop
                             </div>
                             <div class="upload-zone-desc">
-                                Supports .csv files only
+                                Supports .csv and .xlsx (Excel) files
                             </div>
                         </div>
 
                         <input type="file"
                                name="file"
                                id="csvFile"
-                               accept=".csv"
+                               accept=".csv,.xlsx,.xls"
                                style="display:none"
                                onchange="fileSelected(this)"/>
 
@@ -365,9 +365,11 @@
                 <h6 class="fw-bold mb-3">
                     📋 CSV Format Guide
                 </h6>
+
                 <p class="small text-muted mb-3">
-                    Your CSV file must have these columns
-                    (header row required):
+                    Upload a <strong>CSV</strong> or
+                    <strong>Excel (.xlsx)</strong> file with
+                    these columns:
                 </p>
                 <table class="format-table">
                     <thead>
@@ -563,15 +565,17 @@ Anitha S,anitha@college.edu,</pre>
         e.preventDefault();
         zone.classList.remove('drag-over');
         const file = e.dataTransfer.files[0];
-        if (file && file.name.endsWith('.csv')) {
-            const input =
-                document.getElementById('csvFile');
+        const name = file ? file.name.toLowerCase() : '';
+        if (file && (name.endsWith('.csv') ||
+                name.endsWith('.xlsx') ||
+                name.endsWith('.xls'))) {
+            const input = document.getElementById('csvFile');
             const dt = new DataTransfer();
             dt.items.add(file);
             input.files = dt.files;
             fileSelected(input);
         } else {
-            alert('Please drop a .csv file only.');
+            alert('Please drop a .csv or .xlsx file only.');
         }
     });
 
