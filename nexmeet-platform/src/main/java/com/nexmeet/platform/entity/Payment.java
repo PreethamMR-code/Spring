@@ -1,16 +1,25 @@
 package com.nexmeet.platform.entity;
 
-
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /*
- * Payment records every financial transaction on NexMeet.
- * Currently: organizer pays a platform listing fee.
- * Later: delegates will also pay conference fees.
+ * Tracks every payment made on the platform.
  *
- * payment_for distinguishes which type of payment this is.
+ * For Phase 36 (simulation): no real payment gateway.
+ * Every registration for a PAID conference auto-creates
+ * a Payment record with status = COMPLETED immediately.
+ *
+ * payment_for: "REGISTRATION" or "BULK_REGISTRATION"
+ * status:      "INITIATED" → "COMPLETED" (simulated instantly)
+ *
+ * amount           = conference.delegateFee (what delegate pays)
+ * platform_commission = perDelegateFee from commission_settings
+ * organizer_amount = amount - platform_commission
+ *
+ * In a real system: status stays INITIATED until payment
+ * gateway confirms, then moves to COMPLETED.
  */
 @Entity
 @Table(name = "payments")
@@ -18,7 +27,6 @@ public class Payment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private Long id;
 
     @ManyToOne
@@ -30,36 +38,69 @@ public class Payment {
     private Conference conference;
 
     /*
-     * payment_for = CONFERENCE_LISTING_FEE (organizer pays to list)
-     *             = DELEGATE_FEE (delegate pays to attend) — future
+     * What the payment is for.
+     * "REGISTRATION"      = delegate registered themselves
+     * "BULK_REGISTRATION" = organizer uploaded CSV
      */
-    @Column(name = "payment_for", nullable = false, length = 30)
-    private String paymentFor;
+    @Column(name = "payment_for",
+            nullable = false, length = 30)
+    private String paymentFor = "REGISTRATION";
 
-    @Column(name = "amount", nullable = false, precision = 10, scale = 2)
+    /*
+     * Total amount paid by the delegate.
+     * = conference.delegateFee
+     */
+    @Column(name = "amount",
+            nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
 
-    @Column(name = "platform_commission", precision = 10, scale = 2)
-    private BigDecimal platformCommission = BigDecimal.ZERO;
+    /*
+     * Platform's share of the payment.
+     * = perDelegateFee from commission_settings
+     */
+    @Column(name = "platform_commission",
+            precision = 10, scale = 2)
+    private BigDecimal platformCommission =
+            BigDecimal.ZERO;
 
-    @Column(name = "organizer_amount", precision = 10, scale = 2)
-    private BigDecimal organizerAmount = BigDecimal.ZERO;
+    /*
+     * Organizer's share = amount - platform_commission
+     */
+    @Column(name = "organizer_amount",
+            precision = 10, scale = 2)
+    private BigDecimal organizerAmount =
+            BigDecimal.ZERO;
 
+    /*
+     * "SIMULATED" for Phase 36.
+     * Later: "UPI", "CARD", "NET_BANKING", "RAZORPAY"
+     */
     @Column(name = "payment_method", length = 20)
     private String paymentMethod = "SIMULATED";
 
     /*
-     * transaction_ref is the unique payment reference number.
-     * In real payment gateways (Razorpay, Stripe), this comes
-     * from their system. We generate a fake one for simulation.
+     * Unique reference for this payment.
+     * Format: SIM-XXXXXXXXXXXX (12 hex chars)
+     * In production: gateway transaction ID.
      */
-    @Column(name = "transaction_ref", unique = true, length = 100)
+    @Column(name = "transaction_ref",
+            length = 100, unique = true)
     private String transactionRef;
 
-    @Column(name = "status", nullable = false, length = 20)
+    /*
+     * INITIATED  = payment started, awaiting gateway
+     * COMPLETED  = payment confirmed
+     * FAILED     = payment failed
+     * REFUNDED   = payment refunded (cancellation)
+     *
+     * Simulation: always COMPLETED immediately.
+     */
+    @Column(name = "status",
+            nullable = false, length = 20)
     private String status = "INITIATED";
 
-    @Column(name = "initiated_at", nullable = false, updatable = false)
+    @Column(name = "initiated_at",
+            nullable = false, updatable = false)
     private LocalDateTime initiatedAt;
 
     @Column(name = "completed_at")
@@ -74,37 +115,68 @@ public class Payment {
 
     // Getters and Setters
     public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
 
     public User getPayerUser() { return payerUser; }
-    public void setPayerUser(User payerUser) { this.payerUser = payerUser; }
+    public void setPayerUser(User u) {
+        payerUser = u;
+    }
 
-    public Conference getConference() { return conference; }
-    public void setConference(Conference conference) { this.conference = conference; }
+    public Conference getConference() {
+        return conference;
+    }
+    public void setConference(Conference c) {
+        conference = c;
+    }
 
-    public String getPaymentFor() { return paymentFor; }
-    public void setPaymentFor(String paymentFor) { this.paymentFor = paymentFor; }
+    public String getPaymentFor() {
+        return paymentFor;
+    }
+    public void setPaymentFor(String p) {
+        paymentFor = p;
+    }
 
     public BigDecimal getAmount() { return amount; }
-    public void setAmount(BigDecimal amount) { this.amount = amount; }
+    public void setAmount(BigDecimal a) { amount = a; }
 
-    public BigDecimal getPlatformCommission() { return platformCommission; }
-    public void setPlatformCommission(BigDecimal platformCommission) { this.platformCommission = platformCommission; }
+    public BigDecimal getPlatformCommission() {
+        return platformCommission;
+    }
+    public void setPlatformCommission(BigDecimal p) {
+        platformCommission = p;
+    }
 
-    public BigDecimal getOrganizerAmount() { return organizerAmount; }
-    public void setOrganizerAmount(BigDecimal organizerAmount) { this.organizerAmount = organizerAmount; }
+    public BigDecimal getOrganizerAmount() {
+        return organizerAmount;
+    }
+    public void setOrganizerAmount(BigDecimal o) {
+        organizerAmount = o;
+    }
 
-    public String getPaymentMethod() { return paymentMethod; }
-    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+    public void setPaymentMethod(String m) {
+        paymentMethod = m;
+    }
 
-    public String getTransactionRef() { return transactionRef; }
-    public void setTransactionRef(String transactionRef) { this.transactionRef = transactionRef; }
+    public String getTransactionRef() {
+        return transactionRef;
+    }
+    public void setTransactionRef(String t) {
+        transactionRef = t;
+    }
 
     public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public void setStatus(String s) { status = s; }
 
-    public LocalDateTime getInitiatedAt() { return initiatedAt; }
+    public LocalDateTime getInitiatedAt() {
+        return initiatedAt;
+    }
 
-    public LocalDateTime getCompletedAt() { return completedAt; }
-    public void setCompletedAt(LocalDateTime completedAt) { this.completedAt = completedAt; }
+    public LocalDateTime getCompletedAt() {
+        return completedAt;
+    }
+    public void setCompletedAt(LocalDateTime c) {
+        completedAt = c;
+    }
 }
