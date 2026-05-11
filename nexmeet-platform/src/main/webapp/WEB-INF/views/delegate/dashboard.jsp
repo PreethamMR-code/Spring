@@ -64,6 +64,7 @@
                                 <th>Date</th>
                                 <th>Status</th>
                                 <th>Action</th>
+                                <th>💳 Payment</th>
                                 <th>QR Code</th>
                             </tr>
                         </thead>
@@ -131,6 +132,35 @@
 
                                     </td>
 
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${reg.conference.free}">
+                                                <span class="badge bg-success">
+                                                    Free Event
+                                                </span>
+                                            </c:when>
+                                            <c:when test="${not empty paymentMap[reg.conference.id]}">
+                                                <c:set var="pay"
+                                                       value="${paymentMap[reg.conference.id]}"/>
+                                                <div class="small fw-semibold
+                                                            text-success">
+                                                    ₹${pay.amount}
+                                                </div>
+                                                <div class="small text-muted"
+                                                     style="font-size:0.7rem">
+                                                    ${pay.transactionRef}
+                                                </div>
+                                                <span class="badge bg-success"
+                                                      style="font-size:0.65rem">
+                                                    ${pay.status}
+                                                </span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="text-muted small">—</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+
 
 
                                     <td>
@@ -169,6 +199,78 @@
                 </c:otherwise>
             </c:choose>
 
+            <!-- Payment History Card -->
+            <c:if test="${not empty myPayments}">
+            <div class="card mt-4 shadow-sm">
+                <div class="card-header bg-white fw-bold
+                            d-flex justify-content-between">
+                    <span>💳 Payment History</span>
+                    <span class="text-muted small fw-normal">
+                        ${fn:length(myPayments)} transaction(s)
+                    </span>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0 small">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Transaction Ref</th>
+                                <th>Conference</th>
+                                <th class="text-end">Amount</th>
+                                <th>Method</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                        <%-- We need to iterate payments Use a separate list from model --%>
+
+                            <c:forEach var="pay"
+                                       items="${myPayments}">
+                                <tr>
+                                    <td>
+                                        <code style="font-size:
+                                                     0.75rem">
+                                            ${pay.transactionRef}
+                                        </code>
+                                    </td>
+                                    <td>
+                                        ${pay.conference.title}
+                                    </td>
+                                    <td class="text-end fw-bold
+                                               text-success">
+                                        ₹${pay.amount}
+                                    </td>
+                                    <td>
+                                        <span class="badge
+                                            bg-secondary">
+                                            ${pay.paymentMethod}
+                                        </span>
+                                    </td>
+                                    <td class="text-muted">
+                                        ${fn:substringBefore(
+                                            pay.initiatedAt
+                                                .toString(),
+                                            'T')}
+                                    </td>
+                                    <td>
+                                        <span class="badge ${
+                                            pay.status == 'COMPLETED'
+                                                ? 'bg-success'
+                                                : pay.status == 'FAILED'
+                                                ? 'bg-danger'
+                                                : 'bg-warning text-dark'}">
+                                            ${pay.status}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            </c:if>
+
             <div class="mt-3">
                 <a href="${pageContext.request.contextPath}/conferences" class="btn btn-primary">Browse Conferences</a>
 
@@ -179,5 +281,8 @@
             </div>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     </body>
     </html>
