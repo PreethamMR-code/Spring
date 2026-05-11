@@ -119,25 +119,156 @@
         </div>
     </c:if>
 
-    <c:if test="${!conf.free &&
-                 (conf.status == 'APPROVED' ||
-                  conf.status == 'COMPLETED')}">
-        <div class="alert alert-success d-flex
-                    justify-content-between align-items-center">
-            <span>
-                <strong>💰 Your Expected Payout:</strong>
-                ₹${organizerPayout}
-                <small class="text-muted ms-2">
-                    (after ₹${baseFee} base +
-                    ₹${perDelegateFee}/delegate platform fee)
-                </small>
-            </span>
-            <span class="text-muted small">
-                ${conf.registeredCount} registrations
-                × ₹${conf.delegateFee}
-            </span>
-        </div>
-    </c:if>
+   <%-- Replace existing payout alert with this --%>
+   <c:if test="${!conf.free &&
+                (conf.status == 'APPROVED' ||
+                 conf.status == 'COMPLETED')}">
+
+       <%-- Actual payment data from payments table --%>
+       <c:choose>
+           <c:when test="${actualRevenue > 0}">
+               <div class="card mb-3"
+                    style="border:none;
+                           border-radius:12px;
+                           box-shadow:0 2px 10px
+                               rgba(0,0,0,0.08)">
+                   <div class="card-header fw-bold
+                                bg-white border-bottom">
+                       💰 Revenue Summary (Actual)
+                   </div>
+                   <div class="card-body">
+                       <div class="row g-3 text-center">
+                           <div class="col-md-4">
+                               <div style="font-size:
+                                   1.4rem;font-weight:800;
+                                   color:#667eea">
+                                   ₹${actualRevenue}
+                               </div>
+                               <div class="small
+                                           text-muted">
+                                   Total Collected
+                               </div>
+                           </div>
+                           <div class="col-md-4">
+                               <div style="font-size:
+                                   1.4rem;font-weight:800;
+                                   color:#dc2626">
+                                   ₹${actualPlatformShare}
+                               </div>
+                               <div class="small
+                                           text-muted">
+                                   Platform Share
+                               </div>
+                           </div>
+                           <div class="col-md-4">
+                               <div style="font-size:
+                                   1.4rem;font-weight:800;
+                                   color:#059669">
+                                   ₹${actualOrganizerShare}
+                               </div>
+                               <div class="small
+                                           text-muted">
+                                   Your Payout
+                               </div>
+                           </div>
+                       </div>
+                       <div class="text-muted small
+                                   text-center mt-2">
+                           Based on
+                           ${fn:length(payments)}
+                           completed payment(s)
+                           × ₹${conf.delegateFee} each
+                       </div>
+                   </div>
+               </div>
+           </c:when>
+           <c:otherwise>
+               <div class="alert alert-info">
+                   💳 No payments recorded yet for
+                   this conference.
+               </div>
+           </c:otherwise>
+       </c:choose>
+   </c:if>
+
+   <%-- Payment list for organizer --%>
+   <c:if test="${not empty payments &&
+                conf.status == 'APPROVED' ||
+                conf.status == 'COMPLETED'}">
+   <div class="card mb-4"
+        style="border:none;border-radius:12px;
+               box-shadow:0 2px 10px rgba(0,0,0,0.08)">
+       <div class="card-header fw-bold bg-white
+                   border-bottom d-flex
+                   justify-content-between">
+           <span>💳 Delegate Payments</span>
+           <span class="text-muted small fw-normal">
+               ${fn:length(payments)} payment(s)
+           </span>
+       </div>
+       <div class="card-body p-0">
+           <table class="table table-hover
+                         table-sm mb-0 small">
+               <thead class="table-light">
+                   <tr>
+                       <th>Delegate</th>
+                       <th>Ref</th>
+                       <th class="text-end">Amount</th>
+                       <th class="text-end">
+                           Your Share
+                       </th>
+                       <th>Date</th>
+                       <th>Status</th>
+                   </tr>
+               </thead>
+               <tbody>
+                   <c:forEach var="pay"
+                              items="${payments}">
+                       <tr>
+                           <td>
+                               ${pay.payerUser.fullName}
+                               <div class="text-muted"
+                                    style="font-size:
+                                           0.72rem">
+                                   ${pay.payerUser.email}
+                               </div>
+                           </td>
+                           <td>
+                               <code style="font-size:
+                                            0.72rem">
+                                   ${pay.transactionRef}
+                               </code>
+                           </td>
+                           <td class="text-end
+                                      fw-semibold">
+                               ₹${pay.amount}
+                           </td>
+                           <td class="text-end
+                                      text-success
+                                      fw-semibold">
+                               ₹${pay.organizerAmount}
+                           </td>
+                           <td class="text-muted">
+                               ${fn:substringBefore(
+                                   pay.initiatedAt
+                                       .toString(),
+                                   'T')}
+                           </td>
+                           <td>
+                               <span class="badge
+                                   ${pay.status == 'COMPLETED'
+                                       ? 'bg-success'
+                                       : 'bg-warning text-dark'}">
+                                   ${pay.status}
+                               </span>
+                           </td>
+                       </tr>
+                   </c:forEach>
+               </tbody>
+           </table>
+       </div>
+   </div>
+   </c:if>
 
     <%-- Completion section --%>
     <c:if test="${conf.status == 'APPROVED' && endDatePassed}">
