@@ -34,6 +34,7 @@ public class BulkUploadServiceImpl implements BulkUploadService {
     @Autowired private NotificationService notificationService;
     @Autowired private EmailService emailService;
     @Autowired private PasswordEncoder passwordEncoder;
+    @Autowired private PaymentService paymentService;
 
     /*
      * Finds or creates the DELEGATE role.
@@ -483,6 +484,18 @@ public class BulkUploadServiceImpl implements BulkUploadService {
         reg.setStatus(RegistrationStatus.CONFIRMED);
         reg.setRegistrationType(RegistrationType.BULK);
         registrationDao.save(reg);
+
+
+
+        // Created simulated payment for paid conferences
+        try {
+            paymentService.createRegistrationPayment(
+                    reg, delegateUser, conference);
+        } catch (Exception e) {
+            System.err.println(
+                    "[BulkPayment] Failed for "
+                            + email + ": " + e.getMessage());
+        }
 
         // Update seat count
         conference.setRegisteredCount(

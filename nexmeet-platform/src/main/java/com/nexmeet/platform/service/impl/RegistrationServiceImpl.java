@@ -10,10 +10,7 @@ import com.nexmeet.platform.entity.Registration;
 import com.nexmeet.platform.entity.User;
 import com.nexmeet.platform.enums.RegistrationStatus;
 import com.nexmeet.platform.enums.RegistrationType;
-import com.nexmeet.platform.service.EmailService;
-import com.nexmeet.platform.service.NotificationService;
-import com.nexmeet.platform.service.QrCodeService;
-import com.nexmeet.platform.service.RegistrationService;
+import com.nexmeet.platform.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,6 +46,9 @@ public class RegistrationServiceImpl implements RegistrationService {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private PaymentService paymentService;
+
     @Override
     @Transactional
     public String registerForConference(Long conferenceId, String userEmail) {
@@ -81,7 +81,7 @@ public class RegistrationServiceImpl implements RegistrationService {
 
         registrationDao.save(reg);
 
-
+        // Send email
         try {
             emailService.sendRegistrationConfirmation(
                     user.getEmail(),
@@ -96,6 +96,18 @@ public class RegistrationServiceImpl implements RegistrationService {
         } catch (Exception e) {
             // Email failure doesn't break registration
         }
+
+        try {
+            paymentService.createRegistrationPayment(
+                    reg, user, conference);
+        } catch (Exception e) {
+            // Payment failure never breaks registration
+            System.err.println(
+                    "[Payment] Failed to create payment: "
+                            + e.getMessage());
+        }
+
+
 
         // 5. Increment registered count
         conference.setRegisteredCount(conference.getRegisteredCount() + 1);
