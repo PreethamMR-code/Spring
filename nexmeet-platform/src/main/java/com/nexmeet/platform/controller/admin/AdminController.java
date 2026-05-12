@@ -1,9 +1,15 @@
 package com.nexmeet.platform.controller.admin;
 
 
+import com.nexmeet.platform.dao.InstitutionDao;
+import com.nexmeet.platform.dao.InstitutionalAdminDao;
 import com.nexmeet.platform.dao.OrganizerDao;
+import com.nexmeet.platform.dto.InstitutionDto;
 import com.nexmeet.platform.entity.Conference;
+import com.nexmeet.platform.entity.Institution;
+import com.nexmeet.platform.entity.InstitutionalAdmin;
 import com.nexmeet.platform.enums.ConferenceStatus;
+import com.nexmeet.platform.enums.InstitutionType;
 import com.nexmeet.platform.enums.VerificationStatus;
 import com.nexmeet.platform.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +43,15 @@ public class AdminController {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private PaymentService paymentService;
+
+    @Autowired
+    private InstitutionDao institutionDao;
+
+    @Autowired
+    private InstitutionalAdminDao institutionalAdminDao;
+
 
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication auth) {
@@ -61,6 +76,9 @@ public class AdminController {
                 pendingOrganizersCount);
 
         model.addAttribute("totalRevenue",
+                paymentService.getTotalPlatformRevenue());
+
+        model.addAttribute("projectedRevenue",
                 commissionService.getTotalPlatformEarnings());
 
         model.addAttribute("pendingConferences", pending);
@@ -266,7 +284,86 @@ public class AdminController {
         model.addAttribute("settings",
                 commissionService.getAllCommissionSettings());
         model.addAttribute("totalRevenue",
-                commissionService.getTotalPlatformEarnings());
+                paymentService.getTotalPlatformRevenue());
+        model.addAttribute("allPayments",
+                paymentService.getAllPayments());
         return "admin/commission";
+    }
+
+    @GetMapping("/institutions")
+    public String allInstitutions(Model model) {
+        model.addAttribute("institutions",
+                institutionDao.findAll());
+        model.addAttribute("pendingAdmins",
+                institutionalAdminDao.findPending());
+        model.addAttribute("dto", new InstitutionDto());
+        model.addAttribute("institutionTypes",
+                InstitutionType.values());
+        return "admin/institutions";
+    }
+
+    @PostMapping("/institution/add")
+    public String addInstitution(
+            @ModelAttribute("dto") InstitutionDto dto,
+            RedirectAttributes flash) {
+        try {
+            Institution inst = new Institution();
+            inst.setName(dto.getName());
+            inst.setType(dto.getType());
+            inst.setContactPerson(dto.getContactPerson());
+            inst.setContactRole(dto.getContactRole());
+            inst.setEmail(dto.getEmail());
+            inst.setPhone(dto.getPhone());
+            inst.setWebsite(dto.getWebsite());
+            inst.setAddress(dto.getAddress());
+            inst.setCity(dto.getCity());
+            inst.setState(dto.getState());
+            inst.setPincode(dto.getPincode());
+            inst.setDomains(dto.getDomains());
+            inst.setActive(true);
+            institutionDao.save(inst);
+            flash.addFlashAttribute("success",
+                    "Institution added successfully!");
+        } catch (Exception e) {
+            flash.addFlashAttribute("error",
+                    "Error: " + e.getMessage());
+        }
+        return "redirect:/admin/institutions";
+    }
+
+    @PostMapping("/institution/{id}/toggle")
+    public String toggleInstitution(
+            @PathVariable Long id,
+            RedirectAttributes flash) {
+        institutionDao.findById(id).ifPresent(inst -> {
+            inst.setActive(!inst.isActive());
+            institutionDao.update(inst);
+            flash.addFlashAttribute("success",
+                    inst.isActive()
+                            ? "Institution activated."
+                            : "Institution deactivated.");
+        });
+        return "redirect:/admin/institutions";
+    }
+
+    @PostMapping("/institutional-admin/{id}/approve")
+    public String approveInstitutionalAdmin(
+            @PathVariable Long id,
+            RedirectAttributes flash) {
+        institutionalAdminDao.findById(id).ifPresent(ia -> {
+            ia.setVerified(true);
+            institutionalAdminDao.update(ia);
+            notificationService.createNotification(
+                    ia.getUser().getEmail(),
+                    "Account Verified",
+                    "Your institutional admin account for " +
+                            ia.getInstitution().getName() +
+                            " has been verified!",
+                    "IN_APP"
+            );
+            flash.addFlashAttribute("success",
+                    "Institutional admin approved.");
+        });
+        return "redirect:/admin/institutions";
     }
 }
