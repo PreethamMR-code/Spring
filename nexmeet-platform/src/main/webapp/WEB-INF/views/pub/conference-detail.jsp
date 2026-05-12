@@ -893,8 +893,8 @@
                         </sec:authorize>
 
                         <sec:authorize access="hasRole('ROLE_DELEGATE')">
-                            <form action="${pageContext.request.contextPath}/delegate/conference/${conference.id}/register"
-                                  method="post">
+                      <form action="${pageContext.request.contextPath}/conference/${conference.id}/register"
+                            method="post">
                                 <input type="hidden"
                                     name="${_csrf.parameterName}"
                                     value="${_csrf.token}"/>
