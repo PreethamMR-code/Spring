@@ -13,6 +13,117 @@
 <%@ include file="/WEB-INF/views/common/navbar.jsp" %>
 
 <div class="container py-4">
+
+  <!--Adding actual revenue section at the top -->
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card text-center p-3
+                        border-success">
+                <h6 class="text-muted small">
+                    Actual Platform Revenue
+                </h6>
+                <h3 class="text-success fw-bold">
+                    ₹${totalRevenue}
+                </h3>
+                <small class="text-muted">
+                    From completed payments
+                </small>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card text-center p-3
+                        border-primary">
+                <h6 class="text-muted small">
+                    Projected Revenue
+                </h6>
+                <h3 class="text-primary fw-bold">
+                    ₹${projectedRevenue}
+                </h3>
+                <small class="text-muted">
+                    Calculated from registrations
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Payments Table -->
+    <c:if test="${not empty allPayments}">
+    <div class="card mt-4">
+        <div class="card-header fw-bold">
+            Recent Payments
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-hover
+                          table-sm mb-0 small">
+                <thead class="table-light">
+                    <tr>
+                        <th>Transaction Ref</th>
+                        <th>Conference</th>
+                        <th>Delegate</th>
+                        <th class="text-end">Amount</th>
+                        <th class="text-end">
+                            Platform
+                        </th>
+                        <th class="text-end">
+                            Organizer
+                        </th>
+                        <th>Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <c:forEach var="pay"
+                               items="${allPayments}">
+                        <tr>
+                            <td>
+                                <code style="font-size:
+                                             0.72rem">
+                                    ${pay.transactionRef}
+                                </code>
+                            </td>
+                            <td class="small">
+                                ${pay.conference.title}
+                            </td>
+                            <td class="small">
+                                ${pay.payerUser.fullName}
+                            </td>
+                            <td class="text-end
+                                       fw-semibold">
+                                ₹${pay.amount}
+                            </td>
+                            <td class="text-end
+                                       text-danger">
+                                ₹${pay.platformCommission}
+                            </td>
+                            <td class="text-end
+                                       text-success">
+                                ₹${pay.organizerAmount}
+                            </td>
+                            <td class="text-muted small">
+                                ${fn:substringBefore(
+                                    pay.initiatedAt
+                                        .toString(),
+                                    'T')}
+                            </td>
+                            <td>
+                                <span class="badge
+                                    ${pay.status == 'COMPLETED'
+                                        ? 'bg-success'
+                                        : 'bg-warning text-dark'}">
+                                    ${pay.status}
+                                </span>
+                            </td>
+                        </tr>
+                    </c:forEach>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    </c:if>
+
+
+
     <div class="d-flex justify-content-between
                 align-items-center mb-4">
         <div>
