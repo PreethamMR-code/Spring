@@ -76,8 +76,11 @@
 
         <intercept-url pattern="/organizer/**"                      access="hasRole('ROLE_ORGANIZER')" />
 
+        <intercept-url pattern="/institution/profile/setup"         access="hasRole('ROLE_INSTITUTIONAL_ADMIN')"/>
 
         <intercept-url pattern="/institution/**"                    access="hasRole('ROLE_INSTITUTIONAL_ADMIN')" />
+
+
         <intercept-url pattern="/delegate/registration/*/cancel"    access="hasRole('ROLE_DELEGATE')"/>
         <intercept-url pattern="/delegate/registration/*/ticket"    access="hasRole('ROLE_DELEGATE')"/>
         <intercept-url pattern="/delegate/registration/*/certificate" access="hasRole('ROLE_DELEGATE')"/>
