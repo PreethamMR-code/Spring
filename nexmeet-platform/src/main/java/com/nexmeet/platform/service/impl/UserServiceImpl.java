@@ -69,9 +69,20 @@ public class UserServiceImpl implements UserService {
         user.setVerified(false);
 
         // Assign role — default to DELEGATE if not provided
-        String roleToAssign = (roleName != null && roleName.equals("ORGANIZER"))
-                ? "ORGANIZER" : "DELEGATE";
+        // Allowed roles
+        // generic version is better because future roles will be easier to add
 
+        String roleToAssign = "DELEGATE";
+
+        if (roleName != null) {
+
+            if ("ORGANIZER".equals(roleName)) {
+                roleToAssign = "ORGANIZER";
+
+            } else if ("INSTITUTIONAL_ADMIN".equals(roleName)) {
+                roleToAssign = "INSTITUTIONAL_ADMIN";
+            }
+        }
 
         Role role = (Role) sessionFactory.getCurrentSession()
                 .createQuery("FROM Role WHERE name = :name")
