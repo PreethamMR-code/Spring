@@ -70,7 +70,17 @@
                        </a>
                    </li>
 
+
+            <li class="nav-item">
+                <a class="nav-link"
+                    href="${pageContext.request.contextPath}/admin/institutions">
+                        Institutions
+                </a>
+            </li>
+
                </sec:authorize>
+
+
 
                 <!-- Organizer Links -->
                 <sec:authorize access="hasRole('ROLE_ORGANIZER')">
