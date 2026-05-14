@@ -61,35 +61,61 @@
                 <!-- Role Selection -->
                 <div class="mb-3">
                     <label class="form-label fw-semibold">I am registering as</label>
+                    <%-- BEFORE — only 2 options in col-6 --%>
                     <div class="row g-2">
                         <div class="col-6">
+                            ... Delegate ...
+                        </div>
+                        <div class="col-6">
+                            ... Organizer ...
+                        </div>
+                    </div>
+
+                    <%-- AFTER — 3 options, each col-4 --%>
+                    <div class="row g-2">
+                        <div class="col-4">
                             <label class="role-card d-block" id="delegateCard">
                                 <input type="radio" name="role"
                                        value="DELEGATE" checked/>
                                 <div class="text-center">
                                     <div style="font-size:1.5rem">🎓</div>
                                     <div class="fw-bold small">Delegate</div>
-                                    <div class="text-muted" style="font-size:0.75rem">
+                                    <div class="text-muted"
+                                         style="font-size:0.72rem">
                                         Attend conferences
                                     </div>
                                 </div>
                             </label>
                         </div>
-                        <div class="col-6">
+                        <div class="col-4">
                             <label class="role-card d-block" id="organizerCard">
                                 <input type="radio" name="role"
                                        value="ORGANIZER"/>
                                 <div class="text-center">
                                     <div style="font-size:1.5rem">🎯</div>
                                     <div class="fw-bold small">Organizer</div>
-                                    <div class="text-muted" style="font-size:0.75rem">
+                                    <div class="text-muted"
+                                         style="font-size:0.72rem">
                                         Host conferences
                                     </div>
                                 </div>
                             </label>
                         </div>
+                        <div class="col-4">
+                            <label class="role-card d-block" id="institutionCard">
+                                <input type="radio" name="role"
+                                       value="INSTITUTIONAL_ADMIN"/>
+                                <div class="text-center">
+                                    <div style="font-size:1.5rem">🏫</div>
+                                    <div class="fw-bold small">Institution</div>
+                                    <div class="text-muted"
+                                         style="font-size:0.72rem">
+                                        Register students
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
                     </div>
-                </div>
 
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Full Name</label>
