@@ -39,6 +39,7 @@
         <intercept-url pattern="/"                    access="permitAll" />
         <intercept-url pattern="/home"                access="permitAll" />
         <intercept-url pattern="/conferences"         access="permitAll" />
+        <intercept-url pattern="/conference/*/institution-bulk-upload" access="hasRole('ROLE_INSTITUTIONAL_ADMIN')"/>
         <intercept-url pattern="/conference/*/register" access="hasRole('ROLE_DELEGATE')" />
         <intercept-url pattern="/conference/**"       access="permitAll" />
         <intercept-url pattern="/register"            access="permitAll" />
