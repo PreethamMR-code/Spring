@@ -4,6 +4,7 @@ import com.nexmeet.platform.dao.DelegateDao;
 import com.nexmeet.platform.dao.QrCodeDao;
 import com.nexmeet.platform.dto.DelegateProfileDto;
 import com.nexmeet.platform.entity.Delegate;
+import com.nexmeet.platform.entity.Payment;
 import com.nexmeet.platform.entity.Registration;
 import com.nexmeet.platform.entity.User;
 import com.nexmeet.platform.enums.RegistrationStatus;
@@ -45,6 +46,9 @@ public class DelegateController {
     @Autowired
     private DelegateDao delegateDao;
 
+    @Autowired
+    private PaymentService paymentService;
+
 
 
     @GetMapping("/dashboard")
@@ -58,7 +62,7 @@ public class DelegateController {
         userService.findByEmail(email)
                 .ifPresent(u -> model.addAttribute("currentUser", u));
 
-        // Load QR codes mapped by registration id
+        // Loading QR codes mapped by registration id
         Map<Long, String> qrCodes = new HashMap<>();
         for (Registration reg : registrations) {
             if (reg.getStatus() == RegistrationStatus.CONFIRMED) {
@@ -66,6 +70,21 @@ public class DelegateController {
                         .ifPresent(qr -> qrCodes.put(reg.getId(), qr.getQrImageBase64()));
             }
         }
+
+        Map<Long, Payment> paymentMap = new HashMap<>();
+        userService.findByEmail(email).ifPresent(u -> {
+            List<Payment> payments =
+                    paymentService.getPaymentsByUser(u.getId());
+            // For map lookup (conference-level deduplication)
+            for (Payment p : payments) {
+                paymentMap.putIfAbsent(
+                        p.getConference().getId(), p);
+            }
+            // For history table (full list)
+            model.addAttribute("myPayments", payments);
+        });
+
+
 
         // Inside dashboard() after building registrations list:
         Set<Long> attendedIds = new HashSet<>();
@@ -90,6 +109,8 @@ public class DelegateController {
             }
         }
         model.addAttribute("feedbackSubmitted", feedbackSubmitted);
+
+        model.addAttribute("paymentMap", paymentMap);
 
         model.addAttribute("attendedIds", attendedIds);
         model.addAttribute("attendedCount", attendedCount);
