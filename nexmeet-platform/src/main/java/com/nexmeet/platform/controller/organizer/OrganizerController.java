@@ -55,6 +55,9 @@ public class OrganizerController {
     @Autowired
     private BulkUploadService bulkUploadService;
 
+    @Autowired
+    private PaymentService paymentService;
+
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication auth) {
 
@@ -377,6 +380,16 @@ public class OrganizerController {
                 feedbackService.getAverageRating(id));
         model.addAttribute("feedbackCount",
                 feedbackService.getFeedbackCount(id));
+
+        model.addAttribute("actualRevenue",
+                paymentService.getTotalRevenueByConference(id));
+        model.addAttribute("actualPlatformShare",
+                paymentService.getPlatformShareByConference(id));
+        model.addAttribute("actualOrganizerShare",
+                paymentService.getOrganizerShareByConference(id));
+        model.addAttribute("payments",
+                paymentService.getPaymentsByConference(id));
+
         return "organizer/conference-detail";
     }
 
