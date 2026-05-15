@@ -1,19 +1,24 @@
 package com.nexmeet.platform.controller.pub;
 
+import com.nexmeet.platform.dao.InstitutionalAdminDao;
 import com.nexmeet.platform.dao.SessionDao;
 import com.nexmeet.platform.dao.SpeakerDao;
+import com.nexmeet.platform.entity.BulkUpload;
 import com.nexmeet.platform.entity.Conference;
-import com.nexmeet.platform.service.ConferenceService;
-import com.nexmeet.platform.service.FeedbackService;
-import com.nexmeet.platform.service.SessionService;
-import com.nexmeet.platform.service.SpeakerService;
+import com.nexmeet.platform.entity.InstitutionalAdmin;
+import com.nexmeet.platform.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,6 +42,12 @@ public class ConferenceController {
 
     @Autowired
     private SessionService sessionService;
+
+    @Autowired
+    private InstitutionalAdminDao institutionalAdminDao;
+
+    @Autowired
+    private BulkUploadService bulkUploadService;
 
 
     @GetMapping("/conferences")
@@ -114,5 +125,105 @@ public class ConferenceController {
                     sessionService.getSessionsByConference(id));
         });
         return "pub/conference-detail";
+    }
+
+    /*
+     * GET — show bulk upload form for institutional admin
+     * Only verified institutional admins can access this.
+     */
+
+    @GetMapping("/conference/{id}/institution-bulk-upload")
+    public String showInstitutionBulkUpload(
+            @PathVariable Long id,
+            Model model,
+            Authentication auth) {
+
+        Conference conference = conferenceService
+                .findById(id)
+                .orElse(null);
+
+        if (conference == null
+                || !conference.isBulkUploadAllowed()) {
+            return "redirect:/conferences";
+        }
+
+        // Must be a verified institutional admin
+        InstitutionalAdmin ia = institutionalAdminDao
+                .findByUserEmail(auth.getName())
+                .orElse(null);
+
+        if (ia == null || !ia.isVerified()) {
+            return "redirect:/institution/dashboard";
+        }
+
+        model.addAttribute("conference", conference);
+        model.addAttribute("instAdmin", ia);
+
+        return "institution/institution-bulk-upload";
+    }
+
+
+    /*
+     * POST — process the uploaded file
+     * Reuses BulkUploadService — same logic as organizer upload.
+     */
+
+    @PostMapping(
+            value = "/conference/{id}/institution-bulk-upload",
+            consumes = "multipart/form-data")
+    public String processInstitutionBulkUpload(
+            @PathVariable Long id,
+            @RequestParam("file") MultipartFile file,
+            Authentication auth,
+            RedirectAttributes flash) {
+
+        try {
+            Conference conference = conferenceService
+                    .findById(id)
+                    .orElseThrow(() ->
+                            new RuntimeException(
+                                    "Conference not found"));
+
+            InstitutionalAdmin ia = institutionalAdminDao
+                    .findByUserEmail(auth.getName())
+                    .orElseThrow(() ->
+                            new RuntimeException(
+                                    "Institutional admin not found"));
+
+            if (!ia.isVerified()) {
+                flash.addFlashAttribute("error",
+                        "Your account is not yet verified.");
+                return "redirect:/institution/dashboard";
+            }
+
+            // Reuse the same BulkUploadService
+            BulkUpload result = bulkUploadService.processBulkUpload(
+                    conference.getId(),
+                    auth.getName(),   // institutional admin email as uploader
+                    file
+            );
+
+
+            flash.addFlashAttribute("success", result);
+        } catch (Exception e) {
+            flash.addFlashAttribute("error",
+                    "Upload failed: " + e.getMessage());
+        }
+
+        return "redirect:/conference/" + id
+                + "/institution-bulk-upload";
+    }
+
+    @GetMapping("/conference/{id}/institution-bulk-upload/template")
+    public void downloadTemplate(
+            HttpServletResponse response) throws Exception {
+        response.setContentType("text/csv");
+        response.setHeader("Content-Disposition",
+                "attachment; filename=student_upload_template.csv");
+        response.getWriter().write(
+                "full_name,email,phone\n" +
+                        "Ravi Kumar,ravi@college.ac.in,9876543210\n" +
+                        "Priya Sharma,priya@college.ac.in,\n"
+        );
     }
 }
