@@ -905,6 +905,26 @@
                             </form>
                         </sec:authorize>
 
+                        <sec:authorize access="hasRole('ROLE_INSTITUTIONAL_ADMIN')">
+                            <c:if test="${conference.bulkUploadAllowed}">
+                                <a href="${pageContext.request.contextPath}/conference/${conference.id}/institution-bulk-upload"
+                                   class="btn-register-main"
+                                   style="display:block;width:100%;
+                                          text-decoration:none;text-align:center;
+                                          margin-top:8px">
+                                    📋 Bulk Register My Students →
+                                </a>
+                            </c:if>
+                            <c:if test="${not conference.bulkUploadAllowed}">
+                                <div style="background:#fef9c3;border:1px solid #fde047;
+                                     border-radius:10px;padding:12px;
+                                     font-size:0.82rem;color:#854d0e;
+                                     margin-top:16px;text-align:center">
+                                    This conference does not allow bulk registration.
+                                </div>
+                            </c:if>
+                        </sec:authorize>
+
                         <sec:authorize access="hasRole('ROLE_ORGANIZER')">
                             <div style="background:#fef9c3;
                                  border:1px solid #fde047;
