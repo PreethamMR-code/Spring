@@ -1,5 +1,20 @@
 package com.nexmeet.platform.service;
 
+
+/*
+ * Centralized email service for all transactional emails.
+ *
+ * JavaMailSender (Gmail SMTP) is already configured in spring-db-config.xml.
+ * All methods are fire-and-forget — a failed email must NEVER break
+ * the main operation (registration, etc.). Always try-catch internally.
+ *
+ * Emails sent:
+ *  1. Welcome        — on new account creation
+ *  2. Registration   — on conference registration, with QR code
+ *  3. Outreach       — organizer invites institution to a conference
+ */
+
+
 public interface EmailService {
 
     /*
@@ -61,5 +76,34 @@ public interface EmailService {
     void sendOrganizerVerified(
             String toEmail,
             String organizerName
+    );
+
+    /*
+     * Sent on new account creation for all roles.
+     * roleName: "DELEGATE", "ORGANIZER", "INSTITUTIONAL_ADMIN"
+     */
+    void sendWelcomeEmail(
+            String toEmail,
+            String fullName,
+            String roleName
+    );
+
+    /*
+     * Organizer invites an institution to a conference.
+     * toEmail = institution's contact email.
+     */
+    void sendOutreachEmail(
+            String toEmail,
+            String institutionName,
+            String conferenceName,
+            String startDate,
+            String mode,
+            String city,
+            String targetAudience,
+            boolean isFree,
+            String delegateFee,
+            Long conferenceId,
+            String organizerName,
+            String organizerEmail
     );
 }

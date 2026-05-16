@@ -27,7 +27,7 @@ import javax.mail.internet.MimeMessage;
 @Service
 public class EmailServiceImpl implements EmailService {
 
-    @Autowired
+    @Autowired(required = false)
     private JavaMailSender mailSender;
 
     /*
@@ -311,5 +311,129 @@ public class EmailServiceImpl implements EmailService {
         send(toEmail,
                 "Your NexMeet Organizer Account is Verified",
                 wrapInTemplate("Account Verified", body));
+    }
+
+    @Override
+    public void sendWelcomeEmail(
+            String toEmail,
+            String fullName,
+            String roleName) {
+
+        String roleDisplay =
+                "ORGANIZER".equals(roleName)
+                        ? "Conference Organizer"
+                        : "INSTITUTIONAL_ADMIN".equals(roleName)
+                        ? "Institutional Admin"
+                        : "Delegate";
+
+        String nextStep =
+                "ORGANIZER".equals(roleName)
+                        ? "Complete your organizer profile and create your first conference."
+                        : "INSTITUTIONAL_ADMIN".equals(roleName)
+                        ? "Complete your institutional admin profile and start registering your students."
+                        : "Browse upcoming conferences and register for ones that interest you.";
+
+        String body =
+                "<h2>Welcome to NexMeet! 🎉</h2>" +
+                        "<p>Hi <strong>" + fullName + "</strong>,</p>" +
+                        "<p>Your account has been created successfully. " +
+                        "You're registered as a <strong>" + roleDisplay +
+                        "</strong> on NexMeet.</p>" +
+
+                        "<div class='highlight-box'>" +
+                        "<div class='label'>Email</div>" +
+                        "<div class='value'>" + toEmail + "</div>" +
+                        "</div>" +
+
+                        "<div class='highlight-box'>" +
+                        "<div class='label'>Account Type</div>" +
+                        "<div class='value'>" + roleDisplay + "</div>" +
+                        "</div>" +
+
+                        "<p><strong>What's next?</strong><br/>" +
+                        nextStep + "</p>";
+
+        send(toEmail,
+                "Welcome to NexMeet! 🎉",
+                wrapInTemplate("Welcome to NexMeet", body));
+    }
+
+    @Override
+    public void sendOutreachEmail(
+            String toEmail,
+            String institutionName,
+            String conferenceName,
+            String startDate,
+            String mode,
+            String city,
+            String targetAudience,
+            boolean isFree,
+            String delegateFee,
+            Long conferenceId,
+            String organizerName,
+            String organizerEmail) {
+
+        String feeInfo = isFree
+                ? "This is a <strong>FREE</strong> event — no registration fee."
+                : "Registration fee: <strong>₹" + delegateFee +
+                "</strong> per delegate (collected at venue).";
+
+        String locationInfo = (city != null && !city.isEmpty())
+                ? city : mode;
+
+        String body =
+                "<h2>Conference Invitation</h2>" +
+                        "<p>Dear <strong>" + institutionName +
+                        "</strong> Team,</p>" +
+                        "<p><strong>" + organizerName + "</strong> is organizing " +
+                        "a conference on NexMeet and would like to invite your " +
+                        "students and faculty to participate.</p>" +
+
+                        "<div class='highlight-box'>" +
+                        "<div class='label'>Conference</div>" +
+                        "<div class='value'>" + conferenceName + "</div>" +
+                        "</div>" +
+
+                        "<div class='highlight-box'>" +
+                        "<div class='label'>Date</div>" +
+                        "<div class='value'>" + startDate + "</div>" +
+                        "</div>" +
+
+                        "<div class='highlight-box'>" +
+                        "<div class='label'>Mode / Location</div>" +
+                        "<div class='value'>" + mode +
+                        (city != null && !city.isEmpty()
+                                ? " · " + city : "") +
+                        "</div>" +
+                        "</div>" +
+
+                        (targetAudience != null && !targetAudience.isEmpty()
+                                ? "<div class='highlight-box'>" +
+                                "<div class='label'>Target Audience</div>" +
+                                "<div class='value'>" + targetAudience +
+                                "</div></div>"
+                                : "") +
+
+                        "<p>" + feeInfo + "</p>" +
+
+                        "<p>Students can register individually, or your " +
+                        "institutional admin on NexMeet can bulk-register them.</p>" +
+
+                        "<p style='text-align:center;margin:24px 0'>" +
+                        "<a class='btn' href='http://localhost:8080/nexmeet/conference/"
+                        + conferenceId + "'>" +
+                        "View Conference &amp; Register →</a>" +
+                        "</p>" +
+
+                        "<p style='font-size:0.85rem;color:#64748b'>" +
+                        "For queries, contact the organizer:<br/>" +
+                        "<strong>" + organizerName + "</strong> — " +
+                        "<a href='mailto:" + organizerEmail + "' " +
+                        "style='color:#667eea'>" + organizerEmail + "</a>" +
+                        "</p>";
+
+        send(toEmail,
+                "Conference Invitation: " + conferenceName + " [NexMeet]",
+                wrapInTemplate("Conference Invitation", body));
     }
 }
