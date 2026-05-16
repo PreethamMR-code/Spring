@@ -1,5 +1,6 @@
 package com.nexmeet.platform.controller.organizer;
 
+import com.nexmeet.platform.dao.InstitutionDao;
 import com.nexmeet.platform.dao.OrganizerDao;
 import com.nexmeet.platform.dto.ConferenceCreateDto;
 import com.nexmeet.platform.dto.OrganizerProfileDto;
@@ -20,6 +21,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/organizer")
@@ -57,6 +60,12 @@ public class OrganizerController {
 
     @Autowired
     private PaymentService paymentService;
+
+    @Autowired
+    private InstitutionDao institutionDao;
+
+    @Autowired
+    private OutreachService outreachService;
 
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication auth) {
@@ -872,5 +881,86 @@ public class OrganizerController {
 
         return "redirect:/organizer/conference/"
                 + id + "/bulk-upload";
+    }
+
+    /*
+     * GET /organizer/conference/{id}/outreach
+     * Shows list of active institutions the organizer can invite.
+     * Marks which ones were already contacted.
+     */
+    @GetMapping("/conference/{id}/outreach")
+    public String showOutreach(
+            @PathVariable Long id,
+            Model model,
+            Authentication auth) {
+
+        Conference conf = conferenceService
+                .findById(id)
+                .orElse(null);
+
+        if (conf == null) {
+            return "redirect:/organizer/conferences";
+        }
+
+        // Ownership check
+        Organizer organizer = organizerDao
+                .findByUserEmail(auth.getName())
+                .orElse(null);
+
+        if (organizer == null
+                || !conf.getOrganizer().getId()
+                .equals(organizer.getId())) {
+            return "redirect:/organizer/conferences";
+        }
+
+        List<Institution> allInstitutions =
+                institutionDao.findByActive(true);
+
+        // Which institutions were already contacted
+        List<OutreachContact> history =
+                outreachService.getHistory(id);
+
+        Set<Long> sentIds = history.stream()
+                .map(oc -> oc.getInstitution().getId())
+                .collect(Collectors.toSet());
+
+        model.addAttribute("conf", conf);
+        model.addAttribute("institutions", allInstitutions);
+        model.addAttribute("sentIds", sentIds);
+        model.addAttribute("sentHistory", history);
+        return "organizer/outreach";
+    }
+
+    /*
+     * POST /organizer/conference/{id}/outreach
+     * Delegates all logic to OutreachService.
+     */
+    @PostMapping("/conference/{id}/outreach")
+    public String sendOutreach(
+            @PathVariable Long id,
+            @RequestParam(value = "institutionIds",
+                    required = false)
+            List<Long> institutionIds,
+            Authentication auth,
+            RedirectAttributes flash) {
+
+        if (institutionIds == null || institutionIds.isEmpty()) {
+            flash.addFlashAttribute("error",
+                    "Please select at least one institution.");
+            return "redirect:/organizer/conference/"
+                    + id + "/outreach";
+        }
+
+        try {
+            String result = outreachService.sendOutreach(
+                    id, institutionIds, auth.getName());
+            flash.addFlashAttribute("success", result);
+        } catch (Exception e) {
+            flash.addFlashAttribute("error",
+                    "Error: " + e.getMessage());
+        }
+
+        return "redirect:/organizer/conference/"
+                + id + "/outreach";
     }
 }
