@@ -20,6 +20,7 @@ package com.nexmeet.platform.service.impl;
 import com.nexmeet.platform.dao.UserDao;
 import com.nexmeet.platform.entity.Role;
 import com.nexmeet.platform.entity.User;
+import com.nexmeet.platform.service.EmailService;
 import com.nexmeet.platform.service.UserService;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +38,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserDao userDao;
+
+    @Autowired(required = false)
+    private EmailService emailService;
 
     @Autowired
     private SessionFactory sessionFactory;
@@ -68,21 +72,15 @@ public class UserServiceImpl implements UserService {
         user.setActive(true);
         user.setVerified(false);
 
-        // Assign role — default to DELEGATE if not provided
-        // Allowed roles
+
         // generic version is better because future roles will be easier to add
+        // Java 8 safe
 
-        String roleToAssign = "DELEGATE";
-
-        if (roleName != null) {
-
-            if ("ORGANIZER".equals(roleName)) {
-                roleToAssign = "ORGANIZER";
-
-            } else if ("INSTITUTIONAL_ADMIN".equals(roleName)) {
-                roleToAssign = "INSTITUTIONAL_ADMIN";
-            }
-        }
+        Set<String> allowedRoles = new HashSet<>(
+                Arrays.asList("DELEGATE", "ORGANIZER", "INSTITUTIONAL_ADMIN")
+        );
+        String roleToAssign = allowedRoles.contains(roleName)
+                ? roleName : "DELEGATE";
 
         Role role = (Role) sessionFactory.getCurrentSession()
                 .createQuery("FROM Role WHERE name = :name")
@@ -96,6 +94,24 @@ public class UserServiceImpl implements UserService {
         }
 
         userDao.save(user);
+
+
+        // Send welcome email — fire and forget
+// emailService is required=false so null check needed
+        if (emailService != null) {
+            try {
+                emailService.sendWelcomeEmail(
+                        user.getEmail(),
+                        user.getFullName(),
+                        roleToAssign
+                );
+            } catch (Exception e) {
+                // Email failure never breaks registration
+                System.err.println("[Welcome Email] Failed: "
+                        + e.getMessage());
+            }
+        }
+
         return user;
     }
 
