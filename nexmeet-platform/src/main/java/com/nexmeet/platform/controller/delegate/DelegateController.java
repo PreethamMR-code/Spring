@@ -62,6 +62,9 @@ public class DelegateController {
         userService.findByEmail(email)
                 .ifPresent(u -> model.addAttribute("currentUser", u));
 
+        boolean profileComplete =
+                delegateDao.existsByUserEmail(email);
+
         // Loading QR codes mapped by registration id
         Map<Long, String> qrCodes = new HashMap<>();
         for (Registration reg : registrations) {
@@ -108,6 +111,9 @@ public class DelegateController {
                 }
             }
         }
+
+        model.addAttribute("profileComplete", profileComplete);
+
         model.addAttribute("feedbackSubmitted", feedbackSubmitted);
 
         model.addAttribute("paymentMap", paymentMap);
