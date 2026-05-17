@@ -84,8 +84,13 @@
            class="btn btn-outline-warning">
             📋 Bulk Upload
         </a>
-    </c:if>
 
+
+    <a href="${pageContext.request.contextPath}/organizer/conference/${conf.id}/outreach"
+       class="btn btn-outline-info btn-sm">
+        📣 Institution Outreach
+    </a>
+</c:if>
 
     <!-- Stats Cards (only for APPROVED) -->
     <c:if test="${conf.status == 'APPROVED'}">
