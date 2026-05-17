@@ -1,9 +1,6 @@
 package com.nexmeet.platform.service.impl;
 
-import com.nexmeet.platform.dao.ConferenceDao;
-import com.nexmeet.platform.dao.QrCodeDao;
-import com.nexmeet.platform.dao.RegistrationDao;
-import com.nexmeet.platform.dao.UserDao;
+import com.nexmeet.platform.dao.*;
 import com.nexmeet.platform.entity.Conference;
 import com.nexmeet.platform.entity.QrCode;
 import com.nexmeet.platform.entity.Registration;
@@ -49,6 +46,9 @@ public class RegistrationServiceImpl implements RegistrationService {
     @Autowired
     private PaymentService paymentService;
 
+    @Autowired
+    private DelegateDao delegateDao;
+
     @Override
     @Transactional
     public String registerForConference(Long conferenceId, String userEmail) {
@@ -63,6 +63,14 @@ public class RegistrationServiceImpl implements RegistrationService {
         // 2. Prevent duplicate registration
         if (registrationDao.existsByConferenceAndUser(conferenceId, user.getId())) {
             return "ALREADY_REGISTERED";
+        }
+
+        //  Phase 42: profile must be complete
+        // before delegate can register for any conference.
+        // Delegates who skipped profile setup are blocked here.
+
+        if (!delegateDao.existsByUserEmail(userEmail)) {
+            return "PROFILE_INCOMPLETE";
         }
 
         // 3. Check if registration is open
