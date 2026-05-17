@@ -217,12 +217,12 @@
                                     </div>
                                     <div class="text-muted">
                                         <c:choose>
-                                            <c:when test="${not empty oc.recipientEmail}">
-                                                ✉ ${oc.recipientEmail}
-                                            </c:when>
-                                            <c:otherwise>
-                                                No email address
-                                            </c:otherwise>
+                                           <c:when test="${not empty oc.institution.email}">
+                                               ✉ ${oc.institution.email}
+                                           </c:when>
+                                           <c:otherwise>
+                                               <span class="text-warning">No email on file</span>
+                                           </c:otherwise>
                                         </c:choose>
                                     </div>
                                     <div class="d-flex
