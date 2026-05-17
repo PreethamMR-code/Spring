@@ -73,6 +73,9 @@
         <intercept-url
                 pattern="/organizer/conference/*/bulk-upload"
                 access="hasRole('ROLE_ORGANIZER')"/>
+        <intercept-url
+                pattern="/organizer/conference/*/outreach"
+                access="hasRole('ROLE_ORGANIZER')"/>
 
 
         <intercept-url pattern="/organizer/**"                      access="hasRole('ROLE_ORGANIZER')" />
