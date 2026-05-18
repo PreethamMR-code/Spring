@@ -26,6 +26,47 @@
                 <div class="alert alert-danger">${error}</div>
             </c:if>
 
+
+            <%-- Profile completion banner — Phase 42 --%>
+            <c:if test="${not profileComplete}">
+                <div class="alert d-flex align-items-start
+                            gap-3 mb-4"
+                     style="background:#fffbeb;
+                            border:1.5px solid #fde68a;
+                            border-radius:12px;
+                            padding:20px 24px">
+                    <div style="font-size:1.8rem;flex-shrink:0">
+                        ⚠️
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold"
+                             style="color:#92400e;font-size:1rem">
+                            Your delegate profile is incomplete
+                        </div>
+                        <div class="small mt-1"
+                             style="color:#b45309;line-height:1.6">
+                            You need to complete your profile before
+                            you can register for any conference.
+                            It only takes 30 seconds.
+                        </div>
+                        <a href="${pageContext.request.contextPath}/delegate/profile/setup"
+                           class="btn btn-sm fw-semibold mt-2"
+                           style="background:#f59e0b;color:white;
+                                  border:none;border-radius:8px;
+                                  padding:7px 18px">
+                            Complete My Profile →
+                        </a>
+                    </div>
+                    <div>
+                        <span class="badge bg-warning
+                                     text-dark fw-semibold">
+                            Action Required
+                        </span>
+                    </div>
+                </div>
+            </c:if>
+
+
             <!-- Stat Cards -->
             <div class="row g-3 mb-4">
                 <div class="col-md-4">

@@ -83,9 +83,13 @@
                                    fw-semibold">
                         Save Profile
                     </button>
+
                     <a href="${pageContext.request.contextPath}/delegate/dashboard"
-                       class="btn btn-outline-secondary">
-                        Skip for now
+                       class="btn btn-outline-secondary"
+                       onclick="return confirm(
+                           'If you skip, you cannot register for conferences. '
+                           + 'Complete your profile to unlock registration. Skip anyway?')">
+                        Skip (registration blocked)
                     </a>
                 </div>
             </form>
