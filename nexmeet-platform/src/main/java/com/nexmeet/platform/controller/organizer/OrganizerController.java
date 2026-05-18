@@ -81,8 +81,33 @@ public class OrganizerController {
             long myConferences = conferenceService.countByOrganizer(organizer.getId());
             long pendingApproval = conferenceService.countByOrganizerAndStatus(
                     organizer.getId(), ConferenceStatus.SUBMITTED);
+
+            // Sum registeredCount across all conferences
+            List<Conference> allConfs = conferenceService
+                    .getConferencesByOrganizer(
+                            organizer.getId());
+            long totalRegistrations = allConfs.stream()
+                    .mapToLong(Conference::getRegisteredCount)
+                    .sum();
+
+            // Revenue earned by organizer across all conf
+            java.math.BigDecimal totalRevenue =
+                    java.math.BigDecimal.ZERO;
+            for (Conference c : allConfs) {
+                java.math.BigDecimal r =
+                        paymentService
+                                .getOrganizerShareByConference(
+                                        c.getId());
+                if (r != null) {
+                    totalRevenue = totalRevenue.add(r);
+                }
+            }
+
+
             model.addAttribute("myConferences", myConferences);
             model.addAttribute("pendingApproval", pendingApproval);
+            model.addAttribute("totalRegistrations", totalRegistrations);
+            model.addAttribute("totalRevenue", totalRevenue);
         }
 
         userService.findByEmail(email)
@@ -962,5 +987,186 @@ public class OrganizerController {
 
         return "redirect:/organizer/conference/"
                 + id + "/outreach";
+    }
+
+
+    /*
+     * GET /organizer/analytics
+     * Full analytics page for the organizer.
+     * Aggregates data across all their conferences —
+     * no new DAOs needed, uses existing services.
+     */
+    @GetMapping("/analytics")
+    public String analytics(Model model,
+                            Authentication auth) {
+
+        String email = auth.getName();
+        Organizer organizer = organizerDao
+                .findByUserEmail(email)
+                .orElse(null);
+
+        if (organizer == null) {
+            return "redirect:/organizer/profile/setup";
+        }
+
+        userService.findByEmail(email)
+                .ifPresent(u ->
+                        model.addAttribute("currentUser", u));
+
+        List<Conference> conferences =
+                conferenceService
+                        .getConferencesByOrganizer(
+                                organizer.getId());
+
+        // ── Summary Stats ──────────────────────────
+        long totalConferences = conferences.size();
+
+        long totalRegistrations = conferences.stream()
+                .mapToLong(Conference::getRegisteredCount)
+                .sum();
+
+        long approvedCount = conferences.stream()
+                .filter(c -> c.getStatus()
+                        == ConferenceStatus.APPROVED)
+                .count();
+        long completedCount = conferences.stream()
+                .filter(c -> c.getStatus()
+                        == ConferenceStatus.COMPLETED)
+                .count();
+        long submittedCount = conferences.stream()
+                .filter(c -> c.getStatus()
+                        == ConferenceStatus.SUBMITTED)
+                .count();
+        long draftCount = conferences.stream()
+                .filter(c -> c.getStatus()
+                        == ConferenceStatus.DRAFT)
+                .count();
+        long cancelledCount = conferences.stream()
+                .filter(c -> c.getStatus()
+                        == ConferenceStatus.CANCELLED)
+                .count();
+
+        // ── Per-conference data for charts ─────────
+        java.util.List<String> confTitles =
+                new java.util.ArrayList<>();
+        java.util.List<Long> regCounts =
+                new java.util.ArrayList<>();
+        java.util.List<String> revenueValues =
+                new java.util.ArrayList<>();
+        java.util.List<Long> attendanceCounts =
+                new java.util.ArrayList<>();
+
+        java.math.BigDecimal totalOrganizerRevenue =
+                java.math.BigDecimal.ZERO;
+        double totalAvgRating   = 0;
+        int    ratedConferences = 0;
+
+        for (Conference conf : conferences) {
+
+            // Truncate long titles for chart labels
+            String title = conf.getTitle();
+            confTitles.add(title.length() > 22
+                    ? title.substring(0, 22) + "…"
+                    : title);
+
+            regCounts.add(
+                    (long) conf.getRegisteredCount());
+
+            java.math.BigDecimal rev =
+                    paymentService
+                            .getOrganizerShareByConference(
+                                    conf.getId());
+            if (rev == null) {
+                rev = java.math.BigDecimal.ZERO;
+            }
+            revenueValues.add(rev.toPlainString());
+            totalOrganizerRevenue =
+                    totalOrganizerRevenue.add(rev);
+
+            long attended = attendanceService
+                    .getAttendanceByConference(
+                            conf.getId())
+                    .size();
+            attendanceCounts.add(attended);
+
+            double avg = feedbackService
+                    .getAverageRating(conf.getId());
+            if (avg > 0) {
+                totalAvgRating  += avg;
+                ratedConferences++;
+            }
+        }
+
+        double overallRating = ratedConferences > 0
+                ? totalAvgRating / ratedConferences
+                : 0;
+
+        // ── JSON arrays for Chart.js ────────────────
+        model.addAttribute("confTitlesJson",
+                buildStringJson(confTitles));
+        model.addAttribute("regCountsJson",
+                buildLongJson(regCounts));
+        model.addAttribute("revenueJson",
+                "[" + String.join(",", revenueValues)
+                        + "]");
+        model.addAttribute("attendanceJson",
+                buildLongJson(attendanceCounts));
+
+        // ── Model attributes ────────────────────────
+        model.addAttribute("conferences", conferences);
+        model.addAttribute("attendanceCounts",
+                attendanceCounts);
+        model.addAttribute("totalConferences",
+                totalConferences);
+        model.addAttribute("totalRegistrations",
+                totalRegistrations);
+        model.addAttribute("totalOrganizerRevenue",
+                totalOrganizerRevenue);
+        model.addAttribute("approvedCount",
+                approvedCount);
+        model.addAttribute("completedCount",
+                completedCount);
+        model.addAttribute("submittedCount",
+                submittedCount);
+        model.addAttribute("draftCount", draftCount);
+        model.addAttribute("cancelledCount",
+                cancelledCount);
+        model.addAttribute("overallRating",
+                overallRating);
+
+        return "organizer/analytics";
+    }
+
+    /*
+     * Build a JSON string array from a Java List<String>.
+     * Escapes quotes to prevent XSS in chart labels.
+     */
+    private String buildStringJson(
+            java.util.List<String> list) {
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < list.size(); i++) {
+            sb.append("\"")
+                    .append(list.get(i)
+                            .replace("\\", "\\\\")
+                            .replace("\"", "'"))
+                    .append("\"");
+            if (i < list.size() - 1) sb.append(",");
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+
+    /*
+     * Build a JSON number array from a Java List<Long>.
+     */
+    private String buildLongJson(
+            java.util.List<Long> list) {
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < list.size(); i++) {
+            sb.append(list.get(i));
+            if (i < list.size() - 1) sb.append(",");
+        }
+        sb.append("]");
+        return sb.toString();
     }
 }
