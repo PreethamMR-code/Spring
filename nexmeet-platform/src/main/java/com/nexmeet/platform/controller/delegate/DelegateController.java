@@ -3,10 +3,7 @@ package com.nexmeet.platform.controller.delegate;
 import com.nexmeet.platform.dao.DelegateDao;
 import com.nexmeet.platform.dao.QrCodeDao;
 import com.nexmeet.platform.dto.DelegateProfileDto;
-import com.nexmeet.platform.entity.Delegate;
-import com.nexmeet.platform.entity.Payment;
-import com.nexmeet.platform.entity.Registration;
-import com.nexmeet.platform.entity.User;
+import com.nexmeet.platform.entity.*;
 import com.nexmeet.platform.enums.RegistrationStatus;
 import com.nexmeet.platform.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +45,8 @@ public class DelegateController {
 
     @Autowired
     private PaymentService paymentService;
+
+
 
 
 
@@ -111,6 +110,24 @@ public class DelegateController {
                 }
             }
         }
+
+        // Phase 44: Load certificate records for
+        // attended registrations so JSP can show
+        // cert number + issued date
+        Map<Long, Certificate> certificateMap =
+                new HashMap<>();
+        for (Registration reg : registrations) {
+            if (attendedIds.contains(reg.getId())) {
+                certificateService
+                        .getCertificateRecord(reg.getId())
+                        .ifPresent(cert ->
+                                certificateMap.put(
+                                        reg.getId(), cert));
+            }
+        }
+
+        model.addAttribute("certificateMap", certificateMap);
+
 
         model.addAttribute("profileComplete", profileComplete);
 
@@ -184,35 +201,72 @@ public class DelegateController {
     }
 
     @GetMapping("/registration/{id}/certificate")
-    public void downloadCertificate(@PathVariable Long id,
-                                    Authentication auth,
-                                    HttpServletResponse response) throws Exception {
-        // Security: only own registrations
-        Optional<Registration> regOpt = registrationService.findById(id);
+    public void downloadCertificate(
+            @PathVariable Long id,
+            Authentication auth,
+            HttpServletResponse response)
+            throws Exception {
 
-        if (!regOpt.isPresent() ||
-                !regOpt.get().getUser().getEmail().equals(auth.getName())) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+        Optional<Registration> regOpt =
+                registrationService.findById(id);
+
+        if (!regOpt.isPresent()
+                || !regOpt.get().getUser().getEmail()
+                .equals(auth.getName())) {
+            response.sendError(
+                    HttpServletResponse.SC_FORBIDDEN);
             return;
         }
 
         Registration reg = regOpt.get();
 
-        // TODO Phase 15: Also check attendance record before allowing certificate
-
-        if (reg.getStatus() != RegistrationStatus.CONFIRMED) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-                    "Certificate only available for confirmed registrations");
+        if (reg.getStatus()
+                != RegistrationStatus.CONFIRMED) {
+            response.sendError(
+                    HttpServletResponse.SC_BAD_REQUEST,
+                    "Certificate only available " +
+                            "for confirmed registrations");
             return;
         }
 
-        ByteArrayOutputStream baos = certificateService.generateCertificate(reg);
+        ByteArrayOutputStream baos;
+        String certNumber;
 
-        String filename = "Certificate_" + reg.getRegistrationNumber() + ".pdf";
+        /*
+         * Phase 44: If certificate was already issued
+         * (record in DB), use the stored number so
+         * every download produces the same certificate.
+         *
+         * If not issued yet (edge case: conference not
+         * yet completed, or certificate not enabled),
+         * fall back to on-the-fly generation.
+         */
+        Optional<Certificate> certRecord =
+                certificateService
+                        .getCertificateRecord(id);
+
+        if (certRecord.isPresent()) {
+            certNumber = certRecord.get()
+                    .getCertificateNumber();
+            baos = certificateService
+                    .generateCertificate(
+                            reg, certNumber);
+        } else {
+            // Fallback — on-the-fly without a number
+            baos = certificateService
+                    .generateCertificate(reg);
+        }
+
+        String filename = "Certificate_"
+                + reg.getRegistrationNumber()
+                + ".pdf";
         response.setContentType("application/pdf");
-        response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+        response.setHeader("Content-Disposition",
+                "attachment; filename=\""
+                        + filename + "\"");
         response.setContentLength(baos.size());
-        response.getOutputStream().write(baos.toByteArray());
+        response.getOutputStream()
+                .write(baos.toByteArray());
         response.getOutputStream().flush();
     }
 
