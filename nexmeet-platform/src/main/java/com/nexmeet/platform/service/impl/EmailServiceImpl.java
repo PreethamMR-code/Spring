@@ -436,4 +436,81 @@ public class EmailServiceImpl implements EmailService {
                 "Conference Invitation: " + conferenceName + " [NexMeet]",
                 wrapInTemplate("Conference Invitation", body));
     }
+
+    @Override
+    public void sendCertificateEmail(
+            String toEmail,
+            String delegateName,
+            String conferenceName,
+            String certificateNumber,
+            byte[] pdfBytes) {
+
+        // Uses the private send() helper but needs
+        // attachment — so we handle directly here
+        if (mailSender == null) return;
+        try {
+            MimeMessage message =
+                    mailSender.createMimeMessage();
+
+            // true = multipart (needed for attachment)
+            MimeMessageHelper helper =
+                    new MimeMessageHelper(
+                            message, true, "UTF-8");
+
+            helper.setFrom(
+                    "NexMeet <noreply@nexmeet.com>");
+            helper.setTo(toEmail);
+            helper.setSubject(
+                    "🏆 Your Certificate — "
+                            + conferenceName);
+
+            String body =
+                    "<h2>Your Certificate is Ready!</h2>" +
+                            "<p>Hi <strong>" + delegateName +
+                            "</strong>,</p>" +
+                            "<p>Congratulations! Your certificate " +
+                            "of participation for " +
+                            "<strong>" + conferenceName +
+                            "</strong> has been issued.</p>" +
+                            "<div class='highlight-box'>" +
+                            "<div class='label'>" +
+                            "Certificate Number</div>" +
+                            "<div class='value'>" +
+                            certificateNumber + "</div>" +
+                            "</div>" +
+                            "<p>Your certificate is attached to " +
+                            "this email as a PDF. You can also " +
+                            "download it anytime from your " +
+                            "NexMeet dashboard.</p>" +
+                            "<p style='color:#64748b;" +
+                            "font-size:0.85rem'>" +
+                            "Keep your certificate number safe. " +
+                            "It uniquely identifies your " +
+                            "participation.</p>";
+
+            helper.setText(
+                    wrapInTemplate(
+                            "Certificate Ready", body),
+                    true);
+
+            // Attach the PDF
+            if (pdfBytes != null
+                    && pdfBytes.length > 0) {
+                helper.addAttachment(
+                        "NexMeet_Certificate_"
+                                + certificateNumber + ".pdf",
+                        new org.springframework.core
+                                .io.ByteArrayResource(pdfBytes),
+                        "application/pdf");
+            }
+
+            mailSender.send(message);
+
+        } catch (Exception e) {
+            System.err.println(
+                    "[EmailService] Certificate email " +
+                            "failed to " + toEmail + ": "
+                            + e.getMessage());
+        }
+    }
 }

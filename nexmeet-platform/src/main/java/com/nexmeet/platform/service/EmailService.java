@@ -106,4 +106,21 @@ public interface EmailService {
             String organizerName,
             String organizerEmail
     );
+
+    /*
+     * Emails the certificate PDF as an attachment.
+     * Called by CertificateServiceImpl.issueCertificate()
+     * when a conference is marked COMPLETED.
+     *
+     * pdfBytes — the raw PDF bytes to attach.
+     * The delegate downloads directly from their email
+     * OR from the dashboard download button.
+     */
+    void sendCertificateEmail(
+            String toEmail,
+            String delegateName,
+            String conferenceName,
+            String certificateNumber,
+            byte[] pdfBytes
+    );
 }
