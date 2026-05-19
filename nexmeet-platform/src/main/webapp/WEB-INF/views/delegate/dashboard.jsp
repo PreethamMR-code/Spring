@@ -143,11 +143,42 @@
                                         <%-- Certificate: only after attendance (Phase 15) --%>
                                             <%-- Will be enabled after organizer marks attendance --%>
 
+                                                 <%-- Certificate section — Phase 44 --%>
                                                  <c:if test="${attendedIds.contains(reg.id)}">
-                                                     <a href="${pageContext.request.contextPath}/delegate/registration/${reg.id}/certificate"
-                                                        class="btn btn-warning btn-sm ms-1">
-                                                         Certificate
-                                                     </a>
+                                                     <c:set var="cert"
+                                                            value="${certificateMap[reg.id]}"/>
+                                                     <c:choose>
+                                                         <c:when test="${not empty cert}">
+                                                             <%-- Certificate issued — show number + download --%>
+                                                             <div class="mt-1"
+                                                                  style="font-size:0.72rem">
+                                                                 <span class="badge bg-success">
+                                                                     🏆 Certified
+                                                                 </span>
+                                                                 <div class="text-muted mt-1"
+                                                                      style="font-size:0.68rem">
+                                                                     ${cert.certificateNumber}
+                                                                 </div>
+                                                                 <a href="${pageContext.request.contextPath}/delegate/registration/${reg.id}/certificate"
+                                                                    class="btn btn-warning
+                                                                           btn-sm mt-1"
+                                                                    style="font-size:0.72rem;
+                                                                           padding:3px 10px">
+                                                                     ⬇ Download PDF
+                                                                 </a>
+                                                             </div>
+                                                         </c:when>
+                                                         <c:otherwise>
+                                                             <%-- Attended but cert not issued yet
+                                                                  (conference not marked complete) --%>
+                                                             <a href="${pageContext.request.contextPath}/delegate/registration/${reg.id}/certificate"
+                                                                class="btn btn-outline-warning
+                                                                       btn-sm ms-1"
+                                                                style="font-size:0.72rem">
+                                                                 📄 Certificate
+                                                             </a>
+                                                         </c:otherwise>
+                                                     </c:choose>
                                                  </c:if>
 
                                                  <%-- Feedback button: only after attended, conference ended --%>
