@@ -8,9 +8,7 @@ import com.nexmeet.platform.entity.Registration;
 import com.nexmeet.platform.entity.User;
 import com.nexmeet.platform.enums.ConferenceStatus;
 import com.nexmeet.platform.enums.RegistrationStatus;
-import com.nexmeet.platform.service.ConferenceService;
-import com.nexmeet.platform.service.EmailService;
-import com.nexmeet.platform.service.NotificationService;
+import com.nexmeet.platform.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +37,12 @@ public class ConferenceServiceImpl implements ConferenceService {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private CertificateService certificateService;
+
+    @Autowired
+    private AttendanceService attendanceService;
 
 
     @Override
@@ -181,23 +185,56 @@ public class ConferenceServiceImpl implements ConferenceService {
                 registrationDao.findByConferenceId(conferenceId);
 
         for (Registration reg : registrations) {
-            if (reg.getStatus() == RegistrationStatus.CONFIRMED) {
-                notificationService.createNotification(
-                        reg.getUser().getEmail(),
-                        "Conference Completed",
-                        "\"" + conf.getTitle() + "\" has ended. " +
-                                "You can now submit your feedback" +
-                                (conf.isCertificateEnabled()
-                                        ? " and download your certificate." : "."),
-                        "IN_APP"
-                );
-                // FIX: was registration.getUser() and conference.getTitle()
-                emailService.sendConferenceCompleted(
-                        reg.getUser().getEmail(),
-                        reg.getUser().getFullName(),
-                        conf.getTitle()
-                );
+            if (reg.getStatus()
+                    != RegistrationStatus.CONFIRMED) {
+                continue;
             }
+
+            // Notify delegate (existing)
+            notificationService.createNotification(
+                    reg.getUser().getEmail(),
+                    "Conference Completed",
+                    "\"" + conf.getTitle() +
+                            "\" has ended. " +
+                            (conf.isCertificateEnabled()
+                                    ? "Your certificate is being " +
+                                    "issued and will arrive by email."
+                                    : "You can now submit feedback."),
+                    "IN_APP"
+            );
+
+            // Phase 44: Only issue certificates to
+            // delegates who ACTUALLY ATTENDED.
+            // Registered but absent = no certificate.
+            if (conf.isCertificateEnabled()
+                    && attendanceService
+                    .hasAttended(reg.getId())) {
+                try {
+                    certificateService
+                            .issueCertificate(reg);
+                    // email is sent inside issueCertificate
+                } catch (Exception e) {
+                    // Never let one failure stop others
+                    System.err.println(
+                            "[Certificate] Failed for "
+                                    + reg.getUser().getEmail()
+                                    + ": " + e.getMessage());
+                }
+            } else if (!conf.isCertificateEnabled()) {
+                // No certificates for this conference
+                // Just send completion email
+                try {
+                    emailService.sendConferenceCompleted(
+                            reg.getUser().getEmail(),
+                            reg.getUser().getFullName(),
+                            conf.getTitle()
+                    );
+                } catch (Exception e) {
+                    // silent
+                }
+            }
+            // If certificateEnabled but didn't attend:
+            // no email, no certificate — correct behavior
         }
     }
 
