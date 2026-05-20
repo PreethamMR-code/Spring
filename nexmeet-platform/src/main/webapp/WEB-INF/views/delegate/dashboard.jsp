@@ -144,7 +144,7 @@
                                             <%-- Will be enabled after organizer marks attendance --%>
 
                                                  <%-- Certificate section — Phase 44 --%>
-                                                 <c:if test="${attendedIds.contains(reg.id)}">
+                                                 <c:if test="${attendedIds.contains(reg.id) && reg.conference.status == 'COMPLETED'}">
                                                      <c:set var="cert"
                                                             value="${certificateMap[reg.id]}"/>
                                                      <c:choose>

@@ -4,6 +4,7 @@ import com.nexmeet.platform.dao.DelegateDao;
 import com.nexmeet.platform.dao.QrCodeDao;
 import com.nexmeet.platform.dto.DelegateProfileDto;
 import com.nexmeet.platform.entity.*;
+import com.nexmeet.platform.enums.ConferenceStatus;
 import com.nexmeet.platform.enums.RegistrationStatus;
 import com.nexmeet.platform.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -226,6 +227,17 @@ public class DelegateController {
                     HttpServletResponse.SC_BAD_REQUEST,
                     "Certificate only available " +
                             "for confirmed registrations");
+            return;
+        }
+
+
+        // Phase 44 guard: certificate only available after conference is COMPLETED
+        if (reg.getConference().getStatus()
+                != ConferenceStatus.COMPLETED) {
+            response.sendError(
+                    HttpServletResponse.SC_FORBIDDEN,
+                    "Certificate available only after " +
+                            "the conference is completed.");
             return;
         }
 

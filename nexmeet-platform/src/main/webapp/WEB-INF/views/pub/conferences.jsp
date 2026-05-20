@@ -306,51 +306,71 @@
                     </label>
                     <select name="type" class="form-select">
                         <option value="">All Types</option>
+                        <%-- Academic & Research --%>
                         <option value="STUDENT"
-                            ${selectedType=='STUDENT'?'selected':''}>
-                            Student Academic</option>
+                            ${selectedType=='STUDENT'?'selected':''}>Student Academic</option>
                         <option value="ACADEMIC"
-                            ${selectedType=='ACADEMIC'?'selected':''}>
-                            Academic</option>
+                            ${selectedType=='ACADEMIC'?'selected':''}>Academic</option>
                         <option value="RESEARCH"
-                            ${selectedType=='RESEARCH'?'selected':''}>
-                            Research</option>
+                            ${selectedType=='RESEARCH'?'selected':''}>Research</option>
+                        <option value="EDUCATION"
+                            ${selectedType=='EDUCATION'?'selected':''}>Education</option>
+                        <%-- Technical & IT --%>
                         <option value="TECHNICAL"
-                            ${selectedType=='TECHNICAL'?'selected':''}>
-                            Technical</option>
+                            ${selectedType=='TECHNICAL'?'selected':''}>Technical</option>
+                        <option value="DATA_SCIENCE"
+                            ${selectedType=='DATA_SCIENCE'?'selected':''}>Data Science</option>
                         <option value="AI_ML"
-                            ${selectedType=='AI_ML'?'selected':''}>
-                            AI/ML</option>
+                            ${selectedType=='AI_ML'?'selected':''}>AI / ML</option>
+                        <option value="CYBERSECURITY"
+                            ${selectedType=='CYBERSECURITY'?'selected':''}>Cybersecurity</option>
+                        <option value="CLOUD_COMPUTING"
+                            ${selectedType=='CLOUD_COMPUTING'?'selected':''}>Cloud Computing</option>
+                        <%-- Business --%>
                         <option value="CORPORATE"
-                            ${selectedType=='CORPORATE'?'selected':''}>
-                            Corporate</option>
+                            ${selectedType=='CORPORATE'?'selected':''}>Corporate</option>
                         <option value="BUSINESS"
-                            ${selectedType=='BUSINESS'?'selected':''}>
-                            Business</option>
+                            ${selectedType=='BUSINESS'?'selected':''}>Business</option>
                         <option value="STARTUP"
-                            ${selectedType=='STARTUP'?'selected':''}>
-                            Startup</option>
+                            ${selectedType=='STARTUP'?'selected':''}>Startup</option>
+                        <option value="FINANCE"
+                            ${selectedType=='FINANCE'?'selected':''}>Finance</option>
+                        <option value="MARKETING"
+                            ${selectedType=='MARKETING'?'selected':''}>Marketing</option>
+                        <option value="LEADERSHIP"
+                            ${selectedType=='LEADERSHIP'?'selected':''}>Leadership</option>
+                        <%-- Industry --%>
                         <option value="HEALTHCARE"
-                            ${selectedType=='HEALTHCARE'?'selected':''}>
-                            Healthcare</option>
+                            ${selectedType=='HEALTHCARE'?'selected':''}>Healthcare</option>
                         <option value="ENGINEERING"
-                            ${selectedType=='ENGINEERING'?'selected':''}>
-                            Engineering</option>
-                        <option value="WORKSHOP"
-                            ${selectedType=='WORKSHOP'?'selected':''}>
-                            Workshop</option>
-                        <option value="SEMINAR"
-                            ${selectedType=='SEMINAR'?'selected':''}>
-                            Seminar</option>
-                        <option value="WEBINAR"
-                            ${selectedType=='WEBINAR'?'selected':''}>
-                            Webinar</option>
+                            ${selectedType=='ENGINEERING'?'selected':''}>Engineering</option>
+                        <option value="LEGAL"
+                            ${selectedType=='LEGAL'?'selected':''}>Legal</option>
+                        <option value="ENVIRONMENTAL"
+                            ${selectedType=='ENVIRONMENTAL'?'selected':''}>Environmental</option>
+                        <%-- Civic & Social --%>
                         <option value="NGO"
-                            ${selectedType=='NGO'?'selected':''}>
-                            NGO</option>
+                            ${selectedType=='NGO'?'selected':''}>NGO</option>
+                        <option value="GOVERNMENT"
+                            ${selectedType=='GOVERNMENT'?'selected':''}>Government</option>
+                        <%-- Event Formats --%>
+                        <option value="WORKSHOP"
+                            ${selectedType=='WORKSHOP'?'selected':''}>Workshop</option>
+                        <option value="SEMINAR"
+                            ${selectedType=='SEMINAR'?'selected':''}>Seminar</option>
+                        <option value="WEBINAR"
+                            ${selectedType=='WEBINAR'?'selected':''}>Webinar</option>
+                        <option value="PANEL"
+                            ${selectedType=='PANEL'?'selected':''}>Panel</option>
+                        <option value="BOOTCAMP"
+                            ${selectedType=='BOOTCAMP'?'selected':''}>Bootcamp</option>
+                        <option value="TRAINING"
+                            ${selectedType=='TRAINING'?'selected':''}>Training</option>
+                        <%-- General --%>
+                        <option value="INNOVATION"
+                            ${selectedType=='INNOVATION'?'selected':''}>Innovation</option>
                         <option value="GENERAL"
-                            ${selectedType=='GENERAL'?'selected':''}>
-                            General</option>
+                            ${selectedType=='GENERAL'?'selected':''}>General</option>
                     </select>
                 </div>
                 <div class="col-md-2">
