@@ -4,10 +4,7 @@ import com.nexmeet.platform.dao.InstitutionDao;
 import com.nexmeet.platform.dao.OrganizerDao;
 import com.nexmeet.platform.dao.OutreachDao;
 import com.nexmeet.platform.entity.*;
-import com.nexmeet.platform.service.ConferenceService;
-import com.nexmeet.platform.service.EmailService;
-import com.nexmeet.platform.service.OutreachService;
-import com.nexmeet.platform.service.UserService;
+import com.nexmeet.platform.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +32,9 @@ public class OutreachServiceImpl implements OutreachService {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private AuditLogService auditLogService;
 
     @Override
     public String sendOutreach(
@@ -157,6 +157,15 @@ public class OutreachServiceImpl implements OutreachService {
                     .append(" institution(s) had no email — ")
                     .append("recorded but email not sent.");
         }
+
+        try {
+            auditLogService.log(
+                    organizerEmail,
+                    "OUTREACH_SENT",
+                    "Conference",
+                    conferenceId,
+                    summary.toString());
+        } catch (Exception ignored) {}
 
         return summary.toString().trim();
     }

@@ -49,6 +49,10 @@ public class RegistrationServiceImpl implements RegistrationService {
     @Autowired
     private DelegateDao delegateDao;
 
+
+    @Autowired
+    private AuditLogService auditLogService;
+
     @Override
     @Transactional
     public String registerForConference(Long conferenceId, String userEmail) {
@@ -149,6 +153,17 @@ public class RegistrationServiceImpl implements RegistrationService {
                 "IN_APP"
         );
 
+        try {
+            auditLogService.log(
+                    userEmail,
+                    "DELEGATE_REGISTERED",
+                    "Conference",
+                    conferenceId,
+                    "Reg#: "
+                            + reg.getRegistrationNumber());
+        } catch (Exception ignored) {}
+
+
         return "SUCCESS";
     }
 
@@ -191,6 +206,16 @@ public class RegistrationServiceImpl implements RegistrationService {
         reg.setStatus(RegistrationStatus.CANCELLED);
         reg.setCancelledAt(LocalDateTime.now());
         registrationDao.cancel(reg);
+
+        try {
+            auditLogService.log(
+                    userEmail,
+                    "DELEGATE_CANCELLED",
+                    "Registration",
+                    registrationId,
+                    "Reg#: "
+                            + reg.getRegistrationNumber());
+        } catch (Exception ignored) {}
 
         // Free the seat
         Conference conf = reg.getConference();

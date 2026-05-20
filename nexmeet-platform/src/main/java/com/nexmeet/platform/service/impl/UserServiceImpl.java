@@ -20,6 +20,7 @@ package com.nexmeet.platform.service.impl;
 import com.nexmeet.platform.dao.UserDao;
 import com.nexmeet.platform.entity.Role;
 import com.nexmeet.platform.entity.User;
+import com.nexmeet.platform.service.AuditLogService;
 import com.nexmeet.platform.service.EmailService;
 import com.nexmeet.platform.service.UserService;
 import org.hibernate.SessionFactory;
@@ -44,6 +45,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private SessionFactory sessionFactory;
+
+    @Autowired
+    private AuditLogService auditLogService;
 
 
     /*
@@ -94,6 +98,15 @@ public class UserServiceImpl implements UserService {
         }
 
         userDao.save(user);
+
+        try {
+            auditLogService.logSystem(
+                    "USER_REGISTERED",
+                    "User",
+                    user.getId(),
+                    "Role: " + roleToAssign
+                            + " | Email: " + email);
+        } catch (Exception ignored) {}
 
 
         // Send welcome email — fire and forget

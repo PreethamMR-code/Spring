@@ -9,6 +9,7 @@ import com.itextpdf.text.pdf.draw.LineSeparator;
 import com.nexmeet.platform.dao.CertificateDao;
 import com.nexmeet.platform.entity.Certificate;
 import com.nexmeet.platform.entity.Registration;
+import com.nexmeet.platform.service.AuditLogService;
 import com.nexmeet.platform.service.CertificateService;
 import com.nexmeet.platform.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,9 @@ public class CertificateServiceImpl implements CertificateService {
 
     @Autowired
     private CertificateDao certificateDao;
+
+    @Autowired
+    private AuditLogService auditLogService;
 
     /*
      * required=false — if EmailService is unavailable
@@ -503,6 +507,21 @@ public class CertificateServiceImpl implements CertificateService {
         // file_path: null — in-memory generation
         cert.setFilePath(null);
         certificateDao.save(cert);
+
+        try {
+            auditLogService.logSystem(
+                    "CERTIFICATE_ISSUED",
+                    "Certificate",
+                    cert.getId(),
+                    "Cert#: " + certNumber
+                            + " | Delegate: "
+                            + registration.getUser().getEmail()
+                            + " | Conf: "
+                            + registration.getConference()
+                            .getTitle());
+        } catch (Exception ignored) {}
+
+
 
         // Email the PDF to the delegate
         if (emailService != null) {

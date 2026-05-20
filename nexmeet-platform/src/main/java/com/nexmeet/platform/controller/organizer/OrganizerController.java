@@ -67,6 +67,9 @@ public class OrganizerController {
     @Autowired
     private OutreachService outreachService;
 
+    @Autowired
+    private AuditLogService auditLogService;
+
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication auth) {
 
@@ -179,6 +182,16 @@ public class OrganizerController {
                     ? ConferenceStatus.SUBMITTED : ConferenceStatus.DRAFT);
 
             conferenceService.save(conf);
+
+            try {
+                auditLogService.log(
+                        auth.getName(),
+                        "CONFERENCE_CREATED",
+                        "Conference",
+                        conf.getId(),
+                        "Status: " + conf.getStatus().name()
+                                + " | Title: " + conf.getTitle());
+            } catch (Exception ignored) {}
 
             flash.addFlashAttribute("success", "SUBMIT".equals(action)
                     ? "Conference submitted for admin approval!"
@@ -491,6 +504,17 @@ public class OrganizerController {
 
             conferenceService.markAsCompleted(
                     id, auth.getName());
+
+            try {
+                auditLogService.log(
+                        auth.getName(),
+                        "CONFERENCE_COMPLETED",
+                        "Conference",
+                        id,
+                        "Marked complete by organizer");
+            } catch (Exception ignored) {}
+
+
             flash.addFlashAttribute("success",
                     "Conference marked as completed! " +
                             "Delegates have been notified.");
@@ -523,6 +547,15 @@ public class OrganizerController {
 
             conferenceService.cancelConference(
                     id, auth.getName(), reason);
+
+            try {
+                auditLogService.log(
+                        auth.getName(),
+                        "CONFERENCE_CANCELLED",
+                        "Conference",
+                        id,
+                        "Reason: " + reason);
+            } catch (Exception ignored) {}
 
             flash.addFlashAttribute("success",
                     "Conference cancelled. All registered " +
@@ -898,6 +931,19 @@ public class OrganizerController {
                             result.getSuccessfulRows() +
                             " registered, " +
                             result.getFailedRows() + " failed.");
+
+            try {
+                auditLogService.log(
+                        auth.getName(),
+                        "BULK_UPLOAD_COMPLETED",
+                        "Conference",
+                        id,
+                        result.getSuccessfulRows()
+                                + " registered, "
+                                + result.getFailedRows()
+                                + " failed");
+            } catch (Exception ignored) {}
+
 
         } catch (Exception e) {
             flash.addFlashAttribute("error",
