@@ -52,6 +52,9 @@ public class AdminController {
     @Autowired
     private InstitutionalAdminDao institutionalAdminDao;
 
+    @Autowired
+    private AuditLogService auditLogService;
+
 
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication auth) {
@@ -85,6 +88,10 @@ public class AdminController {
         model.addAttribute("pendingCount", pending.size());
         model.addAttribute("totalUsers", totalUsers);
         model.addAttribute("activeConferences", activeConferences);
+
+        model.addAttribute("totalAuditLogs",
+                auditLogService.getTotalCount());
+
         return "admin/dashboard";
     }
     @PostMapping("/conference/{id}/approve")
@@ -92,6 +99,18 @@ public class AdminController {
                           Authentication auth,
                           RedirectAttributes flash) {
         conferenceService.approveConference(id, auth.getName());
+
+        // Phase 45: audit log
+        try {
+            auditLogService.log(
+                    auth.getName(),
+                    "CONFERENCE_APPROVED",
+                    "Conference",
+                    id,
+                    "Admin approved conference ID " + id);
+        } catch (Exception ignored) {}
+
+
         flash.addFlashAttribute("success", "Conference approved!");
         return "redirect:/admin/dashboard";
     }
@@ -102,6 +121,17 @@ public class AdminController {
                          Authentication auth,
                          RedirectAttributes flash) {
         conferenceService.rejectConference(id, null, reason);
+
+        try {
+            auditLogService.log(
+                    auth.getName(),
+                    "CONFERENCE_REJECTED",
+                    "Conference",
+                    id,
+                    "Reason: " + reason);
+        } catch (Exception ignored) {}
+
+
         flash.addFlashAttribute("error", "Conference rejected.");
         return "redirect:/admin/dashboard";
     }
@@ -177,6 +207,13 @@ public class AdminController {
             userService.findByEmail(auth.getName())
                     .ifPresent(org::setVerifiedBy);
             organizerDao.update(org);
+
+            auditLogService.log(
+                    auth.getName(),
+                    "ORGANIZER_VERIFIED",
+                    "Organizer",
+                    id,
+                    "Organizer: " + org.getUser().getEmail());
 
             // Notify organizer
             notificationService.createNotification(
@@ -271,6 +308,18 @@ public class AdminController {
                 return;
             }
             userService.toggleUserActive(id);
+
+            String actionName = user.isActive()
+                    ? "USER_DEACTIVATED"
+                    : "USER_ACTIVATED";
+            auditLogService.log(
+                    auth.getName(),
+                    actionName,
+                    "User",
+                    id,
+                    "Toggled user: " + user.getEmail());
+
+
             flash.addFlashAttribute("success",
                     user.isActive()
                             ? "User deactivated successfully."
@@ -322,6 +371,16 @@ public class AdminController {
             inst.setDomains(dto.getDomains());
             inst.setActive(true);
             institutionDao.save(inst);
+
+            auditLogService.log(
+                    null,
+                    "INSTITUTION_ADDED",
+                    "Institution",
+                    null,
+                    "Added: " + dto.getName()
+                            + " (" + dto.getType() + ")");
+
+
             flash.addFlashAttribute("success",
                     "Institution added successfully!");
         } catch (Exception e) {
@@ -353,6 +412,19 @@ public class AdminController {
         institutionalAdminDao.findById(id).ifPresent(ia -> {
             ia.setVerified(true);
             institutionalAdminDao.update(ia);
+
+
+            auditLogService.log(
+                    null,
+                    "INSTITUTIONAL_ADMIN_APPROVED",
+                    "InstitutionalAdmin",
+                    id,
+                    "Approved: "
+                            + ia.getUser().getEmail()
+                            + " for "
+                            + ia.getInstitution().getName());
+
+
             notificationService.createNotification(
                     ia.getUser().getEmail(),
                     "Account Verified",
@@ -365,5 +437,66 @@ public class AdminController {
                     "Institutional admin approved.");
         });
         return "redirect:/admin/institutions";
+    }
+
+
+    /*
+     * GET /admin/audit-logs
+     * Shows recent audit log entries.
+     * Supports action filter via request param.
+     */
+    @GetMapping("/audit-logs")
+    public String auditLogs(
+            @RequestParam(required = false)
+            String action,
+            Model model,
+            Authentication auth) {
+
+        userService.findByEmail(auth.getName())
+                .ifPresent(u ->
+                        model.addAttribute(
+                                "currentUser", u));
+
+        int limit = 200; // last 200 events
+
+        List<com.nexmeet.platform.entity.AuditLog>
+                logs;
+
+        if (action != null && !action.isEmpty()) {
+            logs = auditLogService
+                    .filterByAction(action, limit);
+        } else {
+            logs = auditLogService.getRecent(limit);
+        }
+
+        model.addAttribute("logs", logs);
+        model.addAttribute("totalCount",
+                auditLogService.getTotalCount());
+        model.addAttribute("selectedAction",
+                action != null ? action : "");
+
+        // All distinct action types for filter dropdown
+        model.addAttribute("actionTypes",
+                java.util.Arrays.asList(
+                        "CONFERENCE_APPROVED",
+                        "CONFERENCE_REJECTED",
+                        "CONFERENCE_CANCELLED",
+                        "CONFERENCE_COMPLETED",
+                        "CONFERENCE_CREATED",
+                        "ORGANIZER_VERIFIED",
+                        "ORGANIZER_REJECTED",
+                        "USER_REGISTERED",
+                        "USER_DEACTIVATED",
+                        "USER_ACTIVATED",
+                        "DELEGATE_REGISTERED",
+                        "DELEGATE_CANCELLED",
+                        "BULK_UPLOAD_COMPLETED",
+                        "INSTITUTIONAL_ADMIN_APPROVED",
+                        "INSTITUTION_ADDED",
+                        "OUTREACH_SENT",
+                        "CERTIFICATE_ISSUED"
+                ));
+
+        return "admin/audit-logs";
     }
 }
