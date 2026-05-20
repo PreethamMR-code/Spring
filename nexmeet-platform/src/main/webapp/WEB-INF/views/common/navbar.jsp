@@ -78,7 +78,14 @@
                 </a>
             </li>
 
-               </sec:authorize>
+            <li class="nav-item">
+                <a class="nav-link"
+                   href="${pageContext.request.contextPath}/admin/audit-logs">
+                    🔍 Audit Logs
+                </a>
+            </li>
+
+        </sec:authorize>
 
 
 

@@ -84,6 +84,17 @@
             </a>
         </div>
 
+         <a href="${pageContext.request.contextPath}/admin/audit-logs"
+               class="btn btn-outline-secondary">
+                🔍 Audit Logs
+                <c:if test="${totalAuditLogs > 0}">
+                    <span class="badge bg-secondary ms-1">
+                        ${totalAuditLogs}
+                    </span>
+                </c:if>
+            </a>
+        </div>
+
         <!-- Pending Conferences Table -->
         <h5 class="text-danger">Conferences Awaiting Approval</h5>
         <c:choose>
