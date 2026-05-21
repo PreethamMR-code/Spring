@@ -289,7 +289,7 @@
         <form method="get"
               action="${pageContext.request.contextPath}/conferences">
             <div class="row g-2 align-items-end">
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
                     <label class="form-label small fw-semibold
                                   text-muted mb-1">
                         Search
@@ -299,7 +299,7 @@
                            placeholder="Title, city, keyword..."
                            value="${search}"/>
                 </div>
-                <div class="col-md-2">
+                <div class="col-6 col-md-2">
                     <label class="form-label small fw-semibold
                                   text-muted mb-1">
                         Type
@@ -373,7 +373,7 @@
                             ${selectedType=='GENERAL'?'selected':''}>General</option>
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-6 col-md-2">
                     <label class="form-label small fw-semibold
                                   text-muted mb-1">
                         Mode
@@ -391,7 +391,7 @@
                             Hybrid</option>
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-6 col-md-2">
                     <label class="form-label small fw-semibold
                                   text-muted mb-1">
                         City
@@ -406,7 +406,7 @@
                         </c:forEach>
                     </select>
                 </div>
-                <div class="col-md-1">
+                <div class="col-6 col-md-1">
                     <label class="form-label small fw-semibold
                                   text-muted mb-1">
                         Price
@@ -421,7 +421,7 @@
                             Paid</option>
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
                     <div class="d-flex gap-2">
                         <button type="submit"
                                 class="btn btn-filter flex-grow-1">
