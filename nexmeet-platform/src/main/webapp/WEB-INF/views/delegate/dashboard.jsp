@@ -5,6 +5,8 @@
     <html>
     <head>
         <title>Delegate Dashboard - NexMeet</title>
+        <meta name="viewport"
+              content="width=device-width, initial-scale=1"/>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
     </head>
     <body class="bg-light">
@@ -96,6 +98,7 @@
                     <p class="text-muted">You have not registered for any conferences yet.</p>
                 </c:when>
                 <c:otherwise>
+                    <div class="table-responsive">
                     <table class="table table-hover table-bordered">
                         <thead class="table-primary">
                             <tr>
@@ -268,6 +271,7 @@
                             </c:forEach>
                         </tbody>
                     </table>
+                    </div>
                 </c:otherwise>
             </c:choose>
 
@@ -282,6 +286,7 @@
                     </span>
                 </div>
                 <div class="card-body p-0">
+                    <div class="table-responsive">
                     <table class="table table-hover mb-0 small">
                         <thead class="table-light">
                             <tr>
@@ -339,6 +344,7 @@
                             </c:forEach>
                         </tbody>
                     </table>
+                    </div>
                 </div>
             </div>
             </c:if>
