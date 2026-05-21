@@ -6,6 +6,8 @@
 <html>
 <head>
     <title>${conf.title} - Organizer View</title>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
           rel="stylesheet"/>
 </head>
@@ -17,7 +19,7 @@
 <div class="container py-4">
 
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-start mb-4">
+    <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-2">
         <div>
             <h2 class="text-success mb-1">${conf.title}</h2>
             <span class="badge
@@ -30,7 +32,7 @@
                 ${conf.status}
             </span>
         </div>
-        <div class="d-flex gap-2">
+        <div class="d-flex gap-2 flex-wrap">
             <c:if test="${conf.status == 'DRAFT' || conf.status == 'REJECTED'}">
                 <a href="${pageContext.request.contextPath}/organizer/conference/${conf.id}/edit"
                    class="btn btn-warning">Edit Conference</a>
@@ -212,8 +214,8 @@
            </span>
        </div>
        <div class="card-body p-0">
-           <table class="table table-hover
-                         table-sm mb-0 small">
+           <div class="table-responsive">
+           <table class="table table-hover table-sm mb-0 small">
                <thead class="table-light">
                    <tr>
                        <th>Delegate</th>
@@ -271,6 +273,7 @@
                    </c:forEach>
                </tbody>
            </table>
+           </div>
        </div>
    </div>
    </c:if>
