@@ -6,6 +6,8 @@
 <html>
 <head>
     <title>Admin Dashboard - NexMeet</title>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
@@ -31,25 +33,25 @@
 
         <!-- Stat Cards -->
         <div class="row g-3 mb-4">
-            <div class="col-md-3">
+            <div class="col-6 col-md-3">
                 <div class="card text-center p-3 border-danger">
                     <h5>Pending Conferences</h5>
                     <h2 class="text-danger">${pendingCount}</h2>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-6 col-md-3">
                 <div class="card text-center p-3 border-primary">
                     <h5>Total Users</h5>
                     <h2 class="text-primary">${totalUsers}</h2>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-6 col-md-3">
                 <div class="card text-center p-3 border-success">
                     <h5>Active Conferences</h5>
                     <h2 class="text-success">${activeConferences}</h2>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-6 col-md-3">
                 <div class="card text-center p-3 border-warning">
                     <h5>Platform Revenue</h5>
                     <h2 class="text-warning">
@@ -59,7 +61,7 @@
                 </div>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-6 col-md-3">
                 <div class="card text-center p-3 border-info">
                     <h5>Pending Organizers</h5>
                     <h2 class="text-info">${pendingOrganizersCount}</h2>
@@ -102,6 +104,7 @@
                 <p class="text-muted">No conferences pending approval.</p>
             </c:when>
             <c:otherwise>
+                <div class="table-responsive">
                 <table class="table table-hover table-bordered">
                     <thead class="table-danger">
                         <tr>
@@ -166,6 +169,7 @@
                         </c:forEach>
                     </tbody>
                 </table>
+                </div>
             </c:otherwise>
         </c:choose>
 
