@@ -594,6 +594,24 @@
             .step-connector { display: none; }
             .cta-card { padding: 40px 24px; }
         }
+
+        @media (max-width: 576px) {
+            .hero-stats {
+                gap: 16px;
+            }
+            .hero-stat-divider {
+                display: none;
+            }
+            .hero-stat-number {
+                font-size: 1.5rem;
+            }
+            .step-connector {
+                display: none;
+            }
+            .cta-card {
+                padding: 32px 20px;
+            }
+        }
     </style>
 </head>
 <body>
