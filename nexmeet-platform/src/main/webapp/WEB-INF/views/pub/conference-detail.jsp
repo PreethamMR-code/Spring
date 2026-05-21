@@ -300,6 +300,14 @@
             font-size: 0.75rem;
             color: #94a3b8;
         }
+
+        /* Mobile: disable sticky reg card */
+        @media (max-width: 991px) {
+            .reg-card {
+                position: static !important;
+                top: auto !important;
+            }
+        }
     </style>
 </head>
 <body>
