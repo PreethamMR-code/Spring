@@ -42,6 +42,10 @@
         <intercept-url pattern="/conference/*/institution-bulk-upload" access="hasRole('ROLE_INSTITUTIONAL_ADMIN')"/>
         <intercept-url pattern="/conference/*/register" access="hasRole('ROLE_DELEGATE')" />
         <intercept-url pattern="/conference/**"       access="permitAll" />
+
+        <intercept-url pattern="/verify/**"             access="permitAll" />
+        <intercept-url pattern="/verify"                access="permitAll" />
+
         <intercept-url pattern="/register"            access="permitAll" />
         <intercept-url pattern="/login"               access="permitAll" />
         <intercept-url pattern="/error/**"            access="permitAll" />
@@ -89,6 +93,7 @@
         <intercept-url pattern="/delegate/registration/*/ticket"    access="hasRole('ROLE_DELEGATE')"/>
         <intercept-url pattern="/delegate/registration/*/certificate" access="hasRole('ROLE_DELEGATE')"/>
         <intercept-url pattern="/delegate/profile/setup"              access="hasRole('ROLE_DELEGATE')"/>
+        <intercept-url pattern="/delegate/profile/edit"                 access="hasRole('ROLE_DELEGATE')"/>
 
         <intercept-url pattern="/delegate/**"                       access="hasRole('ROLE_DELEGATE')" />
         <intercept-url pattern="/delegate/conference/*/feedback"    access="hasRole('ROLE_DELEGATE')"/>
