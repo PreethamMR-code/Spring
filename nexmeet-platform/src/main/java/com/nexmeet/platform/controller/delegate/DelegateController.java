@@ -320,4 +320,77 @@ public class DelegateController {
             return "redirect:/delegate/profile/setup";
         }
     }
+
+
+    /*
+     * GET /delegate/profile/edit
+     * Shows edit form pre-filled with current delegate details.
+     * If no profile exists (skipped setup), redirect to setup.
+     */
+    @GetMapping("/profile/edit")
+    public String showProfileEdit(
+            Model model,
+            Authentication auth) {
+
+        String email = auth.getName();
+
+        // No profile exists — send to setup instead
+        if (!delegateDao.existsByUserEmail(email)) {
+            return "redirect:/delegate/profile/setup";
+        }
+
+        delegateDao.findByUserEmail(email)
+                .ifPresent(d -> {
+                    // Pre-fill DTO with current values
+                    DelegateProfileDto dto =
+                            new DelegateProfileDto();
+                    dto.setOrganization(
+                            d.getOrganization());
+                    dto.setDesignation(
+                            d.getDesignation());
+                    dto.setCity(d.getCity());
+                    dto.setState(d.getState());
+                    model.addAttribute("dto", dto);
+                    model.addAttribute("delegate", d);
+                });
+
+        userService.findByEmail(email)
+                .ifPresent(u ->
+                        model.addAttribute(
+                                "currentUser", u));
+
+        return "delegate/profile-edit";
+    }
+
+    /*
+     * POST /delegate/profile/edit
+     * Saves updated delegate profile details.
+     * Uses DelegateDao.update() — already exists.
+     */
+    @PostMapping("/profile/edit")
+    public String saveProfileEdit(
+            @ModelAttribute("dto") DelegateProfileDto dto,
+            Authentication auth,
+            RedirectAttributes flash) {
+
+        try {
+            delegateDao.findByUserEmail(auth.getName())
+                    .ifPresent(d -> {
+                        d.setOrganization(
+                                dto.getOrganization());
+                        d.setDesignation(
+                                dto.getDesignation());
+                        d.setCity(dto.getCity());
+                        d.setState(dto.getState());
+                        delegateDao.update(d);
+                    });
+
+            flash.addFlashAttribute("success",
+                    "Profile updated successfully!");
+        } catch (Exception e) {
+            flash.addFlashAttribute("error",
+                    "Update failed: " + e.getMessage());
+        }
+        return "redirect:/delegate/dashboard";
+    }
 }
