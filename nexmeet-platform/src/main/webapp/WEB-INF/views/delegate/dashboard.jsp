@@ -349,12 +349,34 @@
             </div>
             </c:if>
 
-            <div class="mt-3">
-                <a href="${pageContext.request.contextPath}/conferences" class="btn btn-primary">Browse Conferences</a>
+            <div class="mt-3 d-flex gap-2 flex-wrap">
+                <a href="${pageContext.request.contextPath}/conferences"
+                   class="btn btn-primary">
+                    Browse Conferences
+                </a>
 
-                <form action="${pageContext.request.contextPath}/logout" method="post" class="d-inline">
-                    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
-                    <button type="submit" class="btn btn-outline-danger">Logout</button>
+                <%-- Edit Profile — only shown if profile exists --%>
+                <c:if test="${profileComplete}">
+                    <a href="${pageContext.request.contextPath}/delegate/profile/edit"
+                       class="btn btn-outline-primary">
+                        ✏️ Edit Profile
+                    </a>
+                </c:if>
+
+                <a href="${pageContext.request.contextPath}/profile"
+                   class="btn btn-outline-secondary">
+                    👤 My Account
+                </a>
+
+                <form action="${pageContext.request.contextPath}/logout"
+                      method="post" class="d-inline">
+                    <input type="hidden"
+                           name="${_csrf.parameterName}"
+                           value="${_csrf.token}"/>
+                    <button type="submit"
+                            class="btn btn-outline-danger">
+                        Logout
+                    </button>
                 </form>
             </div>
         </div>
