@@ -28,6 +28,13 @@
                     </a>
                 </li>
 
+                <li class="nav-item">
+                    <a class="nav-link"
+                       href="${pageContext.request.contextPath}/verify">
+                        🎓 Verify Certificate
+                    </a>
+                </li>
+
                 <!-- Admin Links -->
                <sec:authorize access="hasRole('ROLE_SUPER_ADMIN')">
                    <li class="nav-item">
