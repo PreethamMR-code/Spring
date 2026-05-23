@@ -499,4 +499,31 @@ public class AdminController {
 
         return "admin/audit-logs";
     }
+
+
+
+
+    /*
+     * POST /admin/conference/{id}/reissue-certificates
+     * One-time fix for conferences that were auto-completed
+     * before certificate issuance logic was fixed.
+     * Admin-only. Idempotent — safe to run multiple times.
+     */
+    @PostMapping("/conference/{id}/reissue-certificates")
+    public String reissueCertificates(
+            @PathVariable Long id,
+            Authentication auth,
+            RedirectAttributes flash) {
+        try {
+            conferenceService
+                    .reissueMissingCertificates(id);
+            flash.addFlashAttribute("success",
+                    "Certificates reissued for all "
+                            + "attended delegates!");
+        } catch (Exception e) {
+            flash.addFlashAttribute("error",
+                    "Error: " + e.getMessage());
+        }
+        return "redirect:/admin/conference/" + id;
+    }
 }
