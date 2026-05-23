@@ -513,4 +513,110 @@ public class EmailServiceImpl implements EmailService {
                             + e.getMessage());
         }
     }
+
+
+    @Override
+    public void sendTicketEmail(
+            String toEmail,
+            String delegateName,
+            String conferenceName,
+            String registrationNumber,
+            String conferenceDate,
+            String venueOrMode,
+            byte[] pdfBytes) {
+
+        if (mailSender == null) return;
+
+        try {
+            MimeMessage message =
+                    mailSender.createMimeMessage();
+
+            /*
+             * true = multipart MIME — required for
+             * adding PDF attachment alongside HTML body.
+             */
+            MimeMessageHelper helper =
+                    new MimeMessageHelper(
+                            message, true, "UTF-8");
+
+            helper.setFrom(
+                    "NexMeet <noreply@nexmeet.com>");
+            helper.setTo(toEmail);
+            helper.setSubject(
+                    "🎫 Your Ticket — "
+                            + conferenceName);
+
+            String body =
+                    "<h2>Your Ticket is Ready!</h2>" +
+                            "<p>Hi <strong>" + delegateName
+                            + "</strong>,</p>" +
+                            "<p>Your registration for " +
+                            "<strong>" + conferenceName
+                            + "</strong> is confirmed. " +
+                            "Your ticket is attached to " +
+                            "this email as a PDF.</p>" +
+
+                            "<div class='highlight-box'>" +
+                            "<div class='label'>" +
+                            "Registration Number</div>" +
+                            "<div class='value'>" +
+                            registrationNumber +
+                            "</div></div>" +
+
+                            "<div class='highlight-box'>" +
+                            "<div class='label'>Date</div>" +
+                            "<div class='value'>" +
+                            conferenceDate +
+                            "</div></div>" +
+
+                            "<div class='highlight-box'>" +
+                            "<div class='label'>" +
+                            "Venue / Mode</div>" +
+                            "<div class='value'>" +
+                            venueOrMode +
+                            "</div></div>" +
+
+                            "<p><strong>At the venue:</strong> " +
+                            "Show the QR code on your ticket " +
+                            "to the organizer for check-in. " +
+                            "The QR code is embedded in your " +
+                            "ticket PDF.</p>" +
+
+                            "<p style='color:#64748b;" +
+                            "font-size:0.85rem'>" +
+                            "You can also download your ticket " +
+                            "anytime from your NexMeet " +
+                            "dashboard under My Registrations." +
+                            "</p>";
+
+            helper.setText(
+                    wrapInTemplate(
+                            "Your Ticket", body),
+                    true);
+
+            /*
+             * Attach the ticket PDF.
+             * ByteArrayResource wraps raw bytes so
+             * Spring can use them as an email attachment
+             * without needing a file on disk.
+             */
+            if (pdfBytes != null
+                    && pdfBytes.length > 0) {
+                helper.addAttachment(
+                        "NexMeet_Ticket_"
+                                + registrationNumber + ".pdf",
+                        new org.springframework.core
+                                .io.ByteArrayResource(pdfBytes),
+                        "application/pdf");
+            }
+
+            mailSender.send(message);
+
+        } catch (Exception e) {
+            System.err.println(
+                    "[EmailService] Ticket email "
+                            + "failed to " + toEmail
+                            + ": " + e.getMessage());
+        }
+    }
 }

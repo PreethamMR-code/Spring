@@ -123,4 +123,27 @@ public interface EmailService {
             String certificateNumber,
             byte[] pdfBytes
     );
+
+    /*
+     * Sends the ticket PDF as an email attachment when a
+     * delegate successfully registers for a conference.
+     *
+     * Called from RegistrationServiceImpl after QR code
+     * is generated — so the ticket PDF includes the QR.
+     *
+     * This is in ADDITION to sendRegistrationConfirmation()
+     * which sends a plain-text summary email. This one
+     * sends the actual downloadable ticket PDF.
+     *
+     * pdfBytes — raw bytes of the generated ticket PDF.
+     */
+    void sendTicketEmail(
+            String toEmail,
+            String delegateName,
+            String conferenceName,
+            String registrationNumber,
+            String conferenceDate,
+            String venueOrMode,
+            byte[] pdfBytes
+    );
 }
