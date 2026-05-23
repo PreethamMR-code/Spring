@@ -169,20 +169,71 @@ public class ConferenceServiceImpl implements ConferenceService {
     @Override
     public void markAsCompleted(Long conferenceId,
                                 String userEmail) {
-        Conference conf = conferenceDao.findById(conferenceId)
+        Conference conf = conferenceDao
+                .findById(conferenceId)
                 .orElseThrow(() ->
-                        new RuntimeException("Conference not found"));
+                        new RuntimeException(
+                                "Conference not found"));
 
-        if (conf.getStatus() != ConferenceStatus.APPROVED) {
+        if (conf.getStatus()
+                != ConferenceStatus.APPROVED) {
             throw new RuntimeException(
-                    "Only APPROVED conferences can be completed.");
+                    "Only APPROVED conferences "
+                            + "can be completed.");
         }
 
+        /*
+         * Delegate to the same helper used by
+         * autoCompleteExpiredConferences() —
+         * single place for all completion logic.
+         */
+        runCompletion(conf);
+    }
+
+    @Override
+    public void autoCompleteExpiredConferences() {
+        /*
+         * Find all APPROVED conferences whose end date
+         * has already passed and run the full completion
+         * logic for each — including certificate issuance
+         * and email notifications.
+         *
+         * WHY NOT just call markAsCompleted() internally:
+         * Internal calls bypass the Spring proxy, and if
+         * one conference's Hibernate session gets marked
+         * rollback-only, it can poison the whole batch.
+         * We handle each conference independently with
+         * its own try-catch to isolate failures.
+         */
+        List<Conference> expired = conferenceDao
+                .findExpiredApproved();
+
+        for (Conference conf : expired) {
+            try {
+                runCompletion(conf);
+            } catch (Exception e) {
+                System.err.println(
+                        "[AutoComplete] Failed for conf "
+                                + conf.getId() + " ("
+                                + conf.getTitle() + "): "
+                                + e.getMessage());
+            }
+        }
+    }
+
+    /*
+     * Internal helper — runs the full completion flow
+     * for one conference. Called by both
+     * autoCompleteExpiredConferences() and
+     * markAsCompleted() to avoid duplicating logic.
+     */
+    private void runCompletion(Conference conf) {
         conf.setStatus(ConferenceStatus.COMPLETED);
         conferenceDao.update(conf);
 
         List<Registration> registrations =
-                registrationDao.findByConferenceId(conferenceId);
+                registrationDao.findByConferenceId(
+                        conf.getId());
 
         for (Registration reg : registrations) {
             if (reg.getStatus()
@@ -190,39 +241,48 @@ public class ConferenceServiceImpl implements ConferenceService {
                 continue;
             }
 
-            // Notify delegate (existing)
-            notificationService.createNotification(
-                    reg.getUser().getEmail(),
-                    "Conference Completed",
-                    "\"" + conf.getTitle() +
-                            "\" has ended. " +
-                            (conf.isCertificateEnabled()
-                                    ? "Your certificate is being " +
-                                    "issued and will arrive by email."
-                                    : "You can now submit feedback."),
-                    "IN_APP"
-            );
+            // In-app notification
+            try {
+                notificationService.createNotification(
+                        reg.getUser().getEmail(),
+                        "Conference Completed",
+                        "\"" + conf.getTitle()
+                                + "\" has ended. "
+                                + (conf.isCertificateEnabled()
+                                ? "Your certificate is being "
+                                + "issued and will arrive "
+                                + "by email."
+                                : "You can now submit "
+                                + "feedback."),
+                        "IN_APP"
+                );
+            } catch (Exception e) {
+                System.err.println(
+                        "[AutoComplete] Notification "
+                                + "failed: " + e.getMessage());
+            }
 
-            // Phase 44: Only issue certificates to
-            // delegates who ACTUALLY ATTENDED.
-            // Registered but absent = no certificate.
+            // Certificate — only for attended delegates
             if (conf.isCertificateEnabled()
                     && attendanceService
                     .hasAttended(reg.getId())) {
                 try {
                     certificateService
                             .issueCertificate(reg);
-                    // email is sent inside issueCertificate
+                    /*
+                     * Email is sent inside
+                     * issueCertificate() — do not
+                     * send separately here.
+                     */
                 } catch (Exception e) {
-                    // Never let one failure stop others
                     System.err.println(
-                            "[Certificate] Failed for "
+                            "[AutoComplete] Certificate "
+                                    + "failed for "
                                     + reg.getUser().getEmail()
                                     + ": " + e.getMessage());
                 }
             } else if (!conf.isCertificateEnabled()) {
-                // No certificates for this conference
-                // Just send completion email
+                // No certs — send completion email only
                 try {
                     emailService.sendConferenceCompleted(
                             reg.getUser().getEmail(),
@@ -230,27 +290,12 @@ public class ConferenceServiceImpl implements ConferenceService {
                             conf.getTitle()
                     );
                 } catch (Exception e) {
-                    // silent
+                    System.err.println(
+                            "[AutoComplete] Completion "
+                                    + "email failed: "
+                                    + e.getMessage());
                 }
             }
-            // If certificateEnabled but didn't attend:
-            // no email, no certificate — correct behavior
-        }
-    }
-
-    @Override
-    public void autoCompleteExpiredConferences() {
-        /*
-         * Find all APPROVED conferences whose end date
-         * has already passed and mark them COMPLETED.
-         * Called on dashboard load — lightweight check.
-         */
-        List<Conference> expired = conferenceDao
-                .findExpiredApproved();
-
-        for (Conference conf : expired) {
-            conf.setStatus(ConferenceStatus.COMPLETED);
-            conferenceDao.update(conf);
         }
     }
 
@@ -313,5 +358,60 @@ public class ConferenceServiceImpl implements ConferenceService {
          * Limit prevents loading all conferences on home page.
          */
         return conferenceDao.findUpcoming(limit);
+    }
+
+
+    @Override
+    @Transactional
+    public void reissueMissingCertificates(
+            Long conferenceId) {
+        Conference conf = conferenceDao
+                .findById(conferenceId)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Conference not found"));
+
+        if (!conf.isCertificateEnabled()) {
+            throw new RuntimeException(
+                    "Certificate not enabled "
+                            + "for this conference.");
+        }
+
+        List<Registration> registrations =
+                registrationDao.findByConferenceId(
+                        conferenceId);
+
+        int issued = 0;
+        int skipped = 0;
+
+        for (Registration reg : registrations) {
+            if (reg.getStatus()
+                    != RegistrationStatus.CONFIRMED) {
+                continue;
+            }
+            if (!attendanceService
+                    .hasAttended(reg.getId())) {
+                continue; // didn't attend
+            }
+            // issueCertificate() is idempotent —
+            // returns existing cert if already issued
+            try {
+                com.nexmeet.platform.entity.Certificate
+                        cert = certificateService
+                        .issueCertificate(reg);
+                if (cert != null) issued++;
+            } catch (Exception e) {
+                skipped++;
+                System.err.println(
+                        "[Reissue] Failed for "
+                                + reg.getUser().getEmail()
+                                + ": " + e.getMessage());
+            }
+        }
+
+        System.out.println(
+                "[Reissue] Conf " + conferenceId
+                        + ": " + issued + " issued, "
+                        + skipped + " failed.");
     }
 }

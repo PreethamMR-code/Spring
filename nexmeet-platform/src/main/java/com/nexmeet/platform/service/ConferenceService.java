@@ -48,4 +48,13 @@ public interface ConferenceService {
                           String reason);
 
     List<Conference> getUpcomingConferences(int limit);
+
+
+    /*
+     * One-time fix: reissue certificates for a
+     * completed conference where auto-complete ran
+     * before certificate logic was implemented.
+     * Idempotent — safe to call multiple times.
+     */
+    void reissueMissingCertificates(Long conferenceId);
 }
