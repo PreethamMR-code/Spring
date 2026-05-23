@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import java.io.ByteArrayOutputStream;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -52,6 +53,17 @@ public class RegistrationServiceImpl implements RegistrationService {
 
     @Autowired
     private AuditLogService auditLogService;
+
+
+    /*
+     * Needed to generate the ticket PDF with QR code
+     * embedded, so the email attachment matches exactly
+     * what the delegate would download from the dashboard.
+     */
+    @Autowired
+    private CertificateService certificateService;
+
+
 
     @Override
     @Transactional
@@ -131,6 +143,49 @@ public class RegistrationServiceImpl implements RegistrationService {
         qr.setQrToken(reg.getRegistrationNumber());   // <- was setQrData
         qr.setQrImageBase64(qrCodeService.generateQrCodeBase64(reg.getRegistrationNumber()));
         qrCodeDao.save(qr);
+
+        /*
+         * Generate ticket PDF with the QR code embedded
+         * and email it to the delegate as an attachment.
+         *
+         * This must come AFTER QR code generation so the
+         * ticket PDF includes the actual QR image.
+         *
+         * We run this in try-catch — a ticket email failure
+         * must never roll back a successful registration.
+         */
+        try {
+            String qrBase64 = qr.getQrImageBase64();
+
+            ByteArrayOutputStream ticketPdf =
+                    certificateService.generateTicket(
+                            reg, qrBase64);
+
+            String venueOrMode =
+                    conference.getVenueName() != null
+                            && !conference.getVenueName()
+                            .isEmpty()
+                            ? conference.getVenueName()
+                            : conference.getMode().name();
+
+            emailService.sendTicketEmail(
+                    user.getEmail(),
+                    user.getFullName(),
+                    conference.getTitle(),
+                    reg.getRegistrationNumber(),
+                    conference.getStartDate()
+                            .toString()
+                            .substring(0, 10),
+                    venueOrMode,
+                    ticketPdf.toByteArray()
+            );
+        } catch (Exception e) {
+            System.err.println(
+                    "[Registration] Ticket email "
+                            + "failed for "
+                            + user.getEmail()
+                            + ": " + e.getMessage());
+        }
 
         // Notify delegate
         notificationService.createNotification(
