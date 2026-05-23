@@ -257,10 +257,12 @@
             verify its authenticity.
             Format: <code>NM-CERT-YYYY-XXXXXX</code>
         </p>
-        <form action="${pageContext.request.contextPath}/verify"
+        <form id="verifySearchForm"
+              action="${pageContext.request.contextPath}/verify"
               method="get"
               class="d-flex gap-2">
             <input type="text"
+                   id="certInput"
                    name="certNumber"
                    class="form-control"
                    placeholder="NM-CERT-2026-A3F7K2"
@@ -280,23 +282,30 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">
 </script>
 <script>
+
     /*
-     * If form submitted with certNumber param,
-     * redirect to the /verify/{certNumber} URL
-     * for clean shareable links.
+     * Use getElementById — not querySelector('form')
+     * because when logged in, the navbar logout form
+     * is the FIRST form in DOM and gets selected
+     * instead of this search form.
      */
-    document.querySelector('form')
-        .addEventListener('submit', function(e) {
-        e.preventDefault();
-        var val = this.querySelector(
-                'input[name=certNumber]')
-                .value.trim();
-        if (val) {
-            window.location.href =
-                '${pageContext.request.contextPath}/verify/'
-                + encodeURIComponent(val);
-        }
-    });
+    var verifyForm =
+        document.getElementById('verifySearchForm');
+    if (verifyForm) {
+        verifyForm.addEventListener(
+                'submit', function(e) {
+            e.preventDefault();
+            var val = document
+                    .getElementById('certInput')
+                    .value.trim();
+            if (val) {
+                window.location.href =
+                    '${pageContext.request.contextPath}'
+                    + '/verify/'
+                    + encodeURIComponent(val);
+            }
+        });
+    }
 </script>
 </body>
 </html>

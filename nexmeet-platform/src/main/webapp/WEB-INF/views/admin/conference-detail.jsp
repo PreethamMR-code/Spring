@@ -231,6 +231,32 @@
         </div>
     </c:if>
 
+    <%-- Add after the existing status display --%>
+    <c:if test="${conf.status == 'COMPLETED'
+                 && conf.certificateEnabled}">
+        <div class="alert alert-info d-flex
+                    justify-content-between
+                    align-items-center mt-3">
+            <span>
+                <strong>Missing certificates?</strong>
+                If delegates attended but didn't receive
+                their certificate email, use this to
+                reissue all missing ones.
+                Safe to run multiple times.
+            </span>
+            <form action="${pageContext.request.contextPath}/admin/conference/${conf.id}/reissue-certificates"
+                  method="post" class="ms-3">
+                <input type="hidden"
+                       name="${_csrf.parameterName}"
+                       value="${_csrf.token}"/>
+                <button class="btn btn-info btn-sm
+                               fw-bold text-white">
+                    🔄 Reissue Certificates
+                </button>
+            </form>
+        </div>
+    </c:if>
+
 
     <%-- Admin cancel for APPROVED conferences --%>
     <c:if test="${conf.status == 'APPROVED' ||
