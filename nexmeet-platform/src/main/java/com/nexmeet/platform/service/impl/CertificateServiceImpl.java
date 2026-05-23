@@ -450,11 +450,11 @@ public class CertificateServiceImpl implements CertificateService {
                     new LineSeparator()));
 
             Paragraph footer = new Paragraph(
-                    "NexMeet Conference Platform  " +
-                            "· nexmeet.com",
+                    "NexMeet Conference Platform  · nexmeet.com  "
+                            + "| Verify: localhost:8080/nexmeet/verify/"
+                            + certificateNumber,
                     smallFont);
-            footer.setAlignment(
-                    Element.ALIGN_CENTER);
+            footer.setAlignment(Element.ALIGN_CENTER);
             document.add(footer);
 
             document.close();
