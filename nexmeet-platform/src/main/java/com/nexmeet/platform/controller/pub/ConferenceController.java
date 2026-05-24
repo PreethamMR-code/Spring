@@ -106,9 +106,11 @@ public class ConferenceController {
     }
 
     @GetMapping("/conference/{id}")
-    public String conferenceDetail(@PathVariable Long id, Model model){
-        conferenceService.findById(id).ifPresent(c -> {
+    public String conferenceDetail(
+            @PathVariable Long id,
+            Model model) {
 
+        conferenceService.findById(id).ifPresent(c -> {
 
             model.addAttribute("conference", c);
             model.addAttribute("feedbackList",
@@ -117,13 +119,46 @@ public class ConferenceController {
                     feedbackService.getAverageRating(id));
             model.addAttribute("feedbackCount",
                     feedbackService.getFeedbackCount(id));
-
             model.addAttribute("speakers",
                     speakerService.getSpeakersByConference(id));
-
             model.addAttribute("sessions",
                     sessionService.getSessionsByConference(id));
+
+            /*
+             * Compute registration availability flags.
+             * Passed to JSP so the button shows the
+             * correct state without logic in the template.
+             *
+             * Professional apps (Eventbrite, Konfhub) do:
+             *   - Deadline passed → "Registration Closed"
+             *   - At capacity     → "Sold Out"
+             *   - Open            → "Register Now"
+             */
+            java.time.LocalDateTime now =
+                    java.time.LocalDateTime.now();
+
+            boolean deadlinePassed =
+                    c.getRegistrationDeadline()
+                            .isBefore(now);
+
+            boolean isFull =
+                    c.getMaxDelegates() > 0
+                            && c.getRegisteredCount()
+                            >= c.getMaxDelegates();
+
+            boolean registrationOpen =
+                    !deadlinePassed
+                            && !isFull
+                            && c.getStatus().name()
+                            .equals("APPROVED");
+
+            model.addAttribute("deadlinePassed",
+                    deadlinePassed);
+            model.addAttribute("isFull", isFull);
+            model.addAttribute("registrationOpen",
+                    registrationOpen);
         });
+
         return "pub/conference-detail";
     }
 
