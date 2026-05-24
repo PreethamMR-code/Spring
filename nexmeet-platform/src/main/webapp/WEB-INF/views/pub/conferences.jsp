@@ -566,6 +566,16 @@
                                         </c:otherwise>
                                     </c:choose>
                                 </div>
+
+                               <c:if test="${conf.maxDelegates > 0 &&
+                                            conf.registeredCount >= conf.maxDelegates}">
+                                   <span class="badge bg-danger"
+                                         style="font-size:0.7rem">
+                                       Sold Out
+                                   </span>
+                               </c:if>
+
+
                                 <span class="btn-register">
                                     View Details →
                                 </span>
