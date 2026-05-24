@@ -5,11 +5,10 @@ import com.nexmeet.platform.dao.InstitutionDao;
 import com.nexmeet.platform.dao.InstitutionalAdminDao;
 import com.nexmeet.platform.dao.OrganizerDao;
 import com.nexmeet.platform.dto.InstitutionDto;
-import com.nexmeet.platform.entity.Conference;
-import com.nexmeet.platform.entity.Institution;
-import com.nexmeet.platform.entity.InstitutionalAdmin;
+import com.nexmeet.platform.entity.*;
 import com.nexmeet.platform.enums.ConferenceStatus;
 import com.nexmeet.platform.enums.InstitutionType;
+import com.nexmeet.platform.enums.RegistrationStatus;
 import com.nexmeet.platform.enums.VerificationStatus;
 import com.nexmeet.platform.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +18,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.List;
+import java.util.*;
 
 @Controller
 @RequestMapping("/admin")
@@ -54,6 +53,15 @@ public class AdminController {
 
     @Autowired
     private AuditLogService auditLogService;
+
+    @Autowired
+    private RegistrationService registrationService;
+
+    @Autowired
+    private AttendanceService attendanceService;
+
+    @Autowired
+    private CertificateService certificateService;
 
 
     @GetMapping("/dashboard")
@@ -148,6 +156,66 @@ public class AdminController {
         boolean endDatePassed = conf.getEndDate()
                 .isBefore(java.time.LocalDateTime.now());
         model.addAttribute("endDatePassed", endDatePassed);
+
+
+        // ── Delegate + Attendance data for admin ──────
+        List<Registration> registrations =
+                registrationService
+                        .findByConferenceId(id);
+
+        long confirmedCount = registrations.stream()
+                .filter(r -> r.getStatus()
+                        == RegistrationStatus.CONFIRMED)
+                .count();
+        long cancelledCount = registrations.stream()
+                .filter(r -> r.getStatus()
+                        == RegistrationStatus.CANCELLED)
+                .count();
+
+        /*
+         * Build attendance set — which registration IDs
+         * have an attendance record (delegate was present).
+         * N queries but acceptable for admin-only view.
+         */
+        Set<Long> attendedRegIds = new HashSet<>();
+        for (Registration reg : registrations) {
+            if (attendanceService
+                    .hasAttended(reg.getId())) {
+                attendedRegIds.add(reg.getId());
+            }
+        }
+
+        long attendedCount = attendedRegIds.size();
+
+        /*
+         * Build certificate map — regId → Certificate.
+         * Used to show whether each attended delegate
+         * received their certificate.
+         */
+        Map<Long, Certificate> certMap =
+                new HashMap<>();
+        for (Registration reg : registrations) {
+            certificateService
+                    .getCertificateRecord(reg.getId())
+                    .ifPresent(cert ->
+                            certMap.put(reg.getId(), cert));
+        }
+
+        long certIssuedCount = certMap.size();
+
+        model.addAttribute("registrations",
+                registrations);
+        model.addAttribute("attendedRegIds",
+                attendedRegIds);
+        model.addAttribute("certMap", certMap);
+        model.addAttribute("confirmedCount",
+                confirmedCount);
+        model.addAttribute("cancelledCount",
+                cancelledCount);
+        model.addAttribute("attendedCount",
+                attendedCount);
+        model.addAttribute("certIssuedCount",
+                certIssuedCount);
 
         model.addAttribute("platformEarnings",
                 commissionService.calculatePlatformEarnings(id));
