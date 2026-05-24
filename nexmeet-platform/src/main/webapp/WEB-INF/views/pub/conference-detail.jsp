@@ -678,10 +678,7 @@
                                         <c:if test="${not empty sess.roomOrLink}">
                                             · 📍 ${sess.roomOrLink}
                                         </c:if>
-                                        <c:if test="${sess.speaker != null}">
-                                            · 🎤
-                                            ${sess.speaker.fullName}
-                                        </c:if>
+
                                     </div>
                                 </div>
                                 <div style="font-size:0.75rem;
@@ -781,7 +778,7 @@
             </div>
 
             <!-- RIGHT COLUMN — Registration Card -->
-            <div class="col-lg-4">
+            <div class="col-lg-4 col-md-5">
                 <div class="reg-card">
                     <!-- Price Header -->
                     <div class="reg-card-header">
@@ -900,18 +897,79 @@
                             </div>
                         </sec:authorize>
 
-                        <sec:authorize access="hasRole('ROLE_DELEGATE')">
-                      <form action="${pageContext.request.contextPath}/conference/${conference.id}/register"
-                            method="post">
-                                <input type="hidden"
-                                    name="${_csrf.parameterName}"
-                                    value="${_csrf.token}"/>
-                                <button type="submit"
-                                        class="btn-register-main">
-                                    Register Now →
-                                </button>
-                            </form>
-                        </sec:authorize>
+                       <sec:authorize access="hasRole('ROLE_DELEGATE')">
+                           <c:choose>
+
+                               <%-- Registration deadline has passed --%>
+                               <c:when test="${deadlinePassed}">
+                                   <div style="background:#fee2e2;
+                                        border:1.5px solid #fca5a5;
+                                        border-radius:10px;
+                                        padding:16px;
+                                        text-align:center;
+                                        margin-top:18px">
+                                       <div style="font-size:1.3rem;
+                                            margin-bottom:6px">
+                                           🚫
+                                       </div>
+                                       <div style="font-weight:700;
+                                            color:#991b1b;
+                                            font-size:0.95rem">
+                                           Registration Closed
+                                       </div>
+                                       <div style="color:#b91c1c;
+                                            font-size:0.78rem;
+                                            margin-top:4px">
+                                           Deadline was
+                                           ${fn:substringBefore(
+                                               conference.registrationDeadline
+                                                   .toString(), 'T')}
+                                       </div>
+                                   </div>
+                               </c:when>
+
+                               <%-- Conference is fully booked --%>
+                               <c:when test="${isFull}">
+                                   <div style="background:#fef3c7;
+                                        border:1.5px solid #fde68a;
+                                        border-radius:10px;
+                                        padding:16px;
+                                        text-align:center;
+                                        margin-top:18px">
+                                       <div style="font-size:1.3rem;
+                                            margin-bottom:6px">
+                                           🎟️
+                                       </div>
+                                       <div style="font-weight:700;
+                                            color:#92400e;
+                                            font-size:0.95rem">
+                                           Sold Out
+                                       </div>
+                                       <div style="color:#b45309;
+                                            font-size:0.78rem;
+                                            margin-top:4px">
+                                           All ${conference.maxDelegates}
+                                           seats are taken
+                                       </div>
+                                   </div>
+                               </c:when>
+
+                               <%-- Registration is open — show the button --%>
+                               <c:otherwise>
+                                   <form action="${pageContext.request.contextPath}/conference/${conference.id}/register"
+                                         method="post">
+                                       <input type="hidden"
+                                              name="${_csrf.parameterName}"
+                                              value="${_csrf.token}"/>
+                                       <button type="submit"
+                                               class="btn-register-main">
+                                           Register Now →
+                                       </button>
+                                   </form>
+                               </c:otherwise>
+
+                           </c:choose>
+                       </sec:authorize>
 
                         <sec:authorize access="hasRole('ROLE_INSTITUTIONAL_ADMIN')">
                             <c:if test="${conference.bulkUploadAllowed}">
