@@ -322,6 +322,193 @@
     </c:if>
 
 
+    <%-- ── Delegate & Attendance Overview ──────── --%>
+    <c:if test="${not empty registrations}">
+        <div class="card mt-4">
+            <div class="card-header bg-white fw-bold
+                        d-flex justify-content-between
+                        align-items-center py-3">
+                <span>👥 Delegate Overview</span>
+                <div class="d-flex gap-3 small">
+                    <span class="text-success fw-semibold">
+                        ✅ Confirmed: ${confirmedCount}
+                    </span>
+                    <span class="text-primary fw-semibold">
+                        📋 Attended: ${attendedCount}
+                    </span>
+                    <span class="text-warning fw-semibold">
+                        🏆 Certified: ${certIssuedCount}
+                    </span>
+                    <span class="text-danger fw-semibold">
+                        ❌ Cancelled: ${cancelledCount}
+                    </span>
+                </div>
+            </div>
+
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover
+                                  table-sm mb-0 small">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-3">#</th>
+                                <th>Reg. Number</th>
+                                <th>Full Name</th>
+                                <th>Email</th>
+                                <th>Registered</th>
+                                <th class="text-center">
+                                    Status
+                                </th>
+                                <th class="text-center">
+                                    Attended
+                                </th>
+                                <th class="text-center">
+                                    Certificate
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <c:forEach var="reg"
+                                items="${registrations}"
+                                varStatus="loop">
+                                <tr>
+                                    <td class="ps-3
+                                               text-muted">
+                                        ${loop.index + 1}
+                                    </td>
+                                    <td>
+                                        <code style="font-size:0.75rem">
+                                            ${reg.registrationNumber}
+                                        </code>
+                                    </td>
+                                    <td class="fw-semibold">
+                                        ${reg.user.fullName}
+                                    </td>
+                                    <td class="text-muted">
+                                        ${reg.user.email}
+                                    </td>
+                                    <td class="text-muted">
+                                        ${fn:substringBefore(
+                                            reg.registeredAt
+                                                .toString(),
+                                            'T')}
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge
+                                            ${reg.status == 'CONFIRMED'
+                                                ? 'bg-success'
+                                            : reg.status == 'CANCELLED'
+                                                ? 'bg-danger'
+                                                : 'bg-secondary'}">
+                                            ${reg.status}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <c:choose>
+                                            <c:when test="${attendedRegIds
+                                                    .contains(reg.id)}">
+                                                <span class="badge
+                                                    bg-primary">
+                                                    ✓ Yes
+                                                </span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="text-muted
+                                                    small">
+                                                    —
+                                                </span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                    <td class="text-center">
+                                        <c:choose>
+                                            <c:when test="${not empty
+                                                certMap[reg.id]}">
+                                                <span class="badge
+                                                    bg-warning
+                                                    text-dark"
+                                                    title="${certMap[reg.id]
+                                                        .certificateNumber}">
+                                                    🏆 Issued
+                                                </span>
+                                                <div class="text-muted"
+                                                    style="font-size:
+                                                           0.68rem;
+                                                           margin-top:2px">
+                                                    ${certMap[reg.id]
+                                                        .certificateNumber}
+                                                </div>
+                                            </c:when>
+                                            <c:when test="${attendedRegIds
+                                                    .contains(reg.id)
+                                                    && conf.status
+                                                        != 'COMPLETED'}">
+                                                <span class="text-muted
+                                                    small fst-italic">
+                                                    After completion
+                                                </span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="text-muted
+                                                    small">
+                                                    —
+                                                </span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <%-- Export link for admin --%>
+            <div class="card-footer bg-white
+                        d-flex justify-content-between
+                        align-items-center py-2">
+                <span class="text-muted small">
+                    ${fn:length(registrations)} total
+                    registration(s) across all statuses
+                </span>
+                <div class="d-flex gap-2">
+                    <a href="${pageContext.request.contextPath}/organizer/conference/${conf.id}/delegates/export?format=excel"
+                       class="btn btn-outline-success
+                              btn-sm"
+                       onclick="return confirm(
+                           'Note: This uses organizer export. '
+                           + 'Continue?')">
+                        📥 Export Excel
+                    </a>
+                    <a href="${pageContext.request.contextPath}/organizer/conference/${conf.id}/delegates/export?format=csv"
+                       class="btn btn-outline-secondary
+                              btn-sm"
+                       onclick="return confirm(
+                           'Note: This uses organizer export. '
+                           + 'Continue?')">
+                        📥 Export CSV
+                    </a>
+                </div>
+            </div>
+        </div>
+    </c:if>
+
+    <c:if test="${empty registrations
+                 && (conf.status == 'APPROVED'
+                 || conf.status == 'COMPLETED')}">
+        <div class="card mt-4">
+            <div class="card-body text-center
+                        text-muted py-4">
+                <div style="font-size:2rem">👥</div>
+                <p class="mt-2 mb-0">
+                    No delegates have registered
+                    for this conference yet.
+                </p>
+            </div>
+        </div>
+    </c:if>
+
+
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
