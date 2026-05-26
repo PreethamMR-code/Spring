@@ -850,6 +850,25 @@ public class OrganizerController {
                 "/schedule";
     }
 
+    @PostMapping("/conference/{id}/schedule/{sessionId}/unassign-speaker")
+    public String unassignSpeaker(
+            @PathVariable Long id,
+            @PathVariable Long sessionId,
+            @RequestParam Long speakerId,
+            Authentication auth,
+            RedirectAttributes flash) {
+        try {
+            sessionService.unassignSpeakerFromSession(
+                    speakerId, sessionId, auth.getName());
+            flash.addFlashAttribute("success",
+                    "Speaker removed from session.");
+        } catch (Exception e) {
+            flash.addFlashAttribute("error",
+                    "Error: " + e.getMessage());
+        }
+        return "redirect:/organizer/conference/" + id + "/schedule";
+    }
+
 
     /*
      * GET: Show bulk upload page for a conference.
