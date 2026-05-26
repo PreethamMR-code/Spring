@@ -17,10 +17,4 @@ public interface SpeakerDao {
 
     List<Speaker> findByConferenceId(Long conferenceId);
 
-    /*
-     * Find speakers assigned to a specific session.
-     * Used when building schedule view.
-     */
-    List<Speaker> findBySessionId(Long sessionId);
-
 }

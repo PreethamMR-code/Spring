@@ -54,16 +54,4 @@ public class SpeakerDaoImpl implements SpeakerDao {
                 .getResultList();
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<Speaker> findBySessionId(Long sessionId) {
-        return sessionFactory.getCurrentSession()
-                .createQuery(
-                        "FROM Speaker s " +
-                                "WHERE s.session.id = :sessionId " +
-                                "ORDER BY s.createdAt ASC",
-                        Speaker.class)
-                .setParameter("sessionId", sessionId)
-                .getResultList();
-    }
 }
