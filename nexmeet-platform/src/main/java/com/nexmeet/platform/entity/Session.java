@@ -57,7 +57,16 @@ public class Session {
     @Column(name = "capacity")
     private Integer capacity;
 
-    @OneToMany(mappedBy = "session", fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "session_speakers",
+
+            joinColumns =
+            @JoinColumn(name = "session_id"),
+
+            inverseJoinColumns =
+            @JoinColumn(name = "speaker_id")
+    )
     private List<Speaker> speakers =
             new ArrayList<>();
 
