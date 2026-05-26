@@ -8,8 +8,12 @@ import java.util.Optional;
 public interface SessionDao {
 
     void save(Session session);
+
     void update(Session session);
+
     void delete(Long id);
+
     Optional<Session> findById(Long id);
+
     List<Session> findByConferenceId(Long conferenceId);
 }
