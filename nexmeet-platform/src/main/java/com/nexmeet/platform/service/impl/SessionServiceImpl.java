@@ -74,26 +74,34 @@ public class SessionServiceImpl implements SessionService {
     @Override
     public void deleteSession(Long sessionId,
                               String organizerEmail) {
-        sessionDao.findById(sessionId).ifPresent(s -> {
-            String ownerEmail = s.getConference()
-                    .getOrganizer().getUser().getEmail();
-            if (!ownerEmail.equals(organizerEmail)) {
-                throw new RuntimeException(
-                        "Unauthorized");
-            }
-            /*
-             * Before deleting session, unlink any speakers
-             * that are assigned to it — set their session to null
-             * so they remain as conference-level speakers.
-             */
-            List<Speaker> assigned =
-                    speakerDao.findBySessionId(sessionId);
-            for (Speaker sp : assigned) {
-                sp.setSession(null);
-                speakerDao.update(sp);
-            }
-            sessionDao.delete(sessionId);
-        });
+
+        sessionDao.findById(sessionId)
+                .ifPresent(s -> {
+
+                    String ownerEmail =
+                            s.getConference()
+                                    .getOrganizer()
+                                    .getUser()
+                                    .getEmail();
+
+                    if (!ownerEmail.equals(organizerEmail)) {
+                        throw new RuntimeException(
+                                "Unauthorized");
+                    }
+
+                    /*
+                     * IMPORTANT:
+                     * session_speakers table uses
+                     * ON DELETE CASCADE.
+                     *
+                     * So deleting a session automatically
+                     * removes join-table mappings.
+                     *
+                     * Speaker rows themselves remain safe.
+                     */
+
+                    sessionDao.delete(sessionId);
+                });
     }
 
     @Override
@@ -128,22 +136,57 @@ public class SessionServiceImpl implements SessionService {
             throw new RuntimeException("Unauthorized");
         }
 
-        speaker.setSession(session);
-        speakerDao.update(speaker);
+        boolean alreadyAssigned =
+                session.getSpeakers()
+                        .stream()
+                        .anyMatch(sp ->
+                                sp.getId()
+                                        .equals(speakerId));
+
+        if (!alreadyAssigned) {
+
+            session.getSpeakers()
+                    .add(speaker);
+
+            sessionDao.update(session);
+        }
     }
 
     @Override
     public void unassignSpeakerFromSession(
-            Long speakerId, String organizerEmail) {
-        speakerDao.findById(speakerId).ifPresent(sp -> {
-            if (!sp.getConference().getOrganizer()
-                    .getUser().getEmail()
-                    .equals(organizerEmail)) {
-                throw new RuntimeException("Unauthorized");
-            }
-            sp.setSession(null);
-            speakerDao.update(sp);
-        });
+            Long speakerId,
+            Long sessionId,
+            String organizerEmail) {
+
+        Session session =
+                sessionDao.findById(sessionId)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Session not found"));
+
+        /*
+         * Security check:
+         * Only conference owner can modify schedule.
+         */
+        if (!session.getConference()
+                .getOrganizer()
+                .getUser()
+                .getEmail()
+                .equals(organizerEmail)) {
+
+            throw new RuntimeException(
+                    "Unauthorized");
+        }
+
+        /*
+         * Remove ONLY this session-speaker relationship.
+         */
+        session.getSpeakers()
+                .removeIf(sp ->
+                        sp.getId()
+                                .equals(speakerId));
+
+        sessionDao.update(session);
     }
 
     @Override

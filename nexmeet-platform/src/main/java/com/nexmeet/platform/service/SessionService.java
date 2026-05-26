@@ -20,14 +20,16 @@ public interface SessionService {
 
     /*
      * Assign an existing conference speaker to a session.
-     * This updates Speaker.session_id FK.
      */
     void assignSpeakerToSession(Long speakerId,
                                 Long sessionId,
                                 String organizerEmail);
 
-    void unassignSpeakerFromSession(Long speakerId,
-                                    String organizerEmail);
+    void unassignSpeakerFromSession(
+            Long speakerId,
+            Long sessionId,
+            String organizerEmail
+    );
 
     List<Session> getSessionsByConference(Long conferenceId);
 
