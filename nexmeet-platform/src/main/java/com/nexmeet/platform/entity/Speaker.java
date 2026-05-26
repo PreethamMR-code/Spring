@@ -3,6 +3,8 @@ package com.nexmeet.platform.entity;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * A Speaker belongs to a Conference and optionally to a specific Session.
@@ -27,9 +29,11 @@ public class Speaker {
      * A speaker might not be assigned to a specific session yet,
      * or they might be a keynote speaker for the whole event.
      */
-    @ManyToOne(optional = true)
-    @JoinColumn(name = "session_id", nullable = true)
-    private Session session;
+    @ManyToMany(mappedBy = "speakers",
+            fetch = FetchType.LAZY)
+    private List<Session> sessions =
+            new ArrayList<>();
+
 
     @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;
@@ -70,8 +74,13 @@ public class Speaker {
     public Conference getConference() { return conference; }
     public void setConference(Conference conference) { this.conference = conference; }
 
-    public Session getSession() { return session; }
-    public void setSession(Session session) { this.session = session; }
+    public List<Session> getSessions() {
+        return sessions;
+    }
+
+    public void setSessions(List<Session> sessions) {
+        this.sessions = sessions;
+    }
 
     public String getFullName() { return fullName; }
     public void setFullName(String fullName) { this.fullName = fullName; }
