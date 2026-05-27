@@ -215,15 +215,24 @@
                                                         </c:if>
                                                     </div>
                                                 </c:if>
-                                                <c:if test="${sp.session != null}">
-                                                    <div class="small mt-1">
-                                                        <span class="badge bg-info text-dark">
-                                                            📅
-                                                            ${sp.session.title}
-                                                        </span>
+                                                <%-- Speaker assigned to one or more sessions --%>
+                                                <c:if test="${not empty sp.sessions}">
+                                                    <div class="small mt-1 d-flex flex-wrap gap-1">
+
+                                                        <c:forEach var="sess"
+                                                                   items="${sp.sessions}">
+
+                                                            <span class="badge bg-info text-dark">
+                                                                📅 ${sess.title}
+                                                            </span>
+
+                                                        </c:forEach>
+
                                                     </div>
                                                 </c:if>
-                                                <c:if test="${sp.session == null}">
+
+                                                <%-- Speaker exists but not assigned yet --%>
+                                                <c:if test="${empty sp.sessions}">
                                                     <div class="small text-muted mt-1">
                                                         Conference speaker
                                                         (not assigned to session)
