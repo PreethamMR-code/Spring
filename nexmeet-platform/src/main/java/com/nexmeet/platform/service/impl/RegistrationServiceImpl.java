@@ -293,4 +293,31 @@ public class RegistrationServiceImpl implements RegistrationService {
     public List<Registration> findByConferenceId(Long conferenceId) {
         return registrationDao.findByConferenceId(conferenceId);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isAlreadyRegistered(Long conferenceId,
+                                       String userEmail) {
+        /*
+         * Loads the user by email inside this transaction,
+         * then checks the registrations table.
+         * Returns false (not false) if user not found —
+         * anonymous or non-delegate callers never match.
+         */
+        return userDao.findByEmail(userEmail)
+                .map(u -> registrationDao
+                        .existsByConferenceAndUser(
+                                conferenceId, u.getId()))
+                .orElse(false);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Registration> findByConferenceAndUserEmail(
+            Long conferenceId, String userEmail) {
+        return userDao.findByEmail(userEmail)
+                .flatMap(u -> registrationDao
+                        .findByConferenceAndUser(
+                                conferenceId, u.getId()));
+    }
 }

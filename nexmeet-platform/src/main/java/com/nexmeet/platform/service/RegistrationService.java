@@ -19,4 +19,13 @@ public interface RegistrationService {
     Optional<Registration> findById(Long id);
 
     List<Registration> findByConferenceId(Long conferenceId);
+
+    // Both methods are @Transactional in the impl.
+    // Called from ConferenceController which has no transaction
+    // of its own — the service layer owns the transaction boundary.
+
+    boolean isAlreadyRegistered(Long conferenceId, String userEmail);
+
+    Optional<Registration> findByConferenceAndUserEmail(
+            Long conferenceId, String userEmail);
 }
