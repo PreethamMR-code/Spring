@@ -267,19 +267,21 @@
                                             </div>
                                         </c:if>
 
-                                        <%-- Assigned speakers --%>
-                                        <c:if test="${not empty sess.speakers}">
-                                            <div class="mt-1">
-                                                <c:forEach
-                                                    var="sp"
-                                                    items="${sess.speakers}">
-                                                    <span class="badge bg-success small">
-                                                        🎤
-                                                        ${sp.fullName}
-                                                    </span>
-                                                </c:forEach>
-                                            </div>
-                                        </c:if>
+
+                                        <c:forEach var="sp" items="${sess.speakers}">
+                                                 <span class="badge bg-success small d-inline-flex align-items-center gap-1">
+                                                         🎤 ${sp.fullName}
+                                                   <form action="${pageContext.request.contextPath}/organizer/conference/${conf.id}/schedule/${sess.id}/unassign-speaker"
+                                                         method="post" class="d-inline m-0">
+                                                                 <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+                                                                 <input type="hidden" name="speakerId" value="${sp.id}"/>
+                                                                 <button type="submit" class="btn-close btn-close-white"
+                                                                 style="font-size:0.6rem"
+                                                                 onclick="return confirm('Remove ${sp.fullName} from this session?')">
+                                                         </button>
+                                                    </form>
+                                                 </span>
+                                       </c:forEach>
 
                                         <%-- Assign speaker form --%>
                                         <c:if test="${not empty speakers}">
@@ -297,9 +299,7 @@
                                                         <option value="">
                                                             Assign speaker...
                                                         </option>
-                                                        <c:forEach
-                                                            var="sp"
-                                                            items="${speakers}">
+                                                        <c:forEach var="sp" items="${speakers}">
                                                             <option value="${sp.id}">
                                                                 ${sp.fullName}
                                                             </option>
@@ -312,6 +312,8 @@
                                                 </form>
                                             </div>
                                         </c:if>
+
+
 
                                         <%-- Description --%>
                                         <c:if test="${not empty sess.description}">
