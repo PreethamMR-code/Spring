@@ -1,8 +1,6 @@
 package com.nexmeet.platform.controller.pub;
 
-import com.nexmeet.platform.dao.InstitutionalAdminDao;
-import com.nexmeet.platform.dao.SessionDao;
-import com.nexmeet.platform.dao.SpeakerDao;
+import com.nexmeet.platform.dao.*;
 import com.nexmeet.platform.entity.BulkUpload;
 import com.nexmeet.platform.entity.Conference;
 import com.nexmeet.platform.entity.InstitutionalAdmin;
@@ -48,6 +46,11 @@ public class ConferenceController {
 
     @Autowired
     private BulkUploadService bulkUploadService;
+
+    @Autowired
+    private RegistrationService registrationService;
+
+
 
 
     @GetMapping("/conferences")
@@ -108,7 +111,8 @@ public class ConferenceController {
     @GetMapping("/conference/{id}")
     public String conferenceDetail(
             @PathVariable Long id,
-            Model model) {
+            Model model,
+        Authentication auth) {
 
         conferenceService.findById(id).ifPresent(c -> {
 
@@ -157,6 +161,34 @@ public class ConferenceController {
             model.addAttribute("isFull", isFull);
             model.addAttribute("registrationOpen",
                     registrationOpen);
+
+            // Default to false for anonymous and non-delegate users.
+            // ── Bug B: already-registered check ──────────────────
+            // Service method owns the transaction — no session
+            // boundary issues. Safe to call from controller.
+            model.addAttribute("alreadyRegistered", false);
+
+            if (auth != null
+                    && auth.isAuthenticated()
+                    && auth.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority()
+                            .equals("ROLE_DELEGATE"))) {
+
+                boolean already =
+                        registrationService.isAlreadyRegistered(
+                                c.getId(), auth.getName());
+                model.addAttribute("alreadyRegistered", already);
+
+                if (already) {
+                    registrationService
+                            .findByConferenceAndUserEmail(
+                                    c.getId(), auth.getName())
+                            .ifPresent(reg ->
+                                    model.addAttribute(
+                                            "myRegistration", reg));
+                }
+            }
+            // ─────────────────────────────────────────────────────
         });
 
         return "pub/conference-detail";
