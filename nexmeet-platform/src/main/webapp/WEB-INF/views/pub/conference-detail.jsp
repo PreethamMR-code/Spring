@@ -623,13 +623,18 @@
                                                     </c:if>
                                                 </div>
                                             </c:if>
-                                            <c:if test="${sp.session != null}">
-                                                <div style="font-size:0.72rem;
-                                                     color:var(--brand);
-                                                     margin-top:3px">
-                                                    ${sp.session.title}
-                                                </div>
-                                            </c:if>
+                                           <c:if test="${not empty sp.sessions}">
+                                               <div style="font-size:0.72rem;
+                                                    color:var(--brand);
+                                                    margin-top:3px">
+                                                   <c:forEach var="sess"
+                                                              items="${sp.sessions}"
+                                                              varStatus="loop">
+                                                       ${sess.title}<c:if
+                                                           test="${!loop.last}">, </c:if>
+                                                   </c:forEach>
+                                               </div>
+                                           </c:if>
                                             <c:if test="${not empty sp.linkedinUrl}">
                                                 <a href="${sp.linkedinUrl}"
                                                    target="_blank"
@@ -899,6 +904,82 @@
 
                        <sec:authorize access="hasRole('ROLE_DELEGATE')">
                            <c:choose>
+
+
+        <%-- ✅ ALREADY REGISTERED — must be checked first --%>
+        <c:when test="${alreadyRegistered}">
+            <div style="background:#f0fdf4;
+                 border:2px solid #86efac;
+                 border-radius:12px;
+                 padding:20px 18px;
+                 margin-top:18px">
+                <div style="display:flex;
+                     align-items:center;
+                     gap:10px;
+                     margin-bottom:12px">
+                    <span style="font-size:1.5rem">✅</span>
+                    <div>
+                        <div style="font-weight:700;
+                             color:#166534;
+                             font-size:0.95rem">
+                            You're Registered!
+                        </div>
+                        <div style="font-size:0.78rem;
+                             color:#16a34a;
+                             margin-top:2px">
+                            Your spot is confirmed
+                        </div>
+                    </div>
+                </div>
+
+                <c:if test="${not empty myRegistration}">
+                    <div style="background:white;
+                         border:1px solid #bbf7d0;
+                         border-radius:8px;
+                         padding:10px 14px;
+                         margin-bottom:12px">
+                        <div style="font-size:0.72rem;
+                             color:#64748b;
+                             text-transform:uppercase;
+                             letter-spacing:0.05em;
+                             margin-bottom:3px">
+                            Registration No.
+                        </div>
+                        <div style="font-weight:700;
+                             font-size:0.92rem;
+                             color:#0f172a;
+                             letter-spacing:0.04em">
+                            ${myRegistration.registrationNumber}
+                        </div>
+                    </div>
+
+                    <a href="${pageContext.request.contextPath}/delegate/registration/${myRegistration.id}/ticket"
+                       style="display:block;
+                              width:100%;
+                              background:linear-gradient(135deg,#166534,#15803d);
+                              color:white;
+                              border:none;
+                              border-radius:10px;
+                              padding:12px;
+                              font-weight:700;
+                              font-size:0.9rem;
+                              text-align:center;
+                              text-decoration:none">
+                        📄 Download My Ticket
+                    </a>
+
+                    <a href="${pageContext.request.contextPath}/delegate/dashboard"
+                       style="display:block;
+                              text-align:center;
+                              font-size:0.78rem;
+                              color:#16a34a;
+                              margin-top:10px;
+                              text-decoration:none">
+                        View in My Dashboard →
+                    </a>
+                </c:if>
+            </div>
+        </c:when>
 
                                <%-- Registration deadline has passed --%>
                                <c:when test="${deadlinePassed}">
