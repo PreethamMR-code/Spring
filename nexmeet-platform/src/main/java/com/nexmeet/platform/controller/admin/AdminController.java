@@ -63,6 +63,9 @@ public class AdminController {
     @Autowired
     private CertificateService certificateService;
 
+    @Autowired
+    private CommissionInvoiceService invoiceService;
+
 
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication auth) {
@@ -225,6 +228,10 @@ public class AdminController {
                 commissionService.getBaseFee(conf.getConferenceType().name()));
         model.addAttribute("perDelegateFee",
                 commissionService.getPerDelegateFee(conf.getConferenceType().name()));
+
+        // Commission Invoice for this conference
+        invoiceService.findByConferenceId(id).ifPresent(inv ->
+                        model.addAttribute("commissionInvoice", inv));
 
         return "admin/conference-detail";
     }
@@ -593,5 +600,83 @@ public class AdminController {
                     "Error: " + e.getMessage());
         }
         return "redirect:/admin/conference/" + id;
+    }
+
+
+    /*
+     * POST /admin/conference/{id}/generate-invoice
+     * Generates the platform commission invoice for a
+     * completed conference. Idempotent — safe to call
+     * multiple times.
+     */
+    @PostMapping("/conference/{id}/generate-invoice")
+    public String generateInvoice(
+            @PathVariable Long id,
+            Authentication auth,
+            RedirectAttributes flash) {
+        try {
+            CommissionInvoice inv =
+                    invoiceService.generateInvoice(
+                            id, auth.getName());
+
+            flash.addFlashAttribute("success",
+                    "Invoice " + inv.getInvoiceNumber()
+                            + " generated for ₹"
+                            + inv.getTotalAmount()
+                            + ". Organizer has been notified.");
+        } catch (Exception e) {
+            flash.addFlashAttribute("error",
+                    "Could not generate invoice: "
+                            + e.getMessage());
+        }
+        return "redirect:/admin/conference/" + id;
+    }
+
+    /*
+     * POST /admin/invoice/{invoiceId}/mark-paid
+     * Admin confirms payment received from organizer.
+     * paymentReference = UTR / UPI transaction ID.
+     */
+    @PostMapping("/invoice/{invoiceId}/mark-paid")
+    public String markInvoicePaid(
+            @PathVariable Long invoiceId,
+            @RequestParam String paymentReference,
+            @RequestParam Long conferenceId,
+            Authentication auth,
+            RedirectAttributes flash) {
+        try {
+            invoiceService.markAsPaid(
+                    invoiceId, paymentReference,
+                    auth.getName());
+            flash.addFlashAttribute("success",
+                    "Payment confirmed! Invoice marked as PAID.");
+        } catch (Exception e) {
+            flash.addFlashAttribute("error",
+                    "Error: " + e.getMessage());
+        }
+        return "redirect:/admin/conference/" + conferenceId;
+    }
+
+    /*
+     * POST /admin/invoice/{invoiceId}/waive
+     * Admin waives commission (NGO/GOVT/goodwill).
+     */
+    @PostMapping("/invoice/{invoiceId}/waive")
+    public String waiveInvoice(
+            @PathVariable Long invoiceId,
+            @RequestParam String notes,
+            @RequestParam Long conferenceId,
+            Authentication auth,
+            RedirectAttributes flash) {
+        try {
+            invoiceService.waiveInvoice(
+                    invoiceId, notes, auth.getName());
+            flash.addFlashAttribute("success",
+                    "Invoice waived successfully.");
+        } catch (Exception e) {
+            flash.addFlashAttribute("error",
+                    "Error: " + e.getMessage());
+        }
+        return "redirect:/admin/conference/" + conferenceId;
     }
 }
