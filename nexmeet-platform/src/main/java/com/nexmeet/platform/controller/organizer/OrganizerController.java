@@ -70,6 +70,12 @@ public class OrganizerController {
     @Autowired
     private AuditLogService auditLogService;
 
+    @Autowired
+    private CommissionInvoiceService invoiceService;
+
+    @Autowired
+    private NotificationService notificationService;
+
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication auth) {
 
@@ -248,6 +254,80 @@ public class OrganizerController {
                 flash.addFlashAttribute("error", "Unknown error.");
         }
         return "redirect:/organizer/conference/" + id + "/attendance";
+    }
+
+    /*
+     * POST /organizer/conference/{id}/delegates/{regId}/mark-payment
+     * Organizer confirms a delegate paid at the venue.
+     * Only valid for OFFLINE and HYBRID conferences.
+     * paymentMethod: VENUE_CASH or VENUE_UPI
+     * paymentReference: optional UPI tx ID or note
+     */
+    @PostMapping("/conference/{id}/delegates/{regId}/mark-payment")
+    public String markVenuePayment(
+            @PathVariable Long id,
+            @PathVariable Long regId,
+            @RequestParam String paymentMethod,
+            @RequestParam(required = false, defaultValue = "")
+            String paymentReference,
+            Authentication auth,
+            RedirectAttributes flash) {
+
+        try {
+            Conference conf = conferenceService
+                    .findById(id)
+                    .orElseThrow(() ->
+                            new RuntimeException("Conference not found"));
+
+            // Security: only owning organizer
+            if (!conf.getOrganizer().getUser()
+                    .getEmail().equals(auth.getName())) {
+                flash.addFlashAttribute("error",
+                        "Unauthorized.");
+                return "redirect:/organizer/conferences";
+            }
+
+            // Only for offline money collection
+            if (conf.getMode().name().equals("ONLINE")) {
+                flash.addFlashAttribute("error",
+                        "Online conferences use Razorpay payment. " +
+                                "Venue payment not applicable.");
+                return "redirect:/organizer/conference/"
+                        + id + "/delegates";
+            }
+
+            // Get the registration to find the delegate user
+            registrationService.findById(regId)
+                    .ifPresent(reg -> {
+                        paymentService.markVenuePaymentReceived(
+                                id,
+                                reg.getUser().getId(),
+                                paymentMethod,
+                                paymentReference,
+                                auth.getName());
+
+                        // Notify the delegate
+                        notificationService.createNotification(
+                                reg.getUser().getEmail(),
+                                "Payment Confirmed",
+                                "Your payment of ₹"
+                                        + conf.getDelegateFee()
+                                        + " for " + conf.getTitle()
+                                        + " has been confirmed by the organizer.",
+                                "IN_APP"
+                        );
+                    });
+
+            flash.addFlashAttribute("success",
+                    "Payment marked as received.");
+
+        } catch (Exception e) {
+            flash.addFlashAttribute("error",
+                    "Error: " + e.getMessage());
+        }
+
+        return "redirect:/organizer/conference/"
+                + id + "/delegates";
     }
 
     @GetMapping("/conference/{id}/delegates")
@@ -436,6 +516,11 @@ public class OrganizerController {
                 paymentService.getOrganizerShareByConference(id));
         model.addAttribute("payments",
                 paymentService.getPaymentsByConference(id));
+
+        // Show commission invoice if one exists for this conference
+        invoiceService.findByConferenceId(id)
+                .ifPresent(inv ->
+                        model.addAttribute("commissionInvoice", inv));
 
         return "organizer/conference-detail";
     }
