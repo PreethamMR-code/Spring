@@ -335,27 +335,76 @@ public class OrganizerController {
                                 Model model,
                                 Authentication auth) {
         Conference conf = conferenceService.findById(id)
-                .orElseThrow(() -> new RuntimeException("Conference not found"));
+                .orElseThrow(() ->
+                        new RuntimeException("Conference not found"));
 
         // Security: only the organizer who owns this conference
         String email = auth.getName();
-        if (!conf.getOrganizer().getUser().getEmail().equals(email)) {
+        if (!conf.getOrganizer().getUser()
+                .getEmail().equals(email)) {
             return "redirect:/organizer/conferences";
         }
 
-        List<Registration> registrations = registrationService.findByConferenceId(id);
+        List<Registration> registrations =
+                registrationService.findByConferenceId(id);
 
         long confirmedCount = registrations.stream()
-                .filter(r -> r.getStatus() == RegistrationStatus.CONFIRMED)
+                .filter(r -> r.getStatus()
+                        == RegistrationStatus.CONFIRMED)
                 .count();
         long cancelledCount = registrations.stream()
-                .filter(r -> r.getStatus() == RegistrationStatus.CANCELLED)
+                .filter(r -> r.getStatus()
+                        == RegistrationStatus.CANCELLED)
                 .count();
+
+        /*
+         * Build paymentMap: registrationId → Payment
+         * Used in JSP to show payment status per row
+         * and to decide whether to show the "Mark Paid" button.
+         *
+         * We key by registrationId (not userId) so we correctly
+         * match each row in the table without ambiguity —
+         * one user could theoretically appear in multiple
+         * conferences and we don't want cross-conference matches.
+         *
+         * Inner lookup: find payment by conference + user,
+         * then store against the registration id for JSP access.
+         */
+        java.util.Map<Long, com.nexmeet.platform.entity.Payment>
+                paymentMap = new java.util.HashMap<>();
+
+        if (!conf.isFree()) {
+            for (Registration reg : registrations) {
+                if (reg.getStatus()
+                        != RegistrationStatus.CANCELLED) {
+                    paymentService
+                            .findByConferenceAndUser(
+                                    id, reg.getUser().getId())
+                            .ifPresent(pay ->
+                                    paymentMap.put(reg.getId(), pay));
+                }
+            }
+        }
+
+        /*
+         * venuePaymentApplicable: true when organizer should
+         * see the "Mark Payment Received" button.
+         * Condition: paid conference + OFFLINE or HYBRID mode.
+         * ONLINE conferences will use Razorpay (future phase).
+         */
+        boolean venuePaymentApplicable =
+                !conf.isFree()
+                        && (conf.getMode().name().equals("OFFLINE")
+                        || conf.getMode().name().equals("HYBRID"));
 
         model.addAttribute("conf", conf);
         model.addAttribute("registrations", registrations);
         model.addAttribute("confirmedCount", confirmedCount);
         model.addAttribute("cancelledCount", cancelledCount);
+        model.addAttribute("paymentMap", paymentMap);
+        model.addAttribute("venuePaymentApplicable",
+                venuePaymentApplicable);
+
         return "organizer/delegates";
     }
 
