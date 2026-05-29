@@ -207,34 +207,140 @@
 
                                     </td>
 
-                                    <td>
-                                        <c:choose>
-                                            <c:when test="${reg.conference.free}">
-                                                <span class="badge bg-success">
-                                                    Free Event
-                                                </span>
-                                            </c:when>
-                                            <c:when test="${not empty paymentMap[reg.conference.id]}">
-                                                <c:set var="pay"
-                                                       value="${paymentMap[reg.conference.id]}"/>
-                                                <div class="small fw-semibold
-                                                            text-success">
-                                                    ₹${pay.amount}
-                                                </div>
-                                                <div class="small text-muted"
-                                                     style="font-size:0.7rem">
-                                                    ${pay.transactionRef}
-                                                </div>
-                                                <span class="badge bg-success"
-                                                      style="font-size:0.65rem">
-                                                    ${pay.status}
-                                                </span>
-                                            </c:when>
-                                            <c:otherwise>
-                                                <span class="text-muted small">—</span>
-                                            </c:otherwise>
-                                        </c:choose>
-                                    </td>
+                                   <td>
+                                       <c:choose>
+
+                                           <%-- FREE CONFERENCE ─────────────────────────── --%>
+                                           <c:when test="${reg.conference.free}">
+                                               <span class="badge bg-success">
+                                                   Free Event
+                                               </span>
+                                           </c:when>
+
+                                           <%-- PAID CONFERENCE — check payment record ──── --%>
+                                           <c:when test="${not empty paymentMap[reg.conference.id]}">
+                                               <c:set var="pay"
+                                                      value="${paymentMap[reg.conference.id]}"/>
+
+                                               <c:choose>
+
+                                                   <%--
+                                                       VENUE_CASH or VENUE_UPI:
+                                                       Organizer has confirmed payment received
+                                                       at the venue. Show green confirmed state.
+                                                   --%>
+                                                   <c:when test="${pay.paymentMethod == 'VENUE_CASH'
+                                                                  || pay.paymentMethod == 'VENUE_UPI'}">
+                                                       <span class="badge bg-success"
+                                                             style="font-size:0.75rem">
+                                                           ✅ Paid at Venue
+                                                       </span>
+                                                       <div class="text-muted mt-1"
+                                                            style="font-size:0.68rem">
+                                                           ₹${pay.amount}
+                                                           · ${pay.paymentMethod == 'VENUE_CASH'
+                                                               ? 'Cash' : 'UPI'}
+                                                       </div>
+                                                       <c:if test="${not empty pay.transactionRef
+                                                                    && !pay.transactionRef
+                                                                        .startsWith('SIM-')}">
+                                                           <div style="font-size:0.65rem;
+                                                                color:#64748b">
+                                                               Ref: ${pay.transactionRef}
+                                                           </div>
+                                                       </c:if>
+                                                   </c:when>
+
+                                                   <%--
+                                                       SIMULATED + OFFLINE or HYBRID:
+                                                       This is the misleading "COMPLETED" badge.
+                                                       Money has NOT been paid — delegate pays
+                                                       organizer cash/UPI on conference day.
+                                                       Show correct "Pay at Venue" state.
+                                                   --%>
+                                                   <c:when test="${pay.paymentMethod == 'SIMULATED'
+                                                       && (reg.conference.mode == 'OFFLINE'
+                                                           || reg.conference.mode == 'HYBRID')}">
+                                                       <span class="badge bg-warning text-dark"
+                                                             style="font-size:0.75rem">
+                                                           🏛️ Pay at Venue
+                                                       </span>
+                                                       <div class="text-muted mt-1"
+                                                            style="font-size:0.68rem;
+                                                                   line-height:1.4">
+                                                           ₹${pay.amount} due on
+                                                           <br/>conference day
+                                                       </div>
+                                                       <div style="font-size:0.65rem;
+                                                            color:#94a3b8;margin-top:2px">
+                                                           Cash / UPI accepted
+                                                       </div>
+                                                   </c:when>
+
+                                                   <%--
+                                                       SIMULATED + ONLINE:
+                                                       Edge case — online conferences shouldn't
+                                                       have SIMULATED payments in production.
+                                                       Show as pending until Razorpay is live.
+                                                   --%>
+                                                   <c:when test="${pay.paymentMethod == 'SIMULATED'
+                                                                  && reg.conference.mode == 'ONLINE'}">
+                                                       <span class="badge bg-info text-dark"
+                                                             style="font-size:0.75rem">
+                                                           ⏳ Pending
+                                                       </span>
+                                                       <div class="text-muted mt-1"
+                                                            style="font-size:0.68rem">
+                                                           ₹${pay.amount}
+                                                       </div>
+                                                   </c:when>
+
+                                                   <%--
+                                                       REAL PAYMENT (future Razorpay):
+                                                       Show full transaction details.
+                                                   --%>
+                                                   <c:otherwise>
+                                                       <div class="small fw-semibold
+                                                                   text-success">
+                                                           ₹${pay.amount}
+                                                       </div>
+                                                       <div class="text-muted"
+                                                            style="font-size:0.68rem">
+                                                           ${pay.transactionRef}
+                                                       </div>
+                                                       <span class="badge bg-success"
+                                                             style="font-size:0.65rem">
+                                                           ${pay.status}
+                                                       </span>
+                                                   </c:otherwise>
+
+                                               </c:choose>
+                                           </c:when>
+
+                                           <%-- NO PAYMENT RECORD ───────────────────────── --%>
+                                           <c:otherwise>
+                                               <c:choose>
+                                                   <c:when test="${reg.conference.free}">
+                                                       <span class="badge bg-success">
+                                                           Free Event
+                                                       </span>
+                                                   </c:when>
+                                                   <c:otherwise>
+                                                       <span class="badge bg-warning text-dark"
+                                                             style="font-size:0.75rem">
+                                                           🏛️ Pay at Venue
+                                                       </span>
+                                                       <div class="text-muted mt-1"
+                                                            style="font-size:0.68rem">
+                                                           ₹${reg.conference.delegateFee}
+                                                           due on conference day
+                                                       </div>
+                                                   </c:otherwise>
+                                               </c:choose>
+                                           </c:otherwise>
+
+                                       </c:choose>
+                                   </td>
 
 
 
@@ -318,12 +424,34 @@
                                                text-success">
                                         ₹${pay.amount}
                                     </td>
+
                                     <td>
-                                        <span class="badge
-                                            bg-secondary">
-                                            ${pay.paymentMethod}
-                                        </span>
+                                        <c:choose>
+                                            <c:when test="${pay.paymentMethod == 'VENUE_CASH'}">
+                                                <span class="badge bg-success">Cash</span>
+                                            </c:when>
+                                            <c:when test="${pay.paymentMethod == 'VENUE_UPI'}">
+                                                <span class="badge bg-success">UPI</span>
+                                            </c:when>
+                                            <c:when test="${pay.paymentMethod == 'SIMULATED'
+                                                && (pay.conference.mode == 'OFFLINE'
+                                                    || pay.conference.mode == 'HYBRID')}">
+                                                <span class="badge bg-warning text-dark">
+                                                    Pay at Venue
+                                                </span>
+                                            </c:when>
+                                            <c:when test="${pay.paymentMethod == 'SIMULATED'}">
+                                                <span class="badge bg-secondary">Pending</span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="badge bg-secondary">
+                                                    ${pay.paymentMethod}
+                                                </span>
+                                            </c:otherwise>
+                                        </c:choose>
                                     </td>
+
+
                                     <td class="text-muted">
                                         ${fn:substringBefore(
                                             pay.initiatedAt
