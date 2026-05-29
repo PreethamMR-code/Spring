@@ -7,6 +7,7 @@ import com.nexmeet.platform.entity.User;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 public interface PaymentService {
 
@@ -69,4 +70,27 @@ public interface PaymentService {
      * All payments — admin view.
      */
     List<Payment> getAllPayments();
+
+    /*
+     * Organizer confirms delegate paid at venue.
+     * Updates payment method from SIMULATED to
+     * VENUE_CASH or VENUE_UPI.
+     * paymentReference = optional UPI transaction ID
+     * or cash receipt note.
+     */
+    void markVenuePaymentReceived(
+            Long conferenceId,
+            Long delegateUserId,
+            String paymentMethod,
+            String paymentReference,
+            String organizerEmail);
+
+    /*
+     * Find a specific payment by conference + payer user.
+     * Used by organizer delegate list to show per-delegate
+     * payment status.
+     */
+
+    Optional<Payment> findByConferenceAndUser(
+            Long conferenceId, Long userId);
 }

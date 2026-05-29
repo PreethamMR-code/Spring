@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -166,5 +167,65 @@ public class PaymentServiceImpl
     @Transactional(readOnly = true)
     public List<Payment> getAllPayments() {
         return paymentDao.findAll();
+    }
+
+    @Override
+    @Transactional
+    public void markVenuePaymentReceived(
+            Long conferenceId,
+            Long delegateUserId,
+            String paymentMethod,
+            String paymentReference,
+            String organizerEmail) {
+
+        /*
+         * paymentMethod must be VENUE_CASH or VENUE_UPI.
+         * Reject anything else to prevent data corruption.
+         */
+        if (!"VENUE_CASH".equals(paymentMethod)
+                && !"VENUE_UPI".equals(paymentMethod)) {
+            throw new IllegalArgumentException(
+                    "Invalid payment method: " + paymentMethod
+                            + ". Must be VENUE_CASH or VENUE_UPI.");
+        }
+
+        Payment payment = paymentDao
+                .findByConferenceAndUser(
+                        conferenceId, delegateUserId)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "No payment record found for " +
+                                        "this delegate and conference."));
+
+        /*
+         * Idempotency: if already confirmed,
+         * don't overwrite with same data.
+         */
+        if ("VENUE_CASH".equals(payment.getPaymentMethod())
+                || "VENUE_UPI".equals(
+                payment.getPaymentMethod())) {
+            return; // already marked, skip silently
+        }
+
+        payment.setPaymentMethod(paymentMethod);
+        payment.setStatus("COMPLETED");
+        payment.setCompletedAt(
+                java.time.LocalDateTime.now());
+
+        if (paymentReference != null
+                && !paymentReference.trim().isEmpty()) {
+            payment.setTransactionRef(
+                    paymentReference.trim());
+        }
+
+        paymentDao.update(payment);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Payment> findByConferenceAndUser(
+            Long conferenceId, Long userId) {
+        return paymentDao.findByConferenceAndUser(
+                conferenceId, userId);
     }
 }
