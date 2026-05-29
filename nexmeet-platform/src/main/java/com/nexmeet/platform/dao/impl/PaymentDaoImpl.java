@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @Transactional
@@ -133,5 +134,30 @@ public class PaymentDaoImpl implements PaymentDao {
                 .uniqueResult();
         return r != null
                 ? ((Number) r).longValue() : 0L;
+    }
+
+    @Override
+    public void update(Payment payment) {
+        sessionFactory.getCurrentSession().update(payment);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Payment> findByConferenceAndUser(
+            Long conferenceId, Long userId) {
+        try {
+            Payment p = sessionFactory.getCurrentSession()
+                    .createQuery(
+                            "FROM Payment p " +
+                                    "WHERE p.conference.id = :cid " +
+                                    "AND p.payerUser.id = :uid",
+                            Payment.class)
+                    .setParameter("cid", conferenceId)
+                    .setParameter("uid", userId)
+                    .getSingleResult();
+            return Optional.of(p);
+        } catch (javax.persistence.NoResultException e) {
+            return Optional.empty();
+        }
     }
 }
