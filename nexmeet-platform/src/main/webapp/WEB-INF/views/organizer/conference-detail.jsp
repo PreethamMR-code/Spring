@@ -383,6 +383,120 @@
         </div>
     </c:if>
 
+    <%-- ── Commission Invoice (Organizer View — read only) --%>
+    <c:if test="${conf.status == 'COMPLETED'
+                 && !conf.free
+                 && not empty commissionInvoice}">
+        <div class="card mt-3 mb-3"
+             style="border:none;border-radius:14px;
+                    box-shadow:0 2px 12px rgba(0,0,0,0.09)">
+            <div class="card-header fw-bold
+                        d-flex justify-content-between
+                        align-items-center"
+                 style="background:#fff8f0;
+                        border-bottom:1px solid #fed7aa;
+                        border-radius:14px 14px 0 0">
+                <span>🧾 Platform Commission Invoice</span>
+                <c:choose>
+                    <c:when test="${commissionInvoice.status
+                                   == 'PENDING'}">
+                        <span class="badge bg-warning text-dark">
+                            ⏳ PAYMENT DUE
+                        </span>
+                    </c:when>
+                    <c:when test="${commissionInvoice.status
+                                   == 'PAID'}">
+                        <span class="badge bg-success">
+                            ✅ PAID
+                        </span>
+                    </c:when>
+                    <c:when test="${commissionInvoice.status
+                                   == 'WAIVED'}">
+                        <span class="badge bg-secondary">
+                            WAIVED
+                        </span>
+                    </c:when>
+                </c:choose>
+            </div>
+            <div class="card-body">
+                <div class="row g-3 mb-2">
+                    <div class="col-sm-6 col-md-3">
+                        <div class="text-muted small fw-semibold mb-1">
+                            Invoice No.
+                        </div>
+                        <code class="fw-bold">
+                            ${commissionInvoice.invoiceNumber}
+                        </code>
+                    </div>
+                    <div class="col-sm-6 col-md-3">
+                        <div class="text-muted small fw-semibold mb-1">
+                            Platform Base Fee
+                        </div>
+                        <div class="fw-semibold">
+                            ₹${commissionInvoice.baseFee}
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">
+                        <div class="text-muted small fw-semibold mb-1">
+                            Per-Delegate Fee
+                            × ${commissionInvoice.registeredCount}
+                        </div>
+                        <div class="fw-semibold">
+                            ₹${commissionInvoice.perDelegateFee}
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3">
+                        <div class="text-muted small fw-semibold mb-1">
+                            Total Amount Due
+                        </div>
+                        <div style="font-size:1.4rem;
+                             font-weight:800;
+                             color:#d97706">
+                            ₹${commissionInvoice.totalAmount}
+                        </div>
+                    </div>
+                </div>
+
+                <c:if test="${commissionInvoice.status == 'PENDING'}">
+                    <div class="alert alert-warning mb-0">
+                        <strong>⚠️ Payment pending.</strong>
+                        Please transfer
+                        <strong>
+                            ₹${commissionInvoice.totalAmount}
+                        </strong>
+                        to the NexMeet platform account and
+                        reference invoice number
+                        <code>
+                            ${commissionInvoice.invoiceNumber}
+                        </code>
+                        in your payment description.
+                        The admin will confirm once received.
+                        <div class="mt-2 small text-muted">
+                            Contact: billing@nexmeet.com
+                            | UPI: nexmeet@upi
+                        </div>
+                    </div>
+                </c:if>
+
+                <c:if test="${commissionInvoice.status == 'PAID'}">
+                    <div class="alert alert-success mb-0">
+                        ✅ Payment received and confirmed.
+                        Reference:
+                        <code>
+                            ${commissionInvoice.paymentReference}
+                        </code>
+                    </div>
+                </c:if>
+
+                <c:if test="${commissionInvoice.status == 'WAIVED'}">
+                    <div class="alert alert-secondary mb-0">
+                        Invoice waived by admin.
+                    </div>
+                </c:if>
+            </div>
+        </div>
+    </c:if>
+
     <!-- Conference Details -->
     <div class="card mb-3">
         <div class="card-header fw-bold bg-success text-white">
