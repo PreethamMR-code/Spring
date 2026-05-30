@@ -103,6 +103,9 @@ public class AdminController {
         model.addAttribute("totalAuditLogs",
                 auditLogService.getTotalCount());
 
+        model.addAttribute("pendingInvoicesCount",
+                invoiceService.countPending());
+
         return "admin/dashboard";
     }
     @PostMapping("/conference/{id}/approve")
@@ -678,5 +681,71 @@ public class AdminController {
                     "Error: " + e.getMessage());
         }
         return "redirect:/admin/conference/" + conferenceId;
+    }
+
+    /*
+     * GET /admin/invoices
+     * Central invoice overview for admin.
+     * Shows all commission invoices across all conferences
+     * with filter by status (PENDING / PAID / WAIVED).
+     */
+    @GetMapping("/invoices")
+    public String allInvoices(
+            @RequestParam(required = false) String status,
+            Model model,
+            Authentication auth) {
+
+        userService.findByEmail(auth.getName())
+                .ifPresent(u ->
+                        model.addAttribute("currentUser", u));
+
+        List<CommissionInvoice> invoices;
+        if (status != null && !status.trim().isEmpty()) {
+            // Filter by status — done in-memory since
+            // volume is small (one invoice per conference)
+            invoices = invoiceService.findAll().stream()
+                    .filter(inv -> inv.getStatus()
+                            .equals(status.toUpperCase()))
+                    .collect(java.util.stream.Collectors
+                            .toList());
+        } else {
+            invoices = invoiceService.findAll();
+        }
+
+        // Summary counts for stat cards
+        long pendingCount = invoiceService.countPending();
+        long paidCount = invoiceService.findAll().stream()
+                .filter(inv -> "PAID".equals(inv.getStatus()))
+                .count();
+        long waivedCount = invoiceService.findAll().stream()
+                .filter(inv -> "WAIVED".equals(inv.getStatus()))
+                .count();
+
+        // Total amount pending (what organizers still owe)
+        java.math.BigDecimal totalPending =
+                invoiceService.findAll().stream()
+                        .filter(inv -> "PENDING".equals(inv.getStatus()))
+                        .map(CommissionInvoice::getTotalAmount)
+                        .reduce(java.math.BigDecimal.ZERO,
+                                java.math.BigDecimal::add);
+
+        // Total amount collected (PAID invoices)
+        java.math.BigDecimal totalCollected =
+                invoiceService.findAll().stream()
+                        .filter(inv -> "PAID".equals(inv.getStatus()))
+                        .map(CommissionInvoice::getTotalAmount)
+                        .reduce(java.math.BigDecimal.ZERO,
+                                java.math.BigDecimal::add);
+
+        model.addAttribute("invoices", invoices);
+        model.addAttribute("selectedStatus",
+                status != null ? status : "");
+        model.addAttribute("pendingCount", pendingCount);
+        model.addAttribute("paidCount", paidCount);
+        model.addAttribute("waivedCount", waivedCount);
+        model.addAttribute("totalPending", totalPending);
+        model.addAttribute("totalCollected", totalCollected);
+
+        return "admin/invoices";
     }
 }
