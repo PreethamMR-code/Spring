@@ -257,6 +257,337 @@
         </div>
     </c:if>
 
+    <%-- ── Commission Invoice Section (Admin) ─────── --%>
+    <c:if test="${conf.status == 'COMPLETED' && !conf.free}">
+        <div class="card mt-4"
+             style="border:none;border-radius:14px;
+                    box-shadow:0 2px 12px rgba(0,0,0,0.09)">
+            <div class="card-header fw-bold
+                        d-flex justify-content-between
+                        align-items-center py-3"
+                 style="background:#fff8f0;
+                        border-bottom:1px solid #fed7aa;
+                        border-radius:14px 14px 0 0">
+                <span>🧾 Platform Commission Invoice</span>
+                <c:choose>
+                    <c:when test="${empty commissionInvoice}">
+                        <span class="badge bg-secondary">
+                            Not Generated
+                        </span>
+                    </c:when>
+                    <c:when test="${commissionInvoice.status == 'PENDING'}">
+                        <span class="badge bg-warning text-dark">
+                            ⏳ PENDING PAYMENT
+                        </span>
+                    </c:when>
+                    <c:when test="${commissionInvoice.status == 'PAID'}">
+                        <span class="badge bg-success">
+                            ✅ PAID
+                        </span>
+                    </c:when>
+                    <c:when test="${commissionInvoice.status == 'WAIVED'}">
+                        <span class="badge bg-secondary">
+                            WAIVED
+                        </span>
+                    </c:when>
+                </c:choose>
+            </div>
+
+            <div class="card-body">
+                <c:choose>
+
+                    <%-- NO INVOICE YET — show generate button --%>
+                    <c:when test="${empty commissionInvoice}">
+                        <div class="d-flex justify-content-between
+                                    align-items-center">
+                            <div>
+                                <div class="fw-semibold mb-1">
+                                    Generate commission invoice
+                                    for this conference.
+                                </div>
+                                <div class="text-muted small">
+                                    Calculation: ₹${baseFee} base
+                                    + ₹${perDelegateFee}
+                                    × ${conf.registeredCount}
+                                    delegates =
+                                    <strong>
+                                        ₹<fmt:formatNumber
+                                            value="${baseFee +
+                                                (perDelegateFee *
+                                                conf.registeredCount)}"
+                                            maxFractionDigits="2"/>
+                                    </strong>
+                                </div>
+                                <div class="text-muted small mt-1">
+                                    Organizer will be notified
+                                    in-app to arrange payment.
+                                </div>
+                            </div>
+                            <form action="${pageContext.request.contextPath}/admin/conference/${conf.id}/generate-invoice"
+                                  method="post" class="ms-3">
+                                <input type="hidden"
+                                       name="${_csrf.parameterName}"
+                                       value="${_csrf.token}"/>
+                                <button class="btn btn-warning
+                                               fw-bold"
+                                        style="white-space:nowrap">
+                                    🧾 Generate Invoice
+                                </button>
+                            </form>
+                        </div>
+                    </c:when>
+
+                    <%-- INVOICE EXISTS — show details --%>
+                    <c:otherwise>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-3">
+                                <div class="text-muted small
+                                            text-uppercase
+                                            fw-semibold mb-1"
+                                     style="letter-spacing:0.05em">
+                                    Invoice No.
+                                </div>
+                                <code class="fw-bold"
+                                      style="font-size:0.9rem">
+                                    ${commissionInvoice.invoiceNumber}
+                                </code>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-muted small
+                                            text-uppercase
+                                            fw-semibold mb-1"
+                                     style="letter-spacing:0.05em">
+                                    Base Fee
+                                </div>
+                                <div class="fw-semibold">
+                                    ₹${commissionInvoice.baseFee}
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-muted small
+                                            text-uppercase
+                                            fw-semibold mb-1"
+                                     style="letter-spacing:0.05em">
+                                    Per-Delegate
+                                    × ${commissionInvoice.registeredCount}
+                                </div>
+                                <div class="fw-semibold">
+                                    ₹${commissionInvoice.perDelegateFee}
+                                    each
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-muted small
+                                            text-uppercase
+                                            fw-semibold mb-1"
+                                     style="letter-spacing:0.05em">
+                                    Total Due
+                                </div>
+                                <div style="font-size:1.3rem;
+                                     font-weight:800;
+                                     color:#d97706">
+                                    ₹${commissionInvoice.totalAmount}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-muted small mb-3">
+                            Generated on
+                            ${fn:substringBefore(
+                                commissionInvoice.generatedAt
+                                    .toString(), 'T')}
+                            by
+                            ${commissionInvoice.generatedBy != null
+                                ? commissionInvoice.generatedBy.fullName
+                                : 'System'}
+                        </div>
+
+                        <%-- PENDING: show mark-paid and waive --%>
+                        <c:if test="${commissionInvoice.status
+                                     == 'PENDING'}">
+                            <div class="alert alert-warning
+                                        d-flex
+                                        justify-content-between
+                                        align-items-start
+                                        flex-wrap gap-2">
+                                <div>
+                                    <strong>
+                                        ⏳ Awaiting payment
+                                        from organizer.
+                                    </strong>
+                                    <div class="small mt-1">
+                                        Ask organizer to transfer
+                                        ₹${commissionInvoice.totalAmount}
+                                        and reference invoice
+                                        ${commissionInvoice.invoiceNumber}.
+                                        Once received, enter the
+                                        UTR/UPI reference below.
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2">
+
+                                    <%-- Mark Paid --%>
+                                    <button class="btn btn-success
+                                                   btn-sm fw-bold"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#markPaidModal">
+                                        ✅ Mark as Paid
+                                    </button>
+
+                                    <%-- Waive --%>
+                                    <button class="btn btn-outline-secondary
+                                                   btn-sm"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#waiveModal">
+                                        Waive
+                                    </button>
+                                </div>
+                            </div>
+
+                            <%-- Mark Paid Modal --%>
+                            <div class="modal fade"
+                                 id="markPaidModal" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header
+                                                    bg-success text-white">
+                                            <h5 class="modal-title">
+                                                Confirm Payment Received
+                                            </h5>
+                                        </div>
+                                        <form action="${pageContext.request.contextPath}/admin/invoice/${commissionInvoice.id}/mark-paid"
+                                              method="post">
+                                            <input type="hidden"
+                                                   name="${_csrf.parameterName}"
+                                                   value="${_csrf.token}"/>
+                                            <input type="hidden"
+                                                   name="conferenceId"
+                                                   value="${conf.id}"/>
+                                            <div class="modal-body">
+                                                <div class="alert alert-info small">
+                                                    Invoice:
+                                                    <strong>
+                                                        ${commissionInvoice.invoiceNumber}
+                                                    </strong>
+                                                    <br/>
+                                                    Amount:
+                                                    <strong>
+                                                        ₹${commissionInvoice.totalAmount}
+                                                    </strong>
+                                                </div>
+                                                <label class="form-label
+                                                              fw-semibold">
+                                                    Payment Reference *
+                                                    <span class="text-muted
+                                                          fw-normal small">
+                                                        (UTR / UPI Ref / Cheque No.)
+                                                    </span>
+                                                </label>
+                                                <input type="text"
+                                                       name="paymentReference"
+                                                       class="form-control"
+                                                       placeholder="e.g. UTR123456789012"
+                                                       required/>
+                                                <div class="form-text text-muted">
+                                                    This reference will be stored
+                                                    for reconciliation.
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button"
+                                                        class="btn btn-secondary"
+                                                        data-bs-dismiss="modal">
+                                                    Cancel
+                                                </button>
+                                                <button type="submit"
+                                                        class="btn btn-success
+                                                               fw-bold">
+                                                    ✅ Confirm Payment
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <%-- Waive Modal --%>
+                            <div class="modal fade"
+                                 id="waiveModal" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">
+                                                Waive Invoice
+                                            </h5>
+                                        </div>
+                                        <form action="${pageContext.request.contextPath}/admin/invoice/${commissionInvoice.id}/waive"
+                                              method="post">
+                                            <input type="hidden"
+                                                   name="${_csrf.parameterName}"
+                                                   value="${_csrf.token}"/>
+                                            <input type="hidden"
+                                                   name="conferenceId"
+                                                   value="${conf.id}"/>
+                                            <div class="modal-body">
+                                                <label class="form-label
+                                                              fw-semibold">
+                                                    Reason for waiver *
+                                                </label>
+                                                <textarea name="notes"
+                                                          class="form-control"
+                                                          rows="3"
+                                                          placeholder="e.g. NGO event, goodwill waiver"
+                                                          required></textarea>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button"
+                                                        class="btn btn-secondary"
+                                                        data-bs-dismiss="modal">
+                                                    Cancel
+                                                </button>
+                                                <button type="submit"
+                                                        class="btn btn-warning">
+                                                    Waive Invoice
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </c:if>
+
+                        <%-- PAID: show confirmation --%>
+                        <c:if test="${commissionInvoice.status
+                                     == 'PAID'}">
+                            <div class="alert alert-success mb-0">
+                                <strong>✅ Payment confirmed.</strong>
+                                Reference:
+                                <code>
+                                    ${commissionInvoice.paymentReference}
+                                </code>
+                                on
+                                ${fn:substringBefore(
+                                    commissionInvoice.paidAt
+                                        .toString(), 'T')}
+                            </div>
+                        </c:if>
+
+                        <%-- WAIVED --%>
+                        <c:if test="${commissionInvoice.status
+                                     == 'WAIVED'}">
+                            <div class="alert alert-secondary mb-0">
+                                <strong>Invoice waived.</strong>
+                                Reason:
+                                ${commissionInvoice.notes}
+                            </div>
+                        </c:if>
+
+                    </c:otherwise>
+                </c:choose>
+            </div>
+        </div>
+    </c:if>
+
 
     <%-- Admin cancel for APPROVED conferences --%>
     <c:if test="${conf.status == 'APPROVED' ||

@@ -61,15 +61,7 @@
                 <!-- Role Selection -->
                 <div class="mb-3">
                     <label class="form-label fw-semibold">I am registering as</label>
-                    <%-- BEFORE — only 2 options in col-6 --%>
-                    <div class="row g-2">
-                        <div class="col-6">
-                            ... Delegate ...
-                        </div>
-                        <div class="col-6">
-                            ... Organizer ...
-                        </div>
-                    </div>
+
 
                     <%-- AFTER — 3 options, each col-4 --%>
                     <div class="row g-2">
