@@ -68,6 +68,21 @@
                 </div>
             </div>
 
+            <div class="col-6 col-md-3">
+                <div class="card text-center p-3 border-warning">
+                    <h5>Pending Invoices</h5>
+                    <h2 class="text-warning">
+                        ${pendingInvoicesCount}
+                    </h2>
+                    <small class="text-muted">
+                        <a href="${pageContext.request.contextPath}/admin/invoices?status=PENDING"
+                           class="text-warning text-decoration-none">
+                            View →
+                        </a>
+                    </small>
+                </div>
+            </div>
+
         </div>
 
         <div class="d-flex gap-2 mb-4 flex-wrap">
@@ -95,6 +110,18 @@
                     </span>
                 </c:if>
             </a>
+
+
+        <a href="${pageContext.request.contextPath}/admin/invoices"
+           class="btn btn-outline-warning">
+            🧾 Commission Invoices
+            <c:if test="${pendingInvoicesCount > 0}">
+                <span class="badge bg-danger ms-1">
+                    ${pendingInvoicesCount}
+                </span>
+            </c:if>
+        </a>
+
         </div>
 
         <!-- Pending Conferences Table -->
