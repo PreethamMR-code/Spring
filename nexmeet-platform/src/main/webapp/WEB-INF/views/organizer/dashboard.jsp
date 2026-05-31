@@ -131,6 +131,79 @@
         </div>
     </c:if>
 
+    <%--
+        Pending invoice alert banner.
+        Only shown when organizer has unpaid
+        commission invoices. Links to invoices page.
+        Shown ABOVE stat cards so it's impossible
+        to miss.
+    --%>
+    <c:if test="${pendingInvoicesCount > 0}">
+        <div class="mt-3"
+             style="background:#fff7ed;
+                    border:2px solid #fed7aa;
+                    border-radius:14px;
+                    padding:20px 24px">
+            <div class="d-flex justify-content-between
+                        align-items-start
+                        flex-wrap gap-3">
+                <div class="d-flex align-items-start
+                            gap-3">
+                    <span style="font-size:1.8rem;
+                          flex-shrink:0">
+                        ⚠️
+                    </span>
+                    <div>
+                        <div style="font-weight:800;
+                             color:#9a3412;
+                             font-size:1rem">
+                            Platform Commission Due
+                        </div>
+                        <div style="color:#c2410c;
+                             font-size:0.88rem;
+                             margin-top:4px;
+                             line-height:1.6">
+                            You have
+                            <strong>
+                                ${pendingInvoicesCount}
+                                pending invoice<c:if
+                                    test="${pendingInvoicesCount > 1}">
+                                    s</c:if>
+                            </strong>
+                            totalling
+                            <strong>
+                                ₹<fmt:formatNumber
+                                    value="${pendingInvoicesTotal}"
+                                    maxFractionDigits="2"/>
+                            </strong>
+                            owed to NexMeet.
+                            Please arrange payment at the
+                            earliest to keep your account
+                            in good standing.
+                        </div>
+                        <div style="font-size:0.8rem;
+                             color:#b45309;
+                             margin-top:6px">
+                            Transfer to UPI: nexmeet@upi
+                            · Reference your invoice number
+                            · Contact: billing@nexmeet.com
+                        </div>
+                    </div>
+                </div>
+                <a href="${pageContext.request.contextPath}/organizer/invoices"
+                   class="btn fw-bold flex-shrink-0"
+                   style="background:#ea580c;
+                          color:white;
+                          border:none;
+                          border-radius:10px;
+                          padding:10px 20px;
+                          white-space:nowrap">
+                    View My Invoices →
+                </a>
+            </div>
+        </div>
+    </c:if>
+
     <!-- Stat Cards -->
     <div class="row g-3">
         <div class="col-md-4">
@@ -257,6 +330,45 @@
                 <div class="action-desc">
                     See all conferences
                     on NexMeet
+                </div>
+            </a>
+        </div>
+
+        <%-- Add after Browse Conferences action card --%>
+        <div class="col-md-4">
+            <a href="${pageContext.request.contextPath}/organizer/invoices"
+               class="action-card"
+               style="${pendingInvoicesCount > 0
+                   ? 'border-color:#fed7aa;background:#fff7ed;'
+                   : ''}">
+                <div class="action-icon">🧾</div>
+                <div class="action-title"
+                     style="${pendingInvoicesCount > 0
+                         ? 'color:#9a3412;' : ''}">
+                    My Invoices
+                    <c:if test="${pendingInvoicesCount > 0}">
+                        <span class="badge bg-danger ms-1"
+                              style="font-size:0.7rem">
+                            ${pendingInvoicesCount}
+                        </span>
+                    </c:if>
+                </div>
+                <div class="action-desc">
+                    <c:choose>
+                        <c:when test="${pendingInvoicesCount > 0}">
+                            <span style="color:#c2410c;
+                                  font-weight:600">
+                                ₹<fmt:formatNumber
+                                    value="${pendingInvoicesTotal}"
+                                    maxFractionDigits="0"/>
+                                pending payment
+                            </span>
+                        </c:when>
+                        <c:otherwise>
+                            Platform commission
+                            invoice history
+                        </c:otherwise>
+                    </c:choose>
                 </div>
             </a>
         </div>
