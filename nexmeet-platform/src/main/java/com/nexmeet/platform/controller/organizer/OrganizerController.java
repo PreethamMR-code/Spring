@@ -19,9 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpServletResponse;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
@@ -117,6 +115,33 @@ public class OrganizerController {
             model.addAttribute("pendingApproval", pendingApproval);
             model.addAttribute("totalRegistrations", totalRegistrations);
             model.addAttribute("totalRevenue", totalRevenue);
+
+            /*
+             * Pending invoice banner:
+             * Count and total amount of unpaid commission
+             * invoices so the dashboard can show an alert.
+             */
+            List<CommissionInvoice> myInvoices =
+                    invoiceService.findByOrganizerId(
+                            organizer.getId());
+
+            long pendingInvoicesCount = myInvoices.stream()
+                    .filter(inv -> "PENDING".equals(
+                            inv.getStatus()))
+                    .count();
+
+            java.math.BigDecimal pendingInvoicesTotal =
+                    myInvoices.stream()
+                            .filter(inv -> "PENDING".equals(
+                                    inv.getStatus()))
+                            .map(CommissionInvoice::getTotalAmount)
+                            .reduce(java.math.BigDecimal.ZERO,
+                                    java.math.BigDecimal::add);
+
+            model.addAttribute("pendingInvoicesCount",
+                    pendingInvoicesCount);
+            model.addAttribute("pendingInvoicesTotal",
+                    pendingInvoicesTotal);
         }
 
         userService.findByEmail(email)
@@ -127,17 +152,106 @@ public class OrganizerController {
     }
 
     @GetMapping("/conferences")
-    public String myConferences(Model model, Authentication auth) {
+    public String myConferences(Model model,
+                                Authentication auth) {
         String email = auth.getName();
-        Optional<Organizer> organizerOpt = organizerDao.findByUserEmail(email);
+        Optional<Organizer> organizerOpt =
+                organizerDao.findByUserEmail(email);
 
         if (organizerOpt.isPresent()) {
-            List<Conference> conferences = conferenceService
-                    .getConferencesByOrganizer(organizerOpt.get().getId());
+            Organizer organizer = organizerOpt.get();
+            List<Conference> conferences =
+                    conferenceService.getConferencesByOrganizer(
+                            organizer.getId());
             model.addAttribute("conferences", conferences);
+
+            /*
+             * invoiceMap: conferenceId → CommissionInvoice
+             * Used in the table to show invoice status
+             * badge per conference row without N+1 queries.
+             * We load all organizer invoices once, then
+             * index them by conference ID in memory.
+             */
+            Map<Long, CommissionInvoice> invoiceMap =
+                    new HashMap<>();
+            invoiceService.findByOrganizerId(
+                            organizer.getId())
+                    .forEach(inv ->
+                            invoiceMap.put(
+                                    inv.getConference().getId(),
+                                    inv));
+            model.addAttribute("invoiceMap", invoiceMap);
         }
 
         return "organizer/my-conferences";
+    }
+
+    /*
+     * GET /organizer/invoices
+     * Shows all commission invoices for this organizer
+     * across all their conferences.
+     * Read-only view — payments are made offline and
+     * marked by admin.
+     */
+    @GetMapping("/invoices")
+    public String myInvoices(Model model,
+                             Authentication auth) {
+        String email = auth.getName();
+
+        Organizer organizer = organizerDao
+                .findByUserEmail(email)
+                .orElse(null);
+
+        if (organizer == null) {
+            return "redirect:/organizer/profile/setup";
+        }
+
+        userService.findByEmail(email)
+                .ifPresent(u ->
+                        model.addAttribute("currentUser", u));
+
+        List<CommissionInvoice> invoices =
+                invoiceService.findByOrganizerId(
+                        organizer.getId());
+
+        // Summary counts for stat cards
+        long pendingCount = invoices.stream()
+                .filter(inv -> "PENDING".equals(
+                        inv.getStatus()))
+                .count();
+        long paidCount = invoices.stream()
+                .filter(inv -> "PAID".equals(
+                        inv.getStatus()))
+                .count();
+        long waivedCount = invoices.stream()
+                .filter(inv -> "WAIVED".equals(
+                        inv.getStatus()))
+                .count();
+
+        java.math.BigDecimal totalPending =
+                invoices.stream()
+                        .filter(inv -> "PENDING".equals(
+                                inv.getStatus()))
+                        .map(CommissionInvoice::getTotalAmount)
+                        .reduce(java.math.BigDecimal.ZERO,
+                                java.math.BigDecimal::add);
+
+        java.math.BigDecimal totalPaid =
+                invoices.stream()
+                        .filter(inv -> "PAID".equals(
+                                inv.getStatus()))
+                        .map(CommissionInvoice::getTotalAmount)
+                        .reduce(java.math.BigDecimal.ZERO,
+                                java.math.BigDecimal::add);
+
+        model.addAttribute("invoices", invoices);
+        model.addAttribute("pendingCount", pendingCount);
+        model.addAttribute("paidCount", paidCount);
+        model.addAttribute("waivedCount", waivedCount);
+        model.addAttribute("totalPending", totalPending);
+        model.addAttribute("totalPaid", totalPaid);
+
+        return "organizer/invoices";
     }
 
     @GetMapping("/conference/create")
