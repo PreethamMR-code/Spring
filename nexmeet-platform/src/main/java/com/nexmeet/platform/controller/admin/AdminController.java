@@ -412,9 +412,52 @@ public class AdminController {
                 commissionService.getAllCommissionSettings());
         model.addAttribute("totalRevenue",
                 paymentService.getTotalPlatformRevenue());
+        model.addAttribute("projectedRevenue",           // ← ADD THIS
+                commissionService.getTotalPlatformEarnings());
         model.addAttribute("allPayments",
                 paymentService.getAllPayments());
         return "admin/commission";
+    }
+
+    /*
+     * POST /admin/commission/update
+     * Updates base fee and per-delegate fee for a
+     * specific conference type. Uses conference type
+     * string as identifier (unique in commission_settings).
+     * Changes take effect for future invoice generation only.
+     */
+    @PostMapping("/commission/update")
+    public String updateCommissionRate(
+            @RequestParam String conferenceType,
+            @RequestParam java.math.BigDecimal baseFee,
+            @RequestParam java.math.BigDecimal perDelegateFee,
+            Authentication auth,
+            RedirectAttributes flash) {
+        try {
+            commissionService.updateRate(
+                    conferenceType, baseFee, perDelegateFee);
+
+            try {
+                auditLogService.log(
+                        auth.getName(),
+                        "COMMISSION_RATE_UPDATED",
+                        "CommissionSetting",
+                        null,
+                        "Type: " + conferenceType
+                                + " | Base: ₹" + baseFee
+                                + " | Per-delegate: ₹"
+                                + perDelegateFee);
+            } catch (Exception ignored) {}
+
+            flash.addFlashAttribute("success",
+                    "Commission rate updated for "
+                            + conferenceType
+                            + ". New rates apply to future invoices.");
+        } catch (Exception e) {
+            flash.addFlashAttribute("error",
+                    "Update failed: " + e.getMessage());
+        }
+        return "redirect:/admin/commission";
     }
 
     @GetMapping("/institutions")
