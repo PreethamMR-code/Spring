@@ -198,4 +198,32 @@ public class CommissionServiceImpl implements CommissionService {
                         Object[].class)
                 .getResultList();
     }
+
+    @Override
+    @Transactional   // overrides class-level readOnly=true
+    public void updateRate(String conferenceType,
+                           BigDecimal baseFee,
+                           BigDecimal perDelegateFee) {
+        /*
+         * conference_type has a UNIQUE KEY in commission_settings
+         * table, so it is safe to use as an identifier.
+         * HQL UPDATE avoids needing to load the entity first.
+         */
+        int updated = sessionFactory.getCurrentSession()
+                .createQuery(
+                        "UPDATE CommissionSetting cs " +
+                                "SET cs.baseFee = :base, " +
+                                "    cs.perDelegateFee = :per " +
+                                "WHERE cs.conferenceType = :type")
+                .setParameter("base", baseFee)
+                .setParameter("per", perDelegateFee)
+                .setParameter("type", conferenceType)
+                .executeUpdate();
+
+        if (updated == 0) {
+            throw new RuntimeException(
+                    "Commission type not found: "
+                            + conferenceType);
+        }
+    }
 }

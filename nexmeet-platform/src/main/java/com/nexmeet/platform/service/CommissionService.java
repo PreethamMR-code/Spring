@@ -20,4 +20,13 @@ public interface CommissionService {
     BigDecimal calculateOrganizerPayout(Long conferenceId);
 
     List<Object[]> getAllCommissionSettings();
+
+    /*
+     * Update base and per-delegate fees for a conference type.
+     * Changes affect future invoices only — existing invoices
+     * already have amounts locked in at generation time.
+     */
+    void updateRate(String conferenceType,
+                    BigDecimal baseFee,
+                    BigDecimal perDelegateFee);
 }
