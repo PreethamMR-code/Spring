@@ -732,6 +732,91 @@ public class OrganizerController {
         }
     }
 
+    /*
+     * GET /organizer/profile/edit
+     * Shows the edit form pre-populated with
+     * the organizer's current profile data.
+     * Redirects to setup if profile doesn't exist.
+     */
+    @GetMapping("/profile/edit")
+    public String showProfileEdit(Model model,
+                                  Authentication auth) {
+        Organizer organizer = organizerDao
+                .findByUserEmail(auth.getName())
+                .orElse(null);
+
+        if (organizer == null) {
+            return "redirect:/organizer/profile/setup";
+        }
+
+        /*
+         * Pre-populate the DTO from current entity values.
+         * Same pattern as showEditForm() for conferences.
+         */
+        OrganizerProfileDto dto = new OrganizerProfileDto();
+        dto.setOrganizationName(
+                organizer.getOrganizationName());
+        dto.setOrganizationType(
+                organizer.getOrganizationType());
+        dto.setWebsiteUrl(organizer.getWebsiteUrl());
+        dto.setAddress(organizer.getAddress());
+        dto.setCity(organizer.getCity());
+        dto.setState(organizer.getState());
+        dto.setPincode(organizer.getPincode());
+
+        model.addAttribute("dto", dto);
+        model.addAttribute("organizer", organizer);
+        return "organizer/profile-edit";
+    }
+
+    /*
+     * POST /organizer/profile/edit
+     * Saves updated organizer profile.
+     * Does NOT reset verification status — organizer
+     * is already approved, editing profile details
+     * shouldn't re-trigger the verification process.
+     */
+    @PostMapping("/profile/edit")
+    public String saveProfileEdit(
+            @ModelAttribute("dto") OrganizerProfileDto dto,
+            Authentication auth,
+            RedirectAttributes flash) {
+        try {
+            Organizer organizer = organizerDao
+                    .findByUserEmail(auth.getName())
+                    .orElseThrow(() ->
+                            new RuntimeException("Profile not found"));
+
+            // Update only the editable fields
+            organizer.setOrganizationName(
+                    dto.getOrganizationName());
+            organizer.setOrganizationType(
+                    dto.getOrganizationType());
+            organizer.setWebsiteUrl(dto.getWebsiteUrl());
+            organizer.setAddress(dto.getAddress());
+            organizer.setCity(dto.getCity());
+            organizer.setState(dto.getState());
+            organizer.setPincode(dto.getPincode());
+
+            /*
+             * Verification status is NOT changed.
+             * Admin-verified organizers stay verified.
+             * Changing org name/address is a normal
+             * business operation, not a re-verification trigger.
+             */
+            organizerDao.update(organizer);
+
+            flash.addFlashAttribute("success",
+                    "Profile updated successfully!");
+
+        } catch (Exception e) {
+            flash.addFlashAttribute("error",
+                    "Error: " + e.getMessage());
+            return "redirect:/organizer/profile/edit";
+        }
+        return "redirect:/organizer/dashboard";
+    }
+
     @PostMapping("/conference/{id}/complete")
     public String completeConference(
             @PathVariable Long id,
