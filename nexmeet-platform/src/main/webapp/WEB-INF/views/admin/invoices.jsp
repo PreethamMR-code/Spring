@@ -511,6 +511,7 @@
                                                 </div>
                                             </div>
 
+
                                             <%-- Waive Modal --%>
                                             <div class="modal fade"
                                                  id="waiveModal${inv.id}"
