@@ -389,6 +389,7 @@
                     </table>
                     </div>
 
+
                     <%-- Footer totals --%>
                     <div class="card-footer bg-white
                                 d-flex justify-content-between
