@@ -1,181 +1,377 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Register - NexMeet</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1"/>
+    <title>Create Account – NexMeet</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
           rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet"/>
     <style>
-        body { background: #f0f2f5; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8f9fc;
+            -webkit-font-smoothing: antialiased;
+        }
         .register-card {
-            max-width: 500px;
-            margin: 50px auto;
+            max-width: 520px;
+            margin: 48px auto 48px;
             border: none;
-            border-radius: 12px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+            border-radius: 16px;
+            box-shadow: 0 4px 28px rgba(0,0,0,0.10);
         }
-        .brand { color: #667eea; font-weight: 800; font-size: 1.6rem; }
-        .btn-primary { background: #667eea; border-color: #667eea; }
-        .btn-primary:hover { background: #5a67d8; border-color: #5a67d8; }
+        .brand {
+            background: linear-gradient(135deg,
+                #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+            font-size: 1.7rem;
+            letter-spacing: -0.02em;
+        }
+
+        /* Role cards */
         .role-card {
-            border: 2px solid #dee2e6;
-            border-radius: 8px;
-            padding: 12px;
+            border: 2px solid #e8ecf0;
+            border-radius: 10px;
+            padding: 14px 10px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.18s;
+            text-align: center;
+            display: block;
+            background: #fafbfc;
+            height: 100%;
         }
-        .role-card:hover { border-color: #667eea; background: #f8f7ff; }
-        .role-card.selected { border-color: #667eea; background: #f0eeff; }
-        .role-card input[type=radio] { display: none; }
+        .role-card:hover {
+            border-color: #667eea;
+            background: #f8f7ff;
+        }
+        .role-card.selected {
+            border-color: #667eea;
+            background: #f0eeff;
+        }
+        .role-card input[type=radio] {
+            display: none;
+        }
+        .role-icon { font-size: 1.6rem; margin-bottom: 6px; }
+        .role-name {
+            font-weight: 700;
+            font-size: 0.82rem;
+            color: #0f172a;
+        }
+        .role-desc {
+            font-size: 0.7rem;
+            color: #64748b;
+            margin-top: 2px;
+            line-height: 1.4;
+        }
+
+        /* Form */
+        .form-label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #374151;
+        }
+        .form-control {
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 11px 14px;
+            font-size: 0.93rem;
+            background: #fafbfc;
+            font-family: 'Inter', sans-serif;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.12);
+            background: white;
+        }
+        .form-control::placeholder { color: #94a3b8; }
+
+        .btn-create {
+            background: linear-gradient(135deg,
+                #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 13px;
+            font-weight: 700;
+            font-size: 0.97rem;
+            width: 100%;
+            transition: opacity 0.15s, transform 0.15s,
+                        box-shadow 0.15s;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+        }
+        .btn-create:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px rgba(102,126,234,0.3);
+        }
+
+        .section-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #94a3b8;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="card register-card">
-        <div class="card-body p-4">
+        <div class="card-body p-4 p-md-5">
 
+            <%-- Header --%>
             <div class="text-center mb-4">
                 <a href="${pageContext.request.contextPath}/"
                    class="text-decoration-none">
                     <div class="brand">NexMeet</div>
                 </a>
-                <p class="text-muted mt-1">Create your account</p>
+                <h5 class="mt-2 fw-bold"
+                    style="color:#0f172a">
+                    Create your free account
+                </h5>
+                <p class="text-muted"
+                   style="font-size:0.88rem">
+                    Join thousands of delegates and organizers
+                </p>
             </div>
 
+            <%-- Error alert --%>
             <c:if test="${not empty error}">
-                <div class="alert alert-danger alert-dismissible">
-                    ${error}
-                    <button type="button" class="btn-close"
-                            data-bs-dismiss="alert"></button>
+                <div style="background:#fef2f2;
+                            border:1px solid #fecaca;
+                            border-radius:10px;
+                            padding:12px 14px;
+                            color:#991b1b;
+                            font-size:0.88rem;
+                            display:flex;gap:10px;
+                            align-items:flex-start;
+                            margin-bottom:20px">
+                    <span>⚠️</span>
+                    <span>${error}</span>
                 </div>
             </c:if>
 
             <form action="${pageContext.request.contextPath}/register"
                   method="post">
-                <input type="hidden" name="${_csrf.parameterName}"
+                <input type="hidden"
+                       name="${_csrf.parameterName}"
                        value="${_csrf.token}"/>
 
-                <!-- Role Selection -->
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">I am registering as</label>
-
-
-                    <%-- AFTER — 3 options, each col-4 --%>
+                <%--
+                    ROLE SELECTION
+                    BUG FIX: The original JSP was missing the closing
+                    </div> for this mb-3 wrapper, causing all subsequent
+                    form fields to be nested inside this div.
+                    Fixed below — wrapper div explicitly closed after
+                    the row div.
+                --%>
+                <div class="mb-4">
+                    <div class="section-label">
+                        I am registering as
+                    </div>
                     <div class="row g-2">
                         <div class="col-4">
-                            <label class="role-card d-block" id="delegateCard">
-                                <input type="radio" name="role"
-                                       value="DELEGATE" checked/>
-                                <div class="text-center">
-                                    <div style="font-size:1.5rem">🎓</div>
-                                    <div class="fw-bold small">Delegate</div>
-                                    <div class="text-muted"
-                                         style="font-size:0.72rem">
-                                        Attend conferences
-                                    </div>
+                            <label class="role-card"
+                                   id="card-DELEGATE">
+                                <input type="radio"
+                                       name="role"
+                                       value="DELEGATE"
+                                       checked/>
+                                <div class="role-icon">🎓</div>
+                                <div class="role-name">
+                                    Delegate
+                                </div>
+                                <div class="role-desc">
+                                    Attend conferences
                                 </div>
                             </label>
                         </div>
                         <div class="col-4">
-                            <label class="role-card d-block" id="organizerCard">
-                                <input type="radio" name="role"
+                            <label class="role-card"
+                                   id="card-ORGANIZER">
+                                <input type="radio"
+                                       name="role"
                                        value="ORGANIZER"/>
-                                <div class="text-center">
-                                    <div style="font-size:1.5rem">🎯</div>
-                                    <div class="fw-bold small">Organizer</div>
-                                    <div class="text-muted"
-                                         style="font-size:0.72rem">
-                                        Host conferences
-                                    </div>
+                                <div class="role-icon">🎯</div>
+                                <div class="role-name">
+                                    Organizer
+                                </div>
+                                <div class="role-desc">
+                                    Host conferences
                                 </div>
                             </label>
                         </div>
                         <div class="col-4">
-                            <label class="role-card d-block" id="institutionCard">
-                                <input type="radio" name="role"
+                            <label class="role-card"
+                                   id="card-INSTITUTIONAL_ADMIN">
+                                <input type="radio"
+                                       name="role"
                                        value="INSTITUTIONAL_ADMIN"/>
-                                <div class="text-center">
-                                    <div style="font-size:1.5rem">🏫</div>
-                                    <div class="fw-bold small">Institution</div>
-                                    <div class="text-muted"
-                                         style="font-size:0.72rem">
-                                        Register students
-                                    </div>
+                                <div class="role-icon">🏫</div>
+                                <div class="role-name">
+                                    Institution
+                                </div>
+                                <div class="role-desc">
+                                    Register students
                                 </div>
                             </label>
                         </div>
                     </div>
-
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Full Name</label>
-                    <input type="text" class="form-control" name="fullName"
-                           value="${registerDto.fullName}"
-                           placeholder="Your full name" required/>
                 </div>
+                <%-- ↑ THIS </div> was missing in the original.
+                       All fields below were incorrectly nested. --%>
 
                 <div class="mb-3">
-                    <label class="form-label fw-semibold">Email Address</label>
-                    <input type="email" class="form-control" name="email"
-                           value="${registerDto.email}"
-                           placeholder="you@example.com" required/>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">
-                        Phone Number
-                        <span class="text-muted fw-normal">(optional)</span>
+                    <label class="form-label"
+                           for="fullName">
+                        Full Name *
                     </label>
-                    <input type="tel" class="form-control" name="phone"
+                    <input type="text"
+                           id="fullName"
+                           class="form-control"
+                           name="fullName"
+                           value="${registerDto.fullName}"
+                           placeholder="Your full name"
+                           required/>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"
+                           for="email">
+                        Email Address *
+                    </label>
+                    <input type="email"
+                           id="email"
+                           class="form-control"
+                           name="email"
+                           value="${registerDto.email}"
+                           placeholder="you@example.com"
+                           required/>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"
+                           for="phone">
+                        Phone Number
+                        <span class="text-muted fw-normal">
+                            (optional)
+                        </span>
+                    </label>
+                    <input type="tel"
+                           id="phone"
+                           class="form-control"
+                           name="phone"
                            value="${registerDto.phone}"
                            placeholder="+91 98765 43210"/>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label fw-semibold">Password</label>
-                    <input type="password" class="form-control" name="password"
-                           placeholder="At least 6 characters" required/>
+                    <label class="form-label"
+                           for="password">
+                        Password *
+                    </label>
+                    <input type="password"
+                           id="password"
+                           class="form-control"
+                           name="password"
+                           placeholder="At least 6 characters"
+                           required/>
+                    <div class="form-text text-muted"
+                         style="font-size:0.78rem">
+                        Minimum 6 characters
+                    </div>
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label fw-semibold">Confirm Password</label>
-                    <input type="password" class="form-control"
+                    <label class="form-label"
+                           for="confirmPassword">
+                        Confirm Password *
+                    </label>
+                    <input type="password"
+                           id="confirmPassword"
+                           class="form-control"
                            name="confirmPassword"
-                           placeholder="Repeat your password" required/>
+                           placeholder="Repeat your password"
+                           required/>
                 </div>
 
-                <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
-                    Create Account
+                <button type="submit"
+                        class="btn-create">
+                    Create Account →
                 </button>
             </form>
 
-            <hr class="my-3"/>
-            <div class="text-center">
-                <span class="text-muted">Already have an account?</span>
+            <hr style="margin:24px 0;border-color:#f0f2f5"/>
+
+            <div class="text-center"
+                 style="font-size:0.9rem;color:#64748b">
+                Already have an account?
                 <a href="${pageContext.request.contextPath}/login"
-                   class="ms-1 text-decoration-none fw-semibold">Sign in</a>
+                   style="color:#667eea;
+                          font-weight:600;
+                          text-decoration:none">
+                    Sign in
+                </a>
             </div>
 
         </div>
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">
+</script>
 <script>
-    // Highlight selected role card
-    document.querySelectorAll('.role-card input[type=radio]').forEach(function(radio) {
-        radio.addEventListener('change', function() {
-            document.querySelectorAll('.role-card').forEach(function(card) {
-                card.classList.remove('selected');
-            });
-            this.closest('.role-card').classList.add('selected');
-        });
+/*
+ * Role card selection highlight.
+ * Reads the role value from the radio input's data
+ * and adds/removes the 'selected' class on the label.
+ */
+function syncCards() {
+    document.querySelectorAll(
+        '.role-card input[type=radio]'
+    ).forEach(function(radio) {
+        var card = radio.closest('.role-card');
+        if (radio.checked) {
+            card.classList.add('selected');
+        } else {
+            card.classList.remove('selected');
+        }
     });
-    // Set initial selected state
-    document.querySelector('.role-card input[type=radio]:checked')
-        .closest('.role-card').classList.add('selected');
+}
+
+// Wire up change events
+document.querySelectorAll(
+    '.role-card input[type=radio]'
+).forEach(function(radio) {
+    radio.addEventListener('change', syncCards);
+});
+
+// Set initial state on page load
+syncCards();
+
+// Optional: confirm passwords match before submit
+document.querySelector('form').addEventListener(
+    'submit',
+    function(e) {
+        var pw = document.getElementById('password').value;
+        var cp = document.getElementById('confirmPassword').value;
+        if (pw !== cp) {
+            e.preventDefault();
+            alert('Passwords do not match. Please check and try again.');
+            document.getElementById('confirmPassword').focus();
+        }
+    }
+);
 </script>
 </body>
 </html>
