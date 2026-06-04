@@ -1,29 +1,186 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
+<%@ taglib prefix="c"
+    uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>404 - Page Not Found</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <meta charset="UTF-8"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1"/>
+    <title>404 – Page Not Found · NexMeet</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+          rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet"/>
     <style>
-        body { background: #f8f9fa; }
-        .error-box { margin-top: 120px; text-align: center; }
-        .error-code { font-size: 8rem; font-weight: 900; color: #dee2e6; line-height: 1; }
-        .error-title { font-size: 1.8rem; font-weight: 700; color: #343a40; }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8f9fc;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            -webkit-font-smoothing: antialiased;
+        }
+        .brand {
+            font-size: 1.4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg,
+                #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+            margin-bottom: 48px;
+        }
+        .error-wrap {
+            text-align: center;
+            max-width: 480px;
+        }
+        .error-emoji {
+            font-size: 4rem;
+            margin-bottom: 8px;
+            line-height: 1;
+        }
+        .error-code {
+            font-size: 7rem;
+            font-weight: 800;
+            color: #e2e8f0;
+            line-height: 1;
+            letter-spacing: -0.04em;
+        }
+        .error-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 12px 0 12px;
+            letter-spacing: -0.02em;
+        }
+        .error-desc {
+            color: #64748b;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin-bottom: 32px;
+        }
+        .btn-home {
+            background: linear-gradient(135deg,
+                #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 28px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-decoration: none;
+            transition: opacity 0.15s, transform 0.15s;
+        }
+        .btn-home:hover {
+            opacity: 0.9;
+            color: white;
+            transform: translateY(-1px);
+        }
+        .btn-back {
+            border: 1.5px solid #e2e8f0;
+            background: white;
+            color: #374151;
+            border-radius: 10px;
+            padding: 11px 24px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .btn-back:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+        .quick-links {
+            margin-top: 36px;
+            padding-top: 28px;
+            border-top: 1px solid #e8ecf0;
+        }
+        .quick-links-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 16px;
+        }
+        .quick-link {
+            display: inline-block;
+            background: white;
+            border: 1px solid #e8ecf0;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            color: #374151;
+            text-decoration: none;
+            margin: 4px;
+            transition: all 0.15s;
+        }
+        .quick-link:hover {
+            border-color: #667eea;
+            color: #667eea;
+            background: #f8f7ff;
+        }
     </style>
 </head>
 <body>
-<div class="container error-box">
-    <div class="error-code">404</div>
-    <div class="error-title mt-2">Page Not Found</div>
-    <p class="text-muted mt-3">
-        The page you are looking for does not exist or has been moved.
-    </p>
-    <div class="mt-4 d-flex justify-content-center gap-3">
-        <a href="${pageContext.request.contextPath}/"
-           class="btn btn-primary px-4">Go to Home</a>
-        <a href="javascript:history.back()"
-           class="btn btn-outline-secondary px-4">Go Back</a>
+
+    <a href="${pageContext.request.contextPath}/"
+       class="brand">
+        NexMeet
+    </a>
+
+    <div class="error-wrap">
+        <div class="error-emoji">🔍</div>
+        <div class="error-code">404</div>
+        <div class="error-title">Page Not Found</div>
+        <p class="error-desc">
+            The page you're looking for doesn't exist
+            or has been moved. Double-check the URL
+            or use one of the links below.
+        </p>
+
+        <div class="d-flex justify-content-center
+                    gap-3 flex-wrap">
+            <a href="${pageContext.request.contextPath}/"
+               class="btn-home">
+                ← Go to Home
+            </a>
+            <a href="javascript:history.back()"
+               class="btn-back">
+                Go Back
+            </a>
+        </div>
+
+        <div class="quick-links">
+            <div class="quick-links-title">
+                Quick Links
+            </div>
+            <a href="${pageContext.request.contextPath}/conferences"
+               class="quick-link">
+                Browse Conferences
+            </a>
+            <a href="${pageContext.request.contextPath}/login"
+               class="quick-link">
+                Sign In
+            </a>
+            <a href="${pageContext.request.contextPath}/register"
+               class="quick-link">
+                Register
+            </a>
+            <a href="${pageContext.request.contextPath}/verify"
+               class="quick-link">
+                Verify Certificate
+            </a>
+        </div>
     </div>
-</div>
+
 </body>
 </html>
