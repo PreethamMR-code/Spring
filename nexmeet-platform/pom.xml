@@ -278,6 +278,15 @@
       <version>1.10.0</version>
     </dependency>
 
+    <!-- Lombok — replaces manual getters, setters, no-arg constructors -->
+    <!-- scope=provided: compile-time only, not in final WAR -->
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>1.18.30</version>
+      <scope>provided</scope>
+    </dependency>
+
   </dependencies>
   <build>
     <finalName>nexmeet-platform</finalName>
