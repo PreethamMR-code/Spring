@@ -1,5 +1,9 @@
 package com.nexmeet.platform.entity;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
@@ -12,6 +16,9 @@ import java.time.LocalDateTime;
  * e.g. "Row 5: Email already registered", "Row 12: Invalid phone number"
  * This helps the HR know exactly which students didn't get registered.
  */
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "bulk_uploads")
 public class BulkUpload {
@@ -74,41 +81,5 @@ public class BulkUpload {
         uploadedAt = LocalDateTime.now();
     }
 
-    public BulkUpload() {}
 
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public Conference getConference() { return conference; }
-    public void setConference(Conference conference) { this.conference = conference; }
-
-    public User getUploadedBy() { return uploadedBy; }
-    public void setUploadedBy(User uploadedBy) { this.uploadedBy = uploadedBy; }
-
-    public String getFileName() { return fileName; }
-    public void setFileName(String fileName) { this.fileName = fileName; }
-
-    public String getFilePath() { return filePath; }
-    public void setFilePath(String filePath) { this.filePath = filePath; }
-
-    public Integer getTotalRows() { return totalRows; }
-    public void setTotalRows(Integer totalRows) { this.totalRows = totalRows; }
-
-    public Integer getSuccessfulRows() { return successfulRows; }
-    public void setSuccessfulRows(Integer successfulRows) { this.successfulRows = successfulRows; }
-
-    public Integer getFailedRows() { return failedRows; }
-    public void setFailedRows(Integer failedRows) { this.failedRows = failedRows; }
-
-    public String getErrorLog() { return errorLog; }
-    public void setErrorLog(String errorLog) { this.errorLog = errorLog; }
-
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-
-    public LocalDateTime getUploadedAt() { return uploadedAt; }
-
-    public LocalDateTime getCompletedAt() { return completedAt; }
-    public void setCompletedAt(LocalDateTime completedAt) { this.completedAt = completedAt; }
 }

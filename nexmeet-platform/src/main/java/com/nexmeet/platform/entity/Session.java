@@ -1,5 +1,9 @@
 package com.nexmeet.platform.entity;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -10,6 +14,10 @@ import java.util.List;
  * One Conference has MANY Sessions.
  * This is a @ManyToOne from Session's side (many sessions, one conference).
  */
+
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "sessions")
 public class Session {
@@ -78,42 +86,5 @@ public class Session {
         createdAt = LocalDateTime.now();
     }
 
-    public Session() {}
 
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public Conference getConference() { return conference; }
-    public void setConference(Conference conference) { this.conference = conference; }
-
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-
-    public String getSessionType() { return sessionType; }
-    public void setSessionType(String sessionType) { this.sessionType = sessionType; }
-
-    public LocalDateTime getStartTime() { return startTime; }
-    public void setStartTime(LocalDateTime startTime) { this.startTime = startTime; }
-
-    public LocalDateTime getEndTime() { return endTime; }
-    public void setEndTime(LocalDateTime endTime) { this.endTime = endTime; }
-
-    public String getRoomOrLink() { return roomOrLink; }
-    public void setRoomOrLink(String roomOrLink) { this.roomOrLink = roomOrLink; }
-
-    public Integer getCapacity() { return capacity; }
-    public void setCapacity(Integer capacity) { this.capacity = capacity; }
-
-    public java.util.List<Speaker> getSpeakers() {
-        return speakers;
-    }
-    public void setSpeakers(java.util.List<Speaker> s) {
-        speakers = s;
-    }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
 }

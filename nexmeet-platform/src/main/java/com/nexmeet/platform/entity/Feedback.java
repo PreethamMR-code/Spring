@@ -1,6 +1,10 @@
 package com.nexmeet.platform.entity;
 
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
@@ -13,6 +17,12 @@ import java.time.LocalDateTime;
  * The organizer's average_rating in the Organizer table is
  * calculated from all feedback records for their conferences.
  */
+
+
+
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "feedback",
         uniqueConstraints = {
@@ -71,37 +81,5 @@ public class Feedback {
         submittedAt = LocalDateTime.now();
     }
 
-    public Feedback() {}
 
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public Conference getConference() { return conference; }
-    public void setConference(Conference conference) { this.conference = conference; }
-
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
-
-    public Integer getOverallRating() { return overallRating; }
-    public void setOverallRating(Integer overallRating) { this.overallRating = overallRating; }
-
-    public Integer getOrganizationRating() { return organizationRating; }
-    public void setOrganizationRating(Integer organizationRating) { this.organizationRating = organizationRating; }
-
-    public Integer getContentRating() { return contentRating; }
-    public void setContentRating(Integer contentRating) { this.contentRating = contentRating; }
-
-    public Integer getSpeakerRating() { return speakerRating; }
-    public void setSpeakerRating(Integer speakerRating) { this.speakerRating = speakerRating; }
-
-    public String getComments() { return comments; }
-    public void setComments(String comments) { this.comments = comments; }
-
-    public boolean isPubliclyVisible() { return publiclyVisible; }
-    public void setPubliclyVisible(boolean publiclyVisible) {
-        this.publiclyVisible = publiclyVisible;
-    }
-
-    public LocalDateTime getSubmittedAt() { return submittedAt; }
 }

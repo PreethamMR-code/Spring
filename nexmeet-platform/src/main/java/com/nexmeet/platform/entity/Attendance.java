@@ -1,6 +1,10 @@
 package com.nexmeet.platform.entity;
 
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
@@ -12,6 +16,9 @@ import java.time.LocalDateTime;
  *
  * One Registration = at most One Attendance record (OneToOne).
  */
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "attendance")
 public class Attendance {
@@ -50,23 +57,4 @@ public class Attendance {
         checkedInAt = LocalDateTime.now();
     }
 
-    public Attendance() {}
-
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public Registration getRegistration() { return registration; }
-    public void setRegistration(Registration registration) { this.registration = registration; }
-
-    public Conference getConference() { return conference; }
-    public void setConference(Conference conference) { this.conference = conference; }
-
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
-
-    public User getCheckedInBy() { return checkedInBy; }
-    public void setCheckedInBy(User checkedInBy) { this.checkedInBy = checkedInBy; }
-
-    public LocalDateTime getCheckedInAt() { return checkedInAt; }
 }

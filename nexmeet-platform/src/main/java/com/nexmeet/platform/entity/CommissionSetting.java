@@ -1,6 +1,10 @@
 package com.nexmeet.platform.entity;
 
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -16,6 +20,10 @@ import java.time.LocalDateTime;
  *
  * We already inserted default rows in the original SQL setup.
  */
+
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "commission_settings")
 public class CommissionSetting {
@@ -58,20 +66,5 @@ public class CommissionSetting {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // Getters and setters
-    public Long getId() { return id; }
-    public String getConferenceType() { return conferenceType; }
-    public void setConferenceType(String t) { conferenceType = t; }
-    public BigDecimal getBaseFee() { return baseFee; }
-    public void setBaseFee(BigDecimal f) { baseFee = f; }
-    public BigDecimal getPerDelegateFee() { return perDelegateFee; }
-    public void setPerDelegateFee(BigDecimal f) { perDelegateFee = f; }
-    public String getDescription() { return description; }
-    public void setDescription(String d) { description = d; }
-    public boolean isActive() { return active; }
-    public void setActive(boolean a) { active = a; }
-    public Long getUpdatedBy() { return updatedBy; }
-    public void setUpdatedBy(Long u) { updatedBy = u; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime t) { updatedAt = t; }
+
 }

@@ -1,5 +1,9 @@
 package com.nexmeet.platform.entity;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
@@ -12,6 +16,10 @@ import java.time.LocalDateTime;
  *
  * This entity links: User <-> Institution
  */
+
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "institutional_admins")
 public class InstitutionalAdmin {
@@ -64,27 +72,5 @@ public class InstitutionalAdmin {
         updatedAt = LocalDateTime.now();
     }
 
-    public InstitutionalAdmin() {}
 
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
-
-    public Institution getInstitution() { return institution; }
-    public void setInstitution(Institution institution) { this.institution = institution; }
-
-    public String getJobTitle() { return jobTitle; }
-    public void setJobTitle(String jobTitle) { this.jobTitle = jobTitle; }
-
-    public String getDepartment() { return department; }
-    public void setDepartment(String department) { this.department = department; }
-
-    public boolean isVerified() { return isVerified; }
-    public void setVerified(boolean verified) { isVerified = verified; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
 }

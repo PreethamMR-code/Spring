@@ -3,6 +3,9 @@ package com.nexmeet.platform.entity;
 
 import com.nexmeet.platform.enums.RegistrationStatus;
 import com.nexmeet.platform.enums.RegistrationType;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -17,6 +20,10 @@ import java.time.LocalDateTime;
  * But one user cannot register for the SAME conference twice
  * (enforced by the UNIQUE constraint below).
  */
+
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "registrations",
         uniqueConstraints = {
@@ -86,36 +93,6 @@ public class Registration {
         registeredAt = LocalDateTime.now();
     }
 
-    public Registration() {}
-
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public Conference getConference() { return conference; }
-    public void setConference(Conference conference) { this.conference = conference; }
-
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
-
-    public String getRegistrationNumber() { return registrationNumber; }
-    public void setRegistrationNumber(String registrationNumber) { this.registrationNumber = registrationNumber; }
-
-    public RegistrationType getRegistrationType() { return registrationType; }
-    public void setRegistrationType(RegistrationType t) {
-        this.registrationType = t;
-    }
-
-    public Long getBulkUploadId() { return bulkUploadId; }
-    public void setBulkUploadId(Long bulkUploadId) { this.bulkUploadId = bulkUploadId; }
-
-    public RegistrationStatus getStatus() { return status; }
-    public void setStatus(RegistrationStatus status) { this.status = status; }
-
-    public LocalDateTime getRegisteredAt() { return registeredAt; }
-
-    public LocalDateTime getCancelledAt() { return cancelledAt; }
-    public void setCancelledAt(LocalDateTime cancelledAt) { this.cancelledAt = cancelledAt; }
 
     @Override
     public String toString() {

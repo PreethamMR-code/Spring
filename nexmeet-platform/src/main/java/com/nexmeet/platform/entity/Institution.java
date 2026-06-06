@@ -1,6 +1,9 @@
 package com.nexmeet.platform.entity;
 
 import com.nexmeet.platform.enums.InstitutionType;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -13,6 +16,9 @@ import java.time.LocalDateTime;
  * The admin uses this table to contact colleges/companies and invite
  * their students/employees to conferences.
  */
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "institutions")
 public class Institution {
@@ -85,53 +91,7 @@ public class Institution {
         updatedAt = LocalDateTime.now();
     }
 
-    public Institution() {}
 
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-
-    public InstitutionType getType() { return type; }
-    public void setType(InstitutionType type) { this.type = type; }
-
-    public String getContactPerson() { return contactPerson; }
-    public void setContactPerson(String contactPerson) { this.contactPerson = contactPerson; }
-
-    public String getContactRole() { return contactRole; }
-    public void setContactRole(String contactRole) { this.contactRole = contactRole; }
-
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-
-    public String getPhone() { return phone; }
-    public void setPhone(String phone) { this.phone = phone; }
-
-    public String getWebsite() { return website; }
-    public void setWebsite(String website) { this.website = website; }
-
-    public String getAddress() { return address; }
-    public void setAddress(String address) { this.address = address; }
-
-    public String getCity() { return city; }
-    public void setCity(String city) { this.city = city; }
-
-    public String getState() { return state; }
-    public void setState(String state) { this.state = state; }
-
-    public String getPincode() { return pincode; }
-    public void setPincode(String pincode) { this.pincode = pincode; }
-
-    public String getDomains() { return domains; }
-    public void setDomains(String domains) { this.domains = domains; }
-
-    public boolean isActive() { return isActive; }
-    public void setActive(boolean active) { isActive = active; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
 
     @Override
     public String toString() {

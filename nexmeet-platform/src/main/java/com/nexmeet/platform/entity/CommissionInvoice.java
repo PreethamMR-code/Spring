@@ -1,9 +1,16 @@
 package com.nexmeet.platform.entity;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "commission_invoices")
 public class CommissionInvoice {
@@ -70,46 +77,4 @@ public class CommissionInvoice {
         }
     }
 
-    // ── Getters & Setters ──────────────────────────
-    public Long getId()                             { return id; }
-    public void setId(Long id)                      { this.id = id; }
-
-    public Conference getConference()               { return conference; }
-    public void setConference(Conference c)         { this.conference = c; }
-
-    public Organizer getOrganizer()                 { return organizer; }
-    public void setOrganizer(Organizer o)           { this.organizer = o; }
-
-    public String getInvoiceNumber()                { return invoiceNumber; }
-    public void setInvoiceNumber(String n)          { this.invoiceNumber = n; }
-
-    public BigDecimal getBaseFee()                  { return baseFee; }
-    public void setBaseFee(BigDecimal b)            { this.baseFee = b; }
-
-    public BigDecimal getPerDelegateFee()           { return perDelegateFee; }
-    public void setPerDelegateFee(BigDecimal p)     { this.perDelegateFee = p; }
-
-    public int getRegisteredCount()                 { return registeredCount; }
-    public void setRegisteredCount(int r)           { this.registeredCount = r; }
-
-    public BigDecimal getTotalAmount()              { return totalAmount; }
-    public void setTotalAmount(BigDecimal t)        { this.totalAmount = t; }
-
-    public String getStatus()                       { return status; }
-    public void setStatus(String s)                 { this.status = s; }
-
-    public String getPaymentReference()             { return paymentReference; }
-    public void setPaymentReference(String r)       { this.paymentReference = r; }
-
-    public String getNotes()                        { return notes; }
-    public void setNotes(String n)                  { this.notes = n; }
-
-    public User getGeneratedBy()                    { return generatedBy; }
-    public void setGeneratedBy(User u)              { this.generatedBy = u; }
-
-    public LocalDateTime getGeneratedAt()           { return generatedAt; }
-    public void setGeneratedAt(LocalDateTime t)     { this.generatedAt = t; }
-
-    public LocalDateTime getPaidAt()                { return paidAt; }
-    public void setPaidAt(LocalDateTime t)          { this.paidAt = t; }
 }

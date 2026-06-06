@@ -1,6 +1,10 @@
 package com.nexmeet.platform.entity;
 
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
@@ -10,6 +14,10 @@ import java.time.LocalDateTime;
  * It's a PDF file with the delegate's name, conference name,
  * and a unique certificate number.
  */
+
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "certificates")
 public class Certificate {
@@ -52,26 +60,5 @@ public class Certificate {
         issuedAt = LocalDateTime.now();
     }
 
-    public Certificate() {}
 
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public Registration getRegistration() { return registration; }
-    public void setRegistration(Registration registration) { this.registration = registration; }
-
-    public Conference getConference() { return conference; }
-    public void setConference(Conference conference) { this.conference = conference; }
-
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
-
-    public String getCertificateNumber() { return certificateNumber; }
-    public void setCertificateNumber(String certificateNumber) { this.certificateNumber = certificateNumber; }
-
-    public String getFilePath() { return filePath; }
-    public void setFilePath(String filePath) { this.filePath = filePath; }
-
-    public LocalDateTime getIssuedAt() { return issuedAt; }
 }

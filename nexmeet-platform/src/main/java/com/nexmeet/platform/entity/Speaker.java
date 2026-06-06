@@ -1,6 +1,10 @@
 package com.nexmeet.platform.entity;
 
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -11,6 +15,10 @@ import java.util.List;
  * conference_id is always required (NOT NULL).
  * session_id is optional (NULL means they speak at the whole conference).
  */
+
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "speakers")
 public class Speaker {
@@ -65,43 +73,5 @@ public class Speaker {
         createdAt = LocalDateTime.now();
     }
 
-    public Speaker() {}
 
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public Conference getConference() { return conference; }
-    public void setConference(Conference conference) { this.conference = conference; }
-
-    public List<Session> getSessions() {
-        return sessions;
-    }
-
-    public void setSessions(List<Session> sessions) {
-        this.sessions = sessions;
-    }
-
-    public String getFullName() { return fullName; }
-    public void setFullName(String fullName) { this.fullName = fullName; }
-
-    public String getDesignation() { return designation; }
-    public void setDesignation(String designation) { this.designation = designation; }
-
-    public String getOrganization() { return organization; }
-    public void setOrganization(String organization) { this.organization = organization; }
-
-    public String getBio() { return bio; }
-    public void setBio(String bio) { this.bio = bio; }
-
-    public String getProfilePicture() { return profilePicture; }
-    public void setProfilePicture(String profilePicture) { this.profilePicture = profilePicture; }
-
-    public String getLinkedinUrl() { return linkedinUrl; }
-    public void setLinkedinUrl(String linkedinUrl) { this.linkedinUrl = linkedinUrl; }
-
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
 }

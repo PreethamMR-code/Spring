@@ -1,6 +1,10 @@
 package com.nexmeet.platform.entity;
 
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
@@ -12,6 +16,10 @@ import java.time.LocalDateTime;
  * The institution_id is optional — delegates registered via bulk upload
  * from a college will have this filled. Individual registrations may not.
  */
+
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "delegates")
 public class Delegate {
@@ -63,30 +71,5 @@ public class Delegate {
         updatedAt = LocalDateTime.now();
     }
 
-    public Delegate() {}
 
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
-
-    public String getOrganization() { return organization; }
-    public void setOrganization(String organization) { this.organization = organization; }
-
-    public String getDesignation() { return designation; }
-    public void setDesignation(String designation) { this.designation = designation; }
-
-    public Institution getInstitution() { return institution; }
-    public void setInstitution(Institution institution) { this.institution = institution; }
-
-    public String getCity() { return city; }
-    public void setCity(String city) { this.city = city; }
-
-    public String getState() { return state; }
-    public void setState(String state) { this.state = state; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
 }

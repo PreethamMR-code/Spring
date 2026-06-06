@@ -3,6 +3,9 @@ package com.nexmeet.platform.entity;
 import com.nexmeet.platform.enums.ConferenceMode;
 import com.nexmeet.platform.enums.ConferenceStatus;
 import com.nexmeet.platform.enums.ConferenceType;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -16,6 +19,10 @@ import java.time.LocalDateTime;
  * Key relationship: Many conferences belong to ONE organizer.
  * This is @ManyToOne from Conference's side.
  */
+
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "conferences")
 public class Conference {
@@ -170,98 +177,7 @@ public class Conference {
         updatedAt = LocalDateTime.now();
     }
 
-    public Conference() {}
 
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public Organizer getOrganizer() { return organizer; }
-    public void setOrganizer(Organizer organizer) { this.organizer = organizer; }
-
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-
-    public String getBannerImage() { return bannerImage; }
-    public void setBannerImage(String bannerImage) { this.bannerImage = bannerImage; }
-
-    public ConferenceType getConferenceType() { return conferenceType; }
-    public void setConferenceType(ConferenceType conferenceType) { this.conferenceType = conferenceType; }
-
-    public String getTargetAudience() { return targetAudience; }
-    public void setTargetAudience(String targetAudience) { this.targetAudience = targetAudience; }
-
-    public String getTargetDomains() { return targetDomains; }
-    public void setTargetDomains(String targetDomains) { this.targetDomains = targetDomains; }
-
-    public ConferenceMode getMode() { return mode; }
-    public void setMode(ConferenceMode mode) { this.mode = mode; }
-
-    public String getVenueName() { return venueName; }
-    public void setVenueName(String venueName) { this.venueName = venueName; }
-
-    public String getVenueAddress() { return venueAddress; }
-    public void setVenueAddress(String venueAddress) { this.venueAddress = venueAddress; }
-
-    public String getCity() { return city; }
-    public void setCity(String city) { this.city = city; }
-
-    public String getState() { return state; }
-    public void setState(String state) { this.state = state; }
-
-    public String getStreamingLink() { return streamingLink; }
-    public void setStreamingLink(String streamingLink) { this.streamingLink = streamingLink; }
-
-    public String getStreamingPassword() { return streamingPassword; }
-    public void setStreamingPassword(String streamingPassword) { this.streamingPassword = streamingPassword; }
-
-    public LocalDateTime getStartDate() { return startDate; }
-    public void setStartDate(LocalDateTime startDate) { this.startDate = startDate; }
-
-    public LocalDateTime getEndDate() { return endDate; }
-    public void setEndDate(LocalDateTime endDate) { this.endDate = endDate; }
-
-    public LocalDateTime getRegistrationDeadline() { return registrationDeadline; }
-    public void setRegistrationDeadline(LocalDateTime registrationDeadline) { this.registrationDeadline = registrationDeadline; }
-
-    public Integer getMaxDelegates() { return maxDelegates; }
-    public void setMaxDelegates(Integer maxDelegates) { this.maxDelegates = maxDelegates; }
-
-    public Integer getRegisteredCount() { return registeredCount; }
-    public void setRegisteredCount(Integer registeredCount) { this.registeredCount = registeredCount; }
-
-    public boolean isFree() { return isFree; }
-    public void setFree(boolean free) { isFree = free; }
-
-    public BigDecimal getDelegateFee() { return delegateFee; }
-    public void setDelegateFee(BigDecimal delegateFee) { this.delegateFee = delegateFee; }
-
-    public boolean isCertificateEnabled() { return certificateEnabled; }
-    public void setCertificateEnabled(boolean certificateEnabled) { this.certificateEnabled = certificateEnabled; }
-
-    public boolean isQrCheckinEnabled() { return qrCheckinEnabled; }
-    public void setQrCheckinEnabled(boolean qrCheckinEnabled) { this.qrCheckinEnabled = qrCheckinEnabled; }
-
-    public boolean isBulkUploadAllowed() { return bulkUploadAllowed; }
-    public void setBulkUploadAllowed(boolean bulkUploadAllowed) { this.bulkUploadAllowed = bulkUploadAllowed; }
-
-    public ConferenceStatus getStatus() { return status; }
-    public void setStatus(ConferenceStatus status) { this.status = status; }
-
-    public String getRejectionReason() { return rejectionReason; }
-    public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
-
-    public User getApprovedBy() { return approvedBy; }
-    public void setApprovedBy(User approvedBy) { this.approvedBy = approvedBy; }
-
-    public LocalDateTime getApprovedAt() { return approvedAt; }
-    public void setApprovedAt(LocalDateTime approvedAt) { this.approvedAt = approvedAt; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
 
     @Override
     public String toString() {

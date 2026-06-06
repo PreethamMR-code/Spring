@@ -1,6 +1,10 @@
 package com.nexmeet.platform.entity;
 
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
@@ -12,6 +16,10 @@ import java.time.LocalDateTime;
  * an actual QR image. When organizer scans it at the event,
  * we look up this token, find the Registration, and mark attendance.
  */
+
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "qr_codes")
 public class QrCode {
@@ -56,23 +64,5 @@ public class QrCode {
         generatedAt = LocalDateTime.now();
     }
 
-    public QrCode() {}
 
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public Registration getRegistration() { return registration; }
-    public void setRegistration(Registration registration) { this.registration = registration; }
-
-    public String getQrToken() { return qrToken; }
-    public void setQrToken(String qrToken) { this.qrToken = qrToken; }
-
-    public String getQrImagePath() { return qrImagePath; }
-    public void setQrImagePath(String qrImagePath) { this.qrImagePath = qrImagePath; }
-
-    public LocalDateTime getGeneratedAt() { return generatedAt; }
-
-    public String getQrImageBase64() { return qrImageBase64; }
-    public void setQrImageBase64(String qrImageBase64) { this.qrImageBase64 = qrImageBase64; }
 }

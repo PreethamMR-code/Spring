@@ -11,11 +11,17 @@ package com.nexmeet.platform.entity;
  */
 
 import com.nexmeet.platform.enums.VerificationStatus;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "organizers")
 public class Organizer {
@@ -135,57 +141,4 @@ public class Organizer {
         updatedAt = LocalDateTime.now();
     }
 
-    public Organizer() {}
-
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
-
-    public String getOrganizationName() { return organizationName; }
-    public void setOrganizationName(String organizationName) { this.organizationName = organizationName; }
-
-    public String getOrganizationType() { return organizationType; }
-    public void setOrganizationType(String organizationType) { this.organizationType = organizationType; }
-
-    public String getWebsiteUrl() { return websiteUrl; }
-    public void setWebsiteUrl(String websiteUrl) { this.websiteUrl = websiteUrl; }
-
-    public String getAddress() { return address; }
-    public void setAddress(String address) { this.address = address; }
-
-    public String getCity() { return city; }
-    public void setCity(String city) { this.city = city; }
-
-    public String getState() { return state; }
-    public void setState(String state) { this.state = state; }
-
-    public String getPincode() { return pincode; }
-    public void setPincode(String pincode) { this.pincode = pincode; }
-
-    public String getDocumentPath() { return documentPath; }
-    public void setDocumentPath(String documentPath) { this.documentPath = documentPath; }
-
-    public VerificationStatus getVerificationStatus() { return verificationStatus; }
-    public void setVerificationStatus(VerificationStatus verificationStatus) { this.verificationStatus = verificationStatus; }
-
-    public String getRejectionReason() { return rejectionReason; }
-    public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
-
-    public LocalDateTime getVerifiedAt() { return verifiedAt; }
-    public void setVerifiedAt(LocalDateTime verifiedAt) { this.verifiedAt = verifiedAt; }
-
-    public User getVerifiedBy() { return verifiedBy; }
-    public void setVerifiedBy(User verifiedBy) { this.verifiedBy = verifiedBy; }
-
-    public BigDecimal getAverageRating() { return averageRating; }
-    public void setAverageRating(BigDecimal averageRating) { this.averageRating = averageRating; }
-
-    public Integer getTotalEvents() { return totalEvents; }
-    public void setTotalEvents(Integer totalEvents) { this.totalEvents = totalEvents; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
 }

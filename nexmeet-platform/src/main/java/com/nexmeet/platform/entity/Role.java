@@ -9,8 +9,16 @@ package com.nexmeet.platform.entity;
  * you could skip @Table — but it's best practice to always be explicit.
  */
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.persistence.*;
 
+
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "roles")
 public class Role {
@@ -26,32 +34,6 @@ public class Role {
     @Column(name = "description", length = 200)
     private String description;
 
-
-
-    public Role(){
-
-    }
-
-    public Integer getId(){
-        return id;
-    }
-    public void setId(Integer id){
-        this.id = id;
-    }
-
-    public String getName(){
-        return name;
-    }
-    public void setName(String name){
-        this.name = name;
-    }
-
-    public String getDescription(){
-        return description;
-    }
-    public void setDescription(String description){
-        this.description = description;
-    }
 
     @Override
     public String toString(){

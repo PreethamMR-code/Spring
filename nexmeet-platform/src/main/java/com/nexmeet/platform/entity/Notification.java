@@ -1,5 +1,9 @@
 package com.nexmeet.platform.entity;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
@@ -9,6 +13,10 @@ import java.time.LocalDateTime;
  * We log every notification here so users can see
  * their notification history in their dashboard.
  */
+
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "notifications")
 public class Notification {
@@ -44,26 +52,5 @@ public class Notification {
         sentAt = LocalDateTime.now();
     }
 
-    public Notification() {}
 
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
-
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-
-    public String getMessage() { return message; }
-    public void setMessage(String message) { this.message = message; }
-
-    public String getType() { return type; }
-    public void setType(String type) { this.type = type; }
-
-    public boolean isRead() { return isRead; }
-    public void setRead(boolean read) { isRead = read; }
-
-    public LocalDateTime getSentAt() { return sentAt; }
 }

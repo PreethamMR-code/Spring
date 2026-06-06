@@ -1,5 +1,9 @@
 package com.nexmeet.platform.entity;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -21,6 +25,10 @@ import java.time.LocalDateTime;
  * In a real system: status stays INITIATED until payment
  * gateway confirms, then moves to COMPLETED.
  */
+
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "payments")
 public class Payment {
@@ -111,72 +119,5 @@ public class Payment {
         initiatedAt = LocalDateTime.now();
     }
 
-    public Payment() {}
 
-    // Getters and Setters
-    public Long getId() { return id; }
-
-    public User getPayerUser() { return payerUser; }
-    public void setPayerUser(User u) {
-        payerUser = u;
-    }
-
-    public Conference getConference() {
-        return conference;
-    }
-    public void setConference(Conference c) {
-        conference = c;
-    }
-
-    public String getPaymentFor() {
-        return paymentFor;
-    }
-    public void setPaymentFor(String p) {
-        paymentFor = p;
-    }
-
-    public BigDecimal getAmount() { return amount; }
-    public void setAmount(BigDecimal a) { amount = a; }
-
-    public BigDecimal getPlatformCommission() {
-        return platformCommission;
-    }
-    public void setPlatformCommission(BigDecimal p) {
-        platformCommission = p;
-    }
-
-    public BigDecimal getOrganizerAmount() {
-        return organizerAmount;
-    }
-    public void setOrganizerAmount(BigDecimal o) {
-        organizerAmount = o;
-    }
-
-    public String getPaymentMethod() {
-        return paymentMethod;
-    }
-    public void setPaymentMethod(String m) {
-        paymentMethod = m;
-    }
-
-    public String getTransactionRef() {
-        return transactionRef;
-    }
-    public void setTransactionRef(String t) {
-        transactionRef = t;
-    }
-
-    public String getStatus() { return status; }
-    public void setStatus(String s) { status = s; }
-
-    public LocalDateTime getInitiatedAt() {
-        return initiatedAt;
-    }
-
-    public LocalDateTime getCompletedAt() {
-        return completedAt;
-    }
-    public void setCompletedAt(LocalDateTime c) {
-        completedAt = c;
-    }
 }

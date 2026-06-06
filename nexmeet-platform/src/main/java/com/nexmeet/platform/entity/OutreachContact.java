@@ -1,6 +1,10 @@
 package com.nexmeet.platform.entity;
 
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
@@ -15,6 +19,10 @@ import java.time.LocalDateTime;
  * CONTACTED -> RESPONDED -> INTERESTED -> REGISTERED
  *                        -> NOT_INTERESTED
  */
+
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "outreach_contacts")
 public class OutreachContact {
@@ -67,32 +75,5 @@ public class OutreachContact {
         contactedAt = LocalDateTime.now();
     }
 
-    public OutreachContact() {}
 
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public Conference getConference() { return conference; }
-    public void setConference(Conference conference) { this.conference = conference; }
-
-    public Institution getInstitution() { return institution; }
-    public void setInstitution(Institution institution) { this.institution = institution; }
-
-    public User getContactedBy() { return contactedBy; }
-    public void setContactedBy(User contactedBy) { this.contactedBy = contactedBy; }
-
-    public String getContactMethod() { return contactMethod; }
-    public void setContactMethod(String contactMethod) { this.contactMethod = contactMethod; }
-
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-
-    public String getNotes() { return notes; }
-    public void setNotes(String notes) { this.notes = notes; }
-
-    public LocalDateTime getContactedAt() { return contactedAt; }
-
-    public LocalDateTime getRespondedAt() { return respondedAt; }
-    public void setRespondedAt(LocalDateTime respondedAt) { this.respondedAt = respondedAt; }
 }

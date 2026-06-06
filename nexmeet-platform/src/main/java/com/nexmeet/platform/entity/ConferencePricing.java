@@ -1,6 +1,10 @@
 package com.nexmeet.platform.entity;
 
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -16,6 +20,9 @@ import java.time.LocalDateTime;
  * One conference has exactly One pricing record.
  * That's why this is @OneToOne.
  */
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "conference_pricing")
 public class ConferencePricing {
@@ -65,32 +72,5 @@ public class ConferencePricing {
         createdAt = LocalDateTime.now();
     }
 
-    public ConferencePricing() {}
 
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public Conference getConference() { return conference; }
-    public void setConference(Conference conference) { this.conference = conference; }
-
-    public BigDecimal getBaseFee() { return baseFee; }
-    public void setBaseFee(BigDecimal baseFee) { this.baseFee = baseFee; }
-
-    public BigDecimal getPerDelegateFee() { return perDelegateFee; }
-    public void setPerDelegateFee(BigDecimal perDelegateFee) { this.perDelegateFee = perDelegateFee; }
-
-    public Integer getExpectedDelegates() { return expectedDelegates; }
-    public void setExpectedDelegates(Integer expectedDelegates) { this.expectedDelegates = expectedDelegates; }
-
-    public BigDecimal getTotalFee() { return totalFee; }
-    public void setTotalFee(BigDecimal totalFee) { this.totalFee = totalFee; }
-
-    public String getPaymentStatus() { return paymentStatus; }
-    public void setPaymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; }
-
-    public LocalDateTime getPaidAt() { return paidAt; }
-    public void setPaidAt(LocalDateTime paidAt) { this.paidAt = paidAt; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
 }
