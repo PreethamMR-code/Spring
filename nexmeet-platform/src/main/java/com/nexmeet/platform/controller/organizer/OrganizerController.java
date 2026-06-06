@@ -566,6 +566,9 @@ public class OrganizerController {
         model.addAttribute("dto", dto);
         model.addAttribute("confId", id);
         model.addAttribute("currentStatus", conf.getStatus());
+// ADD this line — rejection reason shown on form when REJECTED:
+        model.addAttribute("rejectionReason",
+                conf.getRejectionReason());
         return "organizer/edit-conference";
     }
 
