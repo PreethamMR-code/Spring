@@ -31,13 +31,25 @@ public class ConferenceCreateDto {
     private String state;
     private String streamingLink;
 
+    /*
+     * FIX: streamingPassword was missing from this DTO.
+     * edit-conference.jsp referenced ${dto.streamingPassword}
+     * which caused PropertyNotFoundException at render time,
+     * crashing the JSP before the JavaScript ran.
+     * This was the root cause of:
+     *   1. The 500 error on the edit page
+     *   2. The blank Conference Type and Mode dropdowns
+     *      (JS never executed to set select values)
+     *   3. The missing Submit button (same reason)
+     */
+    private String streamingPassword;
+
     private Integer maxDelegates = 100;
     private boolean free = true;
     private BigDecimal delegateFee = BigDecimal.ZERO;
     private boolean certificateEnabled = false;
     private boolean qrCheckinEnabled = false;
     private boolean bulkUploadAllowed = true;
-
 
     // Getters and Setters
     public String getTitle() { return title; }
@@ -68,6 +80,15 @@ public class ConferenceCreateDto {
     public void setState(String state) { this.state = state; }
     public String getStreamingLink() { return streamingLink; }
     public void setStreamingLink(String streamingLink) { this.streamingLink = streamingLink; }
+
+    /*
+     * streamingPassword getter and setter.
+     * Maps to the "streamingPassword" input in both
+     * create-conference.jsp and edit-conference.jsp.
+     */
+    public String getStreamingPassword() { return streamingPassword; }
+    public void setStreamingPassword(String streamingPassword) { this.streamingPassword = streamingPassword; }
+
     public Integer getMaxDelegates() { return maxDelegates; }
     public void setMaxDelegates(Integer maxDelegates) { this.maxDelegates = maxDelegates; }
     public boolean isFree() { return free; }
