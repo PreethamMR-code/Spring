@@ -259,16 +259,33 @@
                                 </c:if>
                                 <c:if test="${conf.status == 'DRAFT'
                                     || conf.status == 'REJECTED'}">
+                                    <%--
+                                        Direct submit — POST to new quick-submit endpoint.
+                                        Organizer no longer needs to open the edit form
+                                        just to submit a conference for approval.
+                                    --%>
+                                    <form action="${pageContext.request.contextPath}/organizer/conference/${conf.id}/submit"
+                                          method="post"
+                                          class="d-inline ms-1">
+                                        <input type="hidden"
+                                               name="${_csrf.parameterName}"
+                                               value="${_csrf.token}"/>
+                                        <button type="submit"
+                                                class="btn btn-success btn-sm"
+                                                onclick="return confirm('Submit \'${conf.title}\' for admin approval?')">
+                                            ✅ Submit
+                                        </button>
+                                    </form>
                                     <a href="${pageContext.request.contextPath}/organizer/conference/${conf.id}/edit"
-                                       class="btn btn-outline-warning
-                                              btn-sm ms-1">
+                                       class="btn btn-outline-warning btn-sm ms-1">
                                         Edit
                                     </a>
                                 </c:if>
                                 <c:if test="${conf.status == 'REJECTED'}">
-                                    <div class="text-danger small mt-1"
-                                         style="font-size:0.72rem">
-                                        ${conf.rejectionReason}
+                                    <div class="text-danger"
+                                         style="font-size:0.72rem;margin-top:4px;
+                                                max-width:160px">
+                                        ↳ ${conf.rejectionReason}
                                     </div>
                                 </c:if>
                             </td>
