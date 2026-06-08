@@ -292,6 +292,7 @@ public class OrganizerController {
             conf.setCity(dto.getCity());
             conf.setState(dto.getState());
             conf.setStreamingLink(dto.getStreamingLink());
+            conf.setStreamingPassword(dto.getStreamingPassword());
             conf.setMaxDelegates(dto.getMaxDelegates());
             conf.setFree(dto.isFree());
             conf.setDelegateFee(dto.getDelegateFee());
@@ -556,6 +557,7 @@ public class OrganizerController {
         dto.setCity(conf.getCity());
         dto.setState(conf.getState());
         dto.setStreamingLink(conf.getStreamingLink());
+        dto.setStreamingPassword(conf.getStreamingPassword());
         dto.setMaxDelegates(conf.getMaxDelegates());
         dto.setFree(conf.isFree());
         dto.setDelegateFee(conf.getDelegateFee());
@@ -569,7 +571,98 @@ public class OrganizerController {
 // ADD this line — rejection reason shown on form when REJECTED:
         model.addAttribute("rejectionReason",
                 conf.getRejectionReason());
+
+        /*
+         * Pass plain Strings for JS select pre-population.
+         * ${dto.conferenceType} is an enum — JSTL EL enum
+         * rendering can add whitespace in some JSP containers.
+         * Plain String model attributes are always exact.
+         *
+         * currentStatusStr is needed for c:when comparison.
+         * ${currentStatus.name()} calls a Java method in EL
+         * which is unreliable across JSP container versions.
+         * String comparison ${currentStatusStr == 'REJECTED'}
+         * is always safe.
+         */
+        model.addAttribute("selectedType",
+                conf.getConferenceType() != null
+                        ? conf.getConferenceType().name() : "");
+        model.addAttribute("selectedMode",
+                conf.getMode() != null
+                        ? conf.getMode().name() : "");
+        model.addAttribute("selectedFree",
+                conf.isFree() ? "true" : "false");
+        model.addAttribute("currentStatusStr",
+                conf.getStatus().name());
+
         return "organizer/edit-conference";
+    }
+
+
+    /*
+     * POST /organizer/conference/{id}/submit
+     * Directly submits a DRAFT or REJECTED conference
+     * for admin approval without going through the edit form.
+     *
+     * WHY: Organizers should be able to submit directly
+     * from the conference list or view page. Requiring them
+     * to open the edit form just to click Submit is poor UX.
+     * This endpoint does one thing: DRAFT/REJECTED → SUBMITTED.
+     */
+    @PostMapping("/conference/{id}/submit")
+    public String quickSubmitConference(
+            @PathVariable Long id,
+            Authentication auth,
+            RedirectAttributes flash) {
+        try {
+            Conference conf = conferenceService
+                    .findById(id)
+                    .orElseThrow(() ->
+                            new RuntimeException(
+                                    "Conference not found"));
+
+            // Security: only owning organizer
+            if (!conf.getOrganizer().getUser()
+                    .getEmail().equals(auth.getName())) {
+                flash.addFlashAttribute("error",
+                        "Unauthorized.");
+                return "redirect:/organizer/conferences";
+            }
+
+            // Only DRAFT or REJECTED can be submitted
+            if (conf.getStatus() != ConferenceStatus.DRAFT
+                    && conf.getStatus()
+                    != ConferenceStatus.REJECTED) {
+                flash.addFlashAttribute("error",
+                        "Only DRAFT or REJECTED conferences "
+                                + "can be submitted.");
+                return "redirect:/organizer/conference/" + id;
+            }
+
+            conf.setStatus(ConferenceStatus.SUBMITTED);
+            // Clear rejection reason on resubmit
+            conf.setRejectionReason(null);
+            conferenceService.update(conf);
+
+            try {
+                auditLogService.log(
+                        auth.getName(),
+                        "CONFERENCE_SUBMITTED",
+                        "Conference",
+                        id,
+                        "Submitted for approval: "
+                                + conf.getTitle());
+            } catch (Exception ignored) {}
+
+            flash.addFlashAttribute("success",
+                    "Conference submitted for admin approval! "
+                            + "You'll be notified once reviewed.");
+
+        } catch (Exception e) {
+            flash.addFlashAttribute("error",
+                    "Error: " + e.getMessage());
+        }
+        return "redirect:/organizer/conference/" + id;
     }
 
     @PostMapping("/conference/{id}/edit")
@@ -610,6 +703,7 @@ public class OrganizerController {
             conf.setCity(dto.getCity());
             conf.setState(dto.getState());
             conf.setStreamingLink(dto.getStreamingLink());
+            conf.setStreamingPassword(dto.getStreamingPassword());
             conf.setMaxDelegates(dto.getMaxDelegates());
             conf.setFree(dto.isFree());
             conf.setDelegateFee(dto.getDelegateFee());
