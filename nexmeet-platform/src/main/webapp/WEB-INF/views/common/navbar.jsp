@@ -92,6 +92,23 @@
                 </a>
             </li>
 
+            <%-- ADD after the Audit Logs nav item --%>
+            <li class="nav-item">
+                <a class="nav-link position-relative"
+                   href="${pageContext.request.contextPath}/admin/invoices">
+                    🧾 Invoices
+                    <c:if test="${pendingInvoicesCount > 0}">
+                        <span class="position-absolute top-0 start-100
+                                     translate-middle badge
+                                     rounded-pill bg-danger"
+                              style="font-size:0.6rem;
+                                     padding:3px 5px">
+                            ${pendingInvoicesCount}
+                        </span>
+                    </c:if>
+                </a>
+            </li>
+
         </sec:authorize>
 
 
@@ -123,6 +140,15 @@
                                 📊 Analytics
                             </a>
                         </li>
+
+                        <%-- ADD after the Analytics nav item --%>
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               href="${pageContext.request.contextPath}/organizer/invoices">
+                                🧾 Invoices
+                            </a>
+                        </li>
+
                 </sec:authorize>
 
                 <!-- Delegate Links -->
