@@ -35,6 +35,4 @@ public interface UserService {
     // UserService interface — add:
     long countByRole(String roleName);
 
-
-
 }

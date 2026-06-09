@@ -3,6 +3,7 @@ package com.nexmeet.platform.controller.delegate;
 import com.nexmeet.platform.dao.DelegateDao;
 import com.nexmeet.platform.dao.QrCodeDao;
 import com.nexmeet.platform.dto.DelegateProfileDto;
+import com.nexmeet.platform.dto.FeedbackDto;
 import com.nexmeet.platform.entity.*;
 import com.nexmeet.platform.enums.ConferenceStatus;
 import com.nexmeet.platform.enums.RegistrationStatus;
@@ -48,6 +49,12 @@ public class DelegateController {
     private PaymentService paymentService;
 
 
+    /*
+     * Needed for feedback form: load conference details
+     * and verify conference status before showing form.
+     */
+    @Autowired
+    private ConferenceService conferenceService;
 
 
 
@@ -391,6 +398,158 @@ public class DelegateController {
             flash.addFlashAttribute("error",
                     "Update failed: " + e.getMessage());
         }
+        return "redirect:/delegate/dashboard";
+    }
+
+
+    /*
+     * GET /delegate/conference/{id}/feedback
+     * Shows the feedback form for a completed conference.
+     *
+     * Guards (redirect to dashboard with error if any fail):
+     *   1. Conference must be COMPLETED
+     *   2. Delegate must have attended (attendance record)
+     *   3. Delegate must not have already submitted feedback
+     */
+    @GetMapping("/conference/{id}/feedback")
+    public String showFeedbackForm(
+            @PathVariable Long id,
+            Model model,
+            Authentication auth,
+            RedirectAttributes flash) {
+
+        String email = auth.getName();
+
+        Conference conf = conferenceService
+                .findById(id).orElse(null);
+
+        if (conf == null) {
+            flash.addFlashAttribute("error",
+                    "Conference not found.");
+            return "redirect:/delegate/dashboard";
+        }
+
+        // Guard 1: Conference must be COMPLETED
+        if (conf.getStatus()
+                != com.nexmeet.platform.enums
+                .ConferenceStatus.COMPLETED) {
+            flash.addFlashAttribute("error",
+                    "Feedback is only available after "
+                            + "the conference has ended.");
+            return "redirect:/delegate/dashboard";
+        }
+
+        // Guard 2: Must have attended
+        // Find the registration for this delegate
+        com.nexmeet.platform.entity.Registration reg =
+                registrationService
+                        .findByConferenceAndUserEmail(id, email)
+                        .orElse(null);
+
+        if (reg == null
+                || !attendanceService.hasAttended(
+                reg.getId())) {
+            flash.addFlashAttribute("error",
+                    "Feedback is only available to "
+                            + "delegates who attended.");
+            return "redirect:/delegate/dashboard";
+        }
+
+        // Guard 3: Must not have already submitted
+        if (feedbackService
+                .hasSubmittedFeedback(id, email)) {
+            flash.addFlashAttribute("error",
+                    "You have already submitted feedback "
+                            + "for this conference.");
+            return "redirect:/delegate/dashboard";
+        }
+
+        userService.findByEmail(email)
+                .ifPresent(u -> model.addAttribute(
+                        "currentUser", u));
+
+        model.addAttribute("conference", conf);
+        model.addAttribute("conferenceId", id);
+        return "delegate/feedback-form";
+    }
+
+    @PostMapping("/conference/{id}/feedback")
+    public String submitFeedback(
+            @PathVariable Long id,
+            @RequestParam Integer overallRating,
+            @RequestParam(required = false)
+            Integer organizationRating,
+            @RequestParam(required = false)
+            Integer contentRating,
+            @RequestParam(required = false)
+            Integer speakerRating,
+            @RequestParam(required = false,
+                    defaultValue = "")
+            String comments,
+            Authentication auth,
+            RedirectAttributes flash) {
+
+        try {
+
+            FeedbackDto dto = new FeedbackDto();
+
+            dto.setConferenceId(id);
+            dto.setOverallRating(overallRating);
+            dto.setOrganizationRating(organizationRating);
+            dto.setContentRating(contentRating);
+            dto.setSpeakerRating(speakerRating);
+            dto.setComments(comments);
+
+            String result =
+                    feedbackService.submitFeedback(
+                            dto,
+                            auth.getName());
+
+            switch (result) {
+
+                case "SUCCESS":
+                    flash.addFlashAttribute(
+                            "success",
+                            "Thank you! Your feedback has been submitted successfully.");
+                    break;
+
+                case "ALREADY_SUBMITTED":
+                    flash.addFlashAttribute(
+                            "error",
+                            "You already submitted feedback.");
+                    break;
+
+                case "NOT_ATTENDED":
+                    flash.addFlashAttribute(
+                            "error",
+                            "Only attendees can submit feedback.");
+                    break;
+
+                case "NOT_REGISTERED":
+                    flash.addFlashAttribute(
+                            "error",
+                            "You are not registered for this conference.");
+                    break;
+
+                case "CONFERENCE_NOT_ENDED":
+                    flash.addFlashAttribute(
+                            "error",
+                            "Conference has not ended yet.");
+                    break;
+
+                default:
+                    flash.addFlashAttribute(
+                            "error",
+                            result);
+            }
+
+        } catch (Exception e) {
+
+            flash.addFlashAttribute(
+                    "error",
+                    e.getMessage());
+        }
+
         return "redirect:/delegate/dashboard";
     }
 }
