@@ -19,16 +19,4 @@ public class LoginController {
         return "pub/login";
     }
 
-    /*
-     * After login, Spring Security redirects to /dashboard.
-     * This is a temporary redirect — each role will get
-     * their own dashboard in Phase 3.
-     */
-//    @GetMapping("/dashboard")
-//    public String dashboard() {
-//        // Temporary — just go back to home for now
-//        return "redirect:/home";
-//    }
-
-
 }
