@@ -63,6 +63,9 @@
         <intercept-url pattern="/admin/invoices"
                        access="hasRole('ROLE_SUPER_ADMIN')"/>
 
+        <intercept-url pattern="/admin/commission/update"
+                       access="hasRole('ROLE_SUPER_ADMIN')"/>
+
         <intercept-url pattern="/admin/**"                          access="hasRole('ROLE_SUPER_ADMIN')" />
 
 
@@ -101,6 +104,9 @@
                 access="hasRole('ROLE_ORGANIZER')"/>
 
         <intercept-url pattern="/organizer/invoices"
+                       access="hasRole('ROLE_ORGANIZER')"/>
+
+        <intercept-url pattern="/organizer/profile/edit"
                        access="hasRole('ROLE_ORGANIZER')"/>
 
 
