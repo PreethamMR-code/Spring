@@ -334,6 +334,20 @@
             </a>
         </div>
 
+        <div class="col-md-4">
+            <a href="${pageContext.request.contextPath}/organizer/profile/edit"
+               class="action-card">
+                <div class="action-icon">✏️</div>
+                <div class="action-title">
+                    Edit Profile
+                </div>
+                <div class="action-desc">
+                    Update your organization name,
+                    address, and website
+                </div>
+            </a>
+        </div>
+
         <%-- Add after Browse Conferences action card --%>
         <div class="col-md-4">
             <a href="${pageContext.request.contextPath}/organizer/invoices"
