@@ -5,7 +5,6 @@ import com.nexmeet.platform.dao.UserDao;
 import com.nexmeet.platform.entity.Notification;
 import com.nexmeet.platform.entity.User;
 import com.nexmeet.platform.service.NotificationService;
-import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,10 +21,6 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Autowired
     private UserDao userDao;
-
-    // SessionFactory needed for markAsRead
-//    @Autowired
-//    private SessionFactory sessionFactory;
 
     @Override
     public void createNotification(String userEmail, String title, String message, String type) {
@@ -60,6 +55,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
+    @Transactional
     public void markAsRead(Long notificationId,
                            String userEmail) {
         notificationDao.findById(notificationId).ifPresent(n -> {
