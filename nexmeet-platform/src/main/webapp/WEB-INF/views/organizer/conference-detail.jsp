@@ -37,6 +37,23 @@
                 <a href="${pageContext.request.contextPath}/organizer/conference/${conf.id}/edit"
                    class="btn btn-warning">Edit Conference</a>
             </c:if>
+
+            <c:if test="${conf.status == 'DRAFT'
+                         || conf.status == 'REJECTED'}">
+                <form action="${pageContext.request.contextPath}/organizer/conference/${conf.id}/submit"
+                      method="post"
+                      class="d-inline">
+                    <input type="hidden"
+                           name="${_csrf.parameterName}"
+                           value="${_csrf.token}"/>
+                    <button type="submit"
+                            class="btn btn-success btn-sm fw-semibold"
+                            onclick="return confirm('Submit for admin approval?')">
+                        ✅ Submit for Approval
+                    </button>
+                </form>
+            </c:if>
+
             <c:if test="${conf.status == 'APPROVED'}">
                 <a href="${pageContext.request.contextPath}/organizer/conference/${conf.id}/delegates"
                    class="btn btn-outline-primary">Delegates</a>
@@ -200,8 +217,8 @@
 
    <%-- Payment list for organizer --%>
    <c:if test="${not empty payments &&
-                conf.status == 'APPROVED' ||
-                conf.status == 'COMPLETED'}">
+                (conf.status == 'APPROVED'
+                 || conf.status == 'COMPLETED')}">
    <div class="card mb-4"
         style="border:none;border-radius:12px;
                box-shadow:0 2px 10px rgba(0,0,0,0.08)">
