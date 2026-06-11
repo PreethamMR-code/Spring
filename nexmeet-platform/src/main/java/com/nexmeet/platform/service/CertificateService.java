@@ -65,4 +65,12 @@ public interface CertificateService {
      */
     boolean isCertificateIssued(
             Long registrationId);
+
+    /*
+     * Find certificate by its unique certificate number.
+     * Used by the public verification page.
+     * Returns empty if certificate number does not exist.
+     */
+    Optional<Certificate> findByCertificateNumber(
+            String certificateNumber);
 }
