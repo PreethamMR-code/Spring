@@ -161,6 +161,7 @@ public class ConferenceServiceImpl implements ConferenceService {
     }
 
     @Override
+    @Transactional
     public void update(Conference conf) {
         conferenceDao.update(conf);
     }
@@ -229,6 +230,7 @@ public class ConferenceServiceImpl implements ConferenceService {
     private void runCompletion(Conference conf) {
         conf.setStatus(ConferenceStatus.COMPLETED);
         conferenceDao.update(conf);
+        conf.setUpdatedAt(LocalDateTime.now());
 
         List<Registration> registrations =
                 registrationDao.findByConferenceId(
