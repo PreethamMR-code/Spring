@@ -586,4 +586,13 @@ public class CertificateServiceImpl implements CertificateService {
         return "NM-CERT-" + year + "-"
                 + sb.toString();
     }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Certificate> findByCertificateNumber(
+            String certificateNumber) {
+        return certificateDao
+                .findByCertificateNumber(certificateNumber);
+    }
 }
