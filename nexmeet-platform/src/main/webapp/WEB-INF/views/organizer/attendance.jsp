@@ -523,7 +523,13 @@ function handleQrDetected(rawData) {
      * (e.g. "NM-AF752AE3") via qrCodeService.generateQrCodeBase64().
      * So rawData IS the registration number — no parsing needed.
      */
-    const token = rawData.trim().toUpperCase();
+    const token = rawData.trim();
+
+    if (!token.startsWith("NM-")) {
+        scanStatus.textContent =
+            "❌ Invalid NexMeet QR Code";
+        return;
+    }
 
     // Visual feedback
     scanStatus.textContent = '✅ QR Detected: ' + token;
