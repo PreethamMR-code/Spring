@@ -619,4 +619,55 @@ public class EmailServiceImpl implements EmailService {
                             + ": " + e.getMessage());
         }
     }
+
+
+    @Override
+    public void sendPasswordResetEmail(
+            String toEmail,
+            String fullName,
+            String token) {
+
+        /*
+         * The reset link points to our controller endpoint.
+         * In production this would use the real domain.
+         * Token is a UUID — safe to put in URL.
+         */
+        String resetLink =
+                "http://localhost:8080/nexmeet/reset-password?token="
+                        + token;
+
+        String body =
+                "<h2>Reset Your Password</h2>" +
+                        "<p>Hi <strong>" + fullName +
+                        "</strong>,</p>" +
+                        "<p>We received a request to reset the " +
+                        "password for your NexMeet account. " +
+                        "Click the button below to choose a " +
+                        "new password.</p>" +
+
+                        "<p style='text-align:center;margin:28px 0'>" +
+                        "<a class='btn' href='" + resetLink + "'>" +
+                        "Reset My Password →</a>" +
+                        "</p>" +
+
+                        "<div class='highlight-box'>" +
+                        "<div class='label'>⏰ Link expires in</div>" +
+                        "<div class='value'>1 hour</div>" +
+                        "</div>" +
+
+                        "<p style='color:#64748b;font-size:0.85rem'>" +
+                        "If you did not request a password reset, " +
+                        "you can safely ignore this email. " +
+                        "Your password will not change." +
+                        "</p>" +
+
+                        "<p style='color:#94a3b8;font-size:0.78rem'>" +
+                        "For security, this link works only once " +
+                        "and expires in 1 hour." +
+                        "</p>";
+
+        send(toEmail,
+                "Reset Your NexMeet Password",
+                wrapInTemplate("Password Reset", body));
+    }
 }

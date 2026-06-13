@@ -146,4 +146,8 @@ public interface EmailService {
             String venueOrMode,
             byte[] pdfBytes
     );
+
+    void sendPasswordResetEmail(String toEmail,
+                                String fullName,
+                                String token);
 }
