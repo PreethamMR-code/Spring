@@ -48,6 +48,8 @@
 
         <intercept-url pattern="/register"            access="permitAll" />
         <intercept-url pattern="/login"               access="permitAll" />
+        <intercept-url pattern="/forgot-password"       access="permitAll" />
+        <intercept-url pattern="/reset-password"         access="permitAll" />
         <intercept-url pattern="/error/**"            access="permitAll" />
 
         <intercept-url pattern="/admin/user/*/toggle-active"        access="hasRole('ROLE_SUPER_ADMIN')"/>
