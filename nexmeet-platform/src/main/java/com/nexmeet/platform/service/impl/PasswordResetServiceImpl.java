@@ -39,43 +39,45 @@ public class PasswordResetServiceImpl
 
     @Override
     public void initiateReset(String email) {
-        Optional<User> userOpt =
-                userDao.findByEmail(email);
+        Optional<User> userOpt = userDao.findByEmail(email);
 
-        /*
-         * SECURITY: Do NOT throw or return an error
-         * if the email doesn't exist. Always behave
-         * the same way so attackers cannot enumerate
-         * registered emails by watching the response.
-         */
-        if (userOpt.isEmpty()) {
+        if (!userOpt.isPresent()) {
+            // Silent on unknown email — security best practice,
+            // never reveal whether an email is registered.
             return;
         }
 
         User user = userOpt.get();
 
-        // Delete any existing tokens for this user
-        // so only one valid reset link exists at a time
+        // Invalidate any previous reset link for this user
         passwordResetTokenDao.deleteByUserId(user.getId());
 
-        // Generate a cryptographically random token
         String token = UUID.randomUUID().toString();
 
-        PasswordResetToken resetToken =
-                new PasswordResetToken();
+        PasswordResetToken resetToken = new PasswordResetToken();
         resetToken.setUser(user);
         resetToken.setToken(token);
-        resetToken.setExpiresAt(
-                LocalDateTime.now().plusHours(1));
+        resetToken.setExpiresAt(LocalDateTime.now().plusHours(1));
 
         passwordResetTokenDao.save(resetToken);
 
-        // Send the reset email
-        emailService.sendPasswordResetEmail(
-                user.getEmail(),
-                user.getFullName(),
-                token
-        );
+        /*
+         * Isolated in its own try-catch so an email failure
+         * never rolls back the token save via the @Transactional
+         * boundary. Worst case: token exists but email didn't
+         * arrive — user can request a new link.
+         */
+        try {
+            emailService.sendPasswordResetEmail(
+                    user.getEmail(),
+                    user.getFullName(),
+                    token
+            );
+        } catch (Exception e) {
+            System.err.println(
+                    "[PasswordReset] Email send failed for "
+                            + user.getEmail() + ": " + e.getMessage());
+        }
     }
 
     @Override
