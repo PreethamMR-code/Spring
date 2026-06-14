@@ -500,6 +500,18 @@
                     </div>
                 </div>
 
+                <div style="text-align:right;
+                                     margin-top:6px;
+                                     margin-bottom:16px">
+                                    <a href="${pageContext.request.contextPath}/forgot-password"
+                                       style="font-size:0.82rem;
+                                              color:#667eea;
+                                              text-decoration:none;
+                                              font-weight:500">
+                                        Forgot password?
+                                    </a>
+                </div>
+
                 <button type="submit" class="btn-signin">
                     Sign In →
                 </button>
