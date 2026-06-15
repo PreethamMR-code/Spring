@@ -116,6 +116,7 @@ public class EmailServiceImpl implements EmailService {
             System.err.println(
                     "[EmailService] Failed to send email to "
                             + to + ": " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
