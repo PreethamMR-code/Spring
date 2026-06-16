@@ -25,14 +25,17 @@
             color: white;
         }
         .stat-card {
-            background: white;
-            border-radius: 14px;
-            padding: 24px;
-            border: 1.5px solid #e8ecf0;
-            margin-top: -32px;
-            position: relative;
-            z-index: 10;
-        }
+                    background: white;
+                    border-radius: 14px;
+                    padding: 24px;
+                    border: 1.5px solid #e8ecf0;
+                }
+                .dashboard-hero-overlap {
+                    margin-top: -32px;
+                    position: relative;
+                    z-index: 10;
+                }
+
         .stat-number {
             font-size: 2.2rem;
             font-weight: 800;
@@ -132,15 +135,22 @@
     </c:if>
 
     <%--
-        Pending invoice alert banner.
-        Only shown when organizer has unpaid
-        commission invoices. Links to invoices page.
-        Shown ABOVE stat cards so it's impossible
-        to miss.
-    --%>
-    <c:if test="${pendingInvoicesCount > 0}">
-        <div class="mt-3"
-             style="background:#fff7ed;
+            Pending invoice alert banner.
+            Only shown when organizer has unpaid
+            commission invoices. Links to invoices page.
+            Shown ABOVE stat cards so it's impossible
+            to miss.
+
+            Wrapped together with the stat-card row in
+            .dashboard-hero-overlap so the whole block
+            floats over the page-header as one unit —
+            prevents stat numbers from overlapping the
+            banner when both are present.
+        --%>
+        <div class="dashboard-hero-overlap">
+        <c:if test="${pendingInvoicesCount > 0}">
+            <div class="mb-3"
+                 style="background:#fff7ed;
                     border:2px solid #fed7aa;
                     border-radius:14px;
                     padding:20px 24px">
@@ -229,15 +239,18 @@
         <div class="col-md-4">
             <div class="stat-card text-center">
                 <div class="stat-number
-                            text-warning">
-                    ${pendingApproval}
-                </div>
-                <div class="stat-label">
-                    Pending Approval
-                </div>
-            </div>
-        </div>
-    </div>
+                                            text-warning">
+                                    ${pendingApproval}
+                                </div>
+                                <div class="stat-label">
+                                    Pending Approval
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </div><%-- /.dashboard-hero-overlap --%>
+
+                    <!-- Revenue Card (only if non-zero) -->
 
     <!-- Revenue Card (only if non-zero) -->
     <c:if test="${totalRevenue != null
