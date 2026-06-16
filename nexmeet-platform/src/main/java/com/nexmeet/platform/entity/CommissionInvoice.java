@@ -70,6 +70,18 @@ public class CommissionInvoice {
     @Column(name = "paid_at")
     private LocalDateTime paidAt;
 
+    /*
+     * Organizer's self-reported payment reference.
+     * Distinct from `paymentReference` (set by admin after
+     * verification). This is the organizer's CLAIM —
+     * admin still must verify before marking PAID.
+     */
+    @Column(name = "submitted_payment_reference", length = 200)
+    private String submittedPaymentReference;
+
+    @Column(name = "submitted_at")
+    private LocalDateTime submittedAt;
+
     @PrePersist
     protected void onCreate() {
         if (this.generatedAt == null) {
