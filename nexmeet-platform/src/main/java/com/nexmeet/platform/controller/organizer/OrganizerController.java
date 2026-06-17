@@ -1664,4 +1664,30 @@ public class OrganizerController {
         sb.append("]");
         return sb.toString();
     }
+
+    /*
+     * POST /organizer/invoice/{invoiceId}/submit-payment
+     * Organizer claims they've paid the commission invoice
+     * and submits their UTR/UPI/Cheque reference for admin
+     * to verify. Does NOT change invoice status — admin
+     * confirms after checking the bank statement.
+     */
+    @PostMapping("/invoice/{invoiceId}/submit-payment")
+    public String submitInvoicePayment(
+            @PathVariable Long invoiceId,
+            @RequestParam String paymentReference,
+            Authentication auth,
+            RedirectAttributes flash) {
+        try {
+            invoiceService.submitPaymentReference(
+                    invoiceId, paymentReference, auth.getName());
+            flash.addFlashAttribute("success",
+                    "Payment reference submitted! " +
+                            "Admin will verify and confirm shortly.");
+        } catch (Exception e) {
+            flash.addFlashAttribute("error",
+                    "Error: " + e.getMessage());
+        }
+        return "redirect:/organizer/invoices";
+    }
 }
