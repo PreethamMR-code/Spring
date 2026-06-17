@@ -38,4 +38,15 @@ public interface CommissionInvoiceService {
     List<CommissionInvoice> findAll();
 
     long countPending();
+
+    /*
+     * Organizer submits their payment reference (UTR/UPI/Cheque)
+     * after transferring the commission amount offline.
+     * Does NOT mark the invoice as PAID — only admin can do
+     * that after verifying the bank statement. This records
+     * the claim and notifies the admin who generated the invoice.
+     */
+    void submitPaymentReference(Long invoiceId,
+                                String reference,
+                                String organizerEmail);
 }

@@ -242,4 +242,65 @@ public class CommissionInvoiceServiceImpl
     public long countPending() {
         return invoiceDao.countPending();
     }
+
+    @Override
+    public void submitPaymentReference(Long invoiceId,
+                                       String reference,
+                                       String organizerEmail) {
+
+        CommissionInvoice invoice = invoiceDao.findById(invoiceId)
+                .orElseThrow(() ->
+                        new RuntimeException("Invoice not found"));
+
+        // Security: only the owning organizer can submit
+        if (!invoice.getOrganizer().getUser()
+                .getEmail().equals(organizerEmail)) {
+            throw new RuntimeException("Unauthorized");
+        }
+
+        if (!"PENDING".equals(invoice.getStatus())) {
+            throw new RuntimeException(
+                    "This invoice is not awaiting payment.");
+        }
+
+        if (reference == null || reference.trim().isEmpty()) {
+            throw new RuntimeException(
+                    "Please enter a payment reference.");
+        }
+
+        invoice.setSubmittedPaymentReference(reference.trim());
+        invoice.setSubmittedAt(LocalDateTime.now());
+        invoiceDao.update(invoice);
+
+        /*
+         * Notify the admin who generated this invoice that the
+         * organizer claims to have paid. Admin still verifies
+         * the bank/UPI statement before clicking "Mark as Paid".
+         */
+        if (invoice.getGeneratedBy() != null) {
+            notificationService.createNotification(
+                    invoice.getGeneratedBy().getEmail(),
+                    "Payment Reference Submitted",
+                    "Organizer " + invoice.getOrganizer()
+                            .getUser().getFullName()
+                            + " submitted payment reference \""
+                            + reference.trim()
+                            + "\" for invoice "
+                            + invoice.getInvoiceNumber()
+                            + " (₹" + invoice.getTotalAmount()
+                            + "). Please verify and confirm.",
+                    "IN_APP"
+            );
+        }
+
+        try {
+            auditLogService.log(
+                    organizerEmail,
+                    "INVOICE_PAYMENT_SUBMITTED",
+                    "CommissionInvoice",
+                    invoiceId,
+                    "Invoice: " + invoice.getInvoiceNumber()
+                            + " | Reference: " + reference.trim());
+        } catch (Exception ignored) {}
+    }
 }
