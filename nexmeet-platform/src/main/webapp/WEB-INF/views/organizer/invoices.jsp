@@ -323,27 +323,88 @@
 
                                 <td style="min-width:160px">
                                     <c:choose>
-                                        <%-- PENDING: show payment instructions --%>
-                                        <c:when test="${inv.status == 'PENDING'}">
-                                            <div style="font-size:0.7rem;
-                                                 color:#9a3412;
-                                                 line-height:1.6">
-                                                Transfer
-                                                <strong>
-                                                    ₹${inv.totalAmount}
-                                                </strong>
-                                                to UPI:
-                                                <code>
-                                                    nexmeet@upi
-                                                </code>
-                                                <br/>
-                                                Reference:
-                                                <code class="fw-bold">
-                                                    ${inv.invoiceNumber}
-                                                </code>
-                                            </div>
-                                        </c:when>
+                                                                            <%-- PENDING: show payment instructions --%>
+                                                                            <c:when test="${inv.status == 'PENDING'}">
+                                                                                <div style="font-size:0.7rem;
+                                                                                     color:#9a3412;
+                                                                                     line-height:1.6">
+                                                                                    Transfer
+                                                                                    <strong>
+                                                                                        ₹${inv.totalAmount}
+                                                                                    </strong>
+                                                                                    to UPI:
+                                                                                    <code>
+                                                                                        nexmeet@upi
+                                                                                    </code>
+                                                                                    <br/>
+                                                                                    Reference:
+                                                                                    <code class="fw-bold">
+                                                                                        ${inv.invoiceNumber}
+                                                                                    </code>
+                                                                                </div>
 
+                                                                                <%--
+                                                                                    If organizer already submitted
+                                                                                    a reference, show it as
+                                                                                    "awaiting confirmation" instead
+                                                                                    of the submit form again.
+                                                                                --%>
+                                                                                <c:choose>
+                                                                                    <c:when test="${not empty inv.submittedPaymentReference}">
+                                                                                        <div class="mt-2 p-2"
+                                                                                             style="background:#eff6ff;
+                                                                                                    border:1px solid #bfdbfe;
+                                                                                                    border-radius:8px;
+                                                                                                    font-size:0.7rem;
+                                                                                                    line-height:1.6">
+                                                                                            <span style="color:#1d4ed8;
+                                                                                                  font-weight:700">
+                                                                                                ⏱ Awaiting admin confirmation
+                                                                                            </span>
+                                                                                            <br/>
+                                                                                            <span class="text-muted">
+                                                                                                Submitted ref:
+                                                                                            </span>
+                                                                                            <code>
+                                                                                                ${inv.submittedPaymentReference}
+                                                                                            </code>
+                                                                                            <br/>
+                                                                                            <span class="text-muted">
+                                                                                                On:
+                                                                                            </span>
+                                                                                            ${fn:substringBefore(
+                                                                                                inv.submittedAt
+                                                                                                    .toString(),
+                                                                                                'T')}
+                                                                                        </div>
+                                                                                    </c:when>
+                                                                                    <c:otherwise>
+                                                                                        <form action="${pageContext.request.contextPath}/organizer/invoice/${inv.id}/submit-payment"
+                                                                                              method="post"
+                                                                                              class="mt-2 d-flex gap-1">
+                                                                                            <input type="hidden"
+                                                                                                   name="${_csrf.parameterName}"
+                                                                                                   value="${_csrf.token}"/>
+                                                                                            <input type="text"
+                                                                                                   name="paymentReference"
+                                                                                                   class="form-control form-control-sm"
+                                                                                                   style="font-size:0.7rem"
+                                                                                                   placeholder="UTR/UPI/Cheque No."
+                                                                                                   required/>
+                                                                                            <button type="submit"
+                                                                                                    class="btn btn-sm
+                                                                                                           fw-bold
+                                                                                                           text-white"
+                                                                                                    style="background:#ea580c;
+                                                                                                           border:none;
+                                                                                                           white-space:nowrap;
+                                                                                                           font-size:0.7rem">
+                                                                                                I've Paid
+                                                                                            </button>
+                                                                                        </form>
+                                                                                    </c:otherwise>
+                                                 </c:choose>
+                                            </c:when>
                                         <%-- PAID: show reference + date --%>
                                         <c:when test="${inv.status == 'PAID'}">
                                             <div style="font-size:0.7rem;
