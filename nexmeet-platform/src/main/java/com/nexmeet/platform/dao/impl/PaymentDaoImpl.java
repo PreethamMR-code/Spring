@@ -160,4 +160,23 @@ public class PaymentDaoImpl implements PaymentDao {
             return Optional.empty();
         }
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Payment> findByRazorpayOrderId(
+            String orderId) {
+        try {
+            Payment p = sessionFactory.getCurrentSession()
+                    .createQuery(
+                            "FROM Payment p " +
+                                    "WHERE p.razorpayOrderId = :oid",
+                            Payment.class)
+                    .setParameter("oid", orderId)
+                    .getSingleResult();
+            return Optional.of(p);
+        } catch (javax.persistence.NoResultException e) {
+            return Optional.empty();
+        }
+    }
+
 }
