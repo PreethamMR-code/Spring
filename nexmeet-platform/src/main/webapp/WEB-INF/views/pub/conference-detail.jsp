@@ -1035,18 +1035,67 @@
                                    </div>
                                </c:when>
 
-                               <%-- Registration is open — show the button --%>
+
+<%-- Registration is open — show the button --%>
                                <c:otherwise>
-                                   <form action="${pageContext.request.contextPath}/conference/${conference.id}/register"
-                                         method="post">
-                                       <input type="hidden"
-                                              name="${_csrf.parameterName}"
-                                              value="${_csrf.token}"/>
-                                       <button type="submit"
-                                               class="btn-register-main">
-                                           Register Now →
-                                       </button>
-                                   </form>
+                                   <c:choose>
+                                       <%--
+                                           PAID conference + ONLINE or HYBRID:
+                                           Razorpay Checkout popup.
+                                           JS calls /payment/create-order,
+                                           opens Razorpay, then POSTs to
+                                           /payment/verify on success.
+                                           The existing form-POST registration
+                                           flow is bypassed here — registration
+                                           is created INSIDE verifyPayment()
+                                           AFTER signature verification passes.
+                                       --%>
+                                       <c:when test="${!conference.free
+                                                       && (conference.mode == 'ONLINE'
+                                                           || conference.mode == 'HYBRID')}">
+                                            <button type="button"
+                                                   id="rzpPayBtn"
+                                                   class="btn-register-main"
+                                                   onclick="openRazorpayCheckout()">
+                                               💳 Pay &amp; Register →
+                                           </button>
+                                           <div style="text-align:center;
+                                                font-size:0.75rem;
+                                                color:#94a3b8;
+                                                margin-top:8px">
+                                               Secure payment via Razorpay
+                                           </div>
+                                       </c:when>
+
+                                       <%--
+                                           FREE conference, or OFFLINE paid
+                                           (venue cash/UPI — existing flow):
+                                           Standard form POST to
+                                           /conference/{id}/register.
+                                           Payment simulation or organizer
+                                           marks venue payment manually.
+                                       --%>
+                                       <c:otherwise>
+                                           <form action="${pageContext.request.contextPath}/conference/${conference.id}/register"
+                                                 method="post">
+                                               <input type="hidden"
+                                                      name="${_csrf.parameterName}"
+                                                      value="${_csrf.token}"/>
+                                               <button type="submit"
+                                                       class="btn-register-main">
+                                                   Register Now →
+                                               </button>
+                                           </form>
+                                           <c:if test="${!conference.free}">
+                                               <div style="text-align:center;
+                                                    font-size:0.75rem;
+                                                    color:#94a3b8;
+                                                    margin-top:8px">
+                                                   Fee collected at venue
+                                               </div>
+                                           </c:if>
+                                       </c:otherwise>
+                                   </c:choose>
                                </c:otherwise>
 
                            </c:choose>
@@ -1137,5 +1186,182 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">
 </script>
+
+<%--
+    Razorpay integration block.
+    Only rendered when:
+    - conference is APPROVED (can accept registrations)
+    - conference is paid (free ones use form POST above)
+    - conference is ONLINE or HYBRID (OFFLINE uses venue cash)
+    - delegate is logged in (sec:authorize wraps the button)
+
+    Razorpay Checkout.js is a CDN script that renders a
+    payment popup. It is NOT loaded for free conferences
+    to avoid unnecessary network requests.
+--%>
+<c:if test="${!conference.free
+              && conference.status == 'APPROVED'
+              && (conference.mode == 'ONLINE'
+                  || conference.mode == 'HYBRID')}">
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    /*
+     * CSRF values from Spring Security.
+     * fetch() POST requires the CSRF token in the header
+     * (Spring Security's CsrfFilter checks it).
+     * ${_csrf.headerName} = "X-XSRF-TOKEN" by default.
+     */
+    var csrfToken  = '${_csrf.token}';
+    var csrfHeader = '${_csrf.headerName}';
+    var confId     = ${conference.id};
+
+    /*
+     * Step 1: Called when delegate clicks "Pay & Register".
+     * POSTs to /payment/create-order which:
+     *   - Calls Razorpay API to create an order (server-side)
+     *   - Saves a PENDING payment row in DB
+     *   - Returns { orderId, amount, keyId, ... } as JSON
+     * Then opens the Razorpay Checkout popup with that data.
+     */
+    function openRazorpayCheckout() {
+        var btn = document.getElementById('rzpPayBtn');
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'Initiating payment…';
+        }
+
+        fetch('${pageContext.request.contextPath}/payment/create-order', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                [csrfHeader]: csrfToken
+            },
+            body: 'conferenceId=' + confId
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+
+            if (data.error) {
+                alert('Could not initiate payment: ' + data.error);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = '💳 Pay & Register →';
+                }
+                return;
+            }
+
+            var options = {
+                /*
+                 * key = rzp_test_XXXX (safe to expose).
+                 * Never put key_secret here — it must stay
+                 * server-side only.
+                 */
+                key:         data.keyId,
+                amount:      data.amount,       /* paise */
+                currency:    data.currency,
+                name:        'NexMeet',
+                description: data.conferenceName,
+                order_id:    data.orderId,
+
+                /*
+                 * Pre-fill delegate's name and email
+                 * so they don't have to type it in popup.
+                 */
+                prefill: {
+                    name:  data.delegateName,
+                    email: data.delegateEmail
+                },
+
+                theme: { color: '#667eea' },
+
+                /*
+                 * Step 2: handler fires when delegate
+                 * completes payment successfully inside popup.
+                 * Razorpay gives us three values.
+                 * We POST them to /payment/verify for
+                 * server-side HMAC signature check.
+                 * Registration is created only AFTER
+                 * verification passes.
+                 */
+                handler: function(response) {
+                    document.getElementById('rzpOrderId').value
+                        = response.razorpay_order_id;
+                    document.getElementById('rzpPaymentId').value
+                        = response.razorpay_payment_id;
+                    document.getElementById('rzpSignature').value
+                        = response.razorpay_signature;
+                    document.getElementById('rzpVerifyForm').submit();
+                },
+
+                modal: {
+                    /*
+                     * User closed the popup without paying.
+                     * Re-enable the button so they can try again.
+                     */
+                    ondismiss: function() {
+                        if (btn) {
+                            btn.disabled = false;
+                            btn.textContent = '💳 Pay & Register →';
+                        }
+                    }
+                }
+            };
+
+            var rzp = new Razorpay(options);
+
+            /*
+             * Handle payment failures inside the popup
+             * (wrong card, bank declined, etc.)
+             */
+            rzp.on('payment.failed', function(response) {
+                alert('Payment failed: '
+                    + response.error.description
+                    + ' (Code: ' + response.error.code + ')');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = '💳 Pay & Register →';
+                }
+            });
+
+            rzp.open();
+        })
+        .catch(function(err) {
+            alert('Network error: ' + err.message);
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = '💳 Pay & Register →';
+            }
+        });
+    }
+</script>
+
+<%-- Hidden form: submits Razorpay callback values to backend --%>
+<form id="rzpVerifyForm"
+      action="${pageContext.request.contextPath}/payment/verify"
+      method="post"
+      style="display:none">
+    <input type="hidden"
+           name="${_csrf.parameterName}"
+           value="${_csrf.token}"/>
+    <input type="hidden"
+           name="conferenceId"
+           value="${conference.id}"/>
+    <input type="hidden"
+           id="rzpOrderId"
+           name="razorpayOrderId"
+           value=""/>
+    <input type="hidden"
+           id="rzpPaymentId"
+           name="razorpayPaymentId"
+           value=""/>
+    <input type="hidden"
+           id="rzpSignature"
+           name="razorpaySignature"
+           value=""/>
+</form>
+
+</c:if>
+
 </body>
 </html>
