@@ -55,4 +55,12 @@ public interface PaymentDao {
      * Used when upgrading SIMULATED → VENUE_CASH/VENUE_UPI.
      */
     void update(Payment payment);
+
+    /*
+     * Find a payment by Razorpay order ID.
+     * Used during webhook/verify to locate the
+     * pending payment record created at order creation.
+     */
+    Optional<Payment> findByRazorpayOrderId(
+            String razorpayOrderId);
 }
