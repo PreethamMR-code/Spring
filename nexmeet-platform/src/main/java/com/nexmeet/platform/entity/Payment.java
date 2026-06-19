@@ -96,6 +96,31 @@ public class Payment {
     private String transactionRef;
 
     /*
+     * Razorpay order ID returned by /v1/orders API.
+     * Created on the server when delegate clicks "Pay Now".
+     * Format: order_XXXXXXXXXXXXXXXXXX
+     */
+    @Column(name = "razorpay_order_id", length = 100)
+    private String razorpayOrderId;
+
+    /*
+     * Razorpay payment ID returned after delegate
+     * completes payment in the Checkout popup.
+     * Format: pay_XXXXXXXXXXXXXXXXXX
+     */
+    @Column(name = "razorpay_payment_id", length = 100)
+    private String razorpayPaymentId;
+
+    /*
+     * HMAC-SHA256 signature returned by Razorpay.
+     * Verified server-side to confirm payment is genuine.
+     * razorpay_order_id + "|" + razorpay_payment_id
+     * hashed with key_secret.
+     */
+    @Column(name = "razorpay_signature", length = 255)
+    private String razorpaySignature;
+
+    /*
      * INITIATED  = payment started, awaiting gateway
      * COMPLETED  = payment confirmed
      * FAILED     = payment failed
