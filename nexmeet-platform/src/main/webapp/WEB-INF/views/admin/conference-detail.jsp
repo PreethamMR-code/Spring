@@ -405,26 +405,59 @@
                         <%-- PENDING: show mark-paid and waive --%>
                         <c:if test="${commissionInvoice.status
                                      == 'PENDING'}">
-                            <div class="alert alert-warning
-                                        d-flex
-                                        justify-content-between
-                                        align-items-start
-                                        flex-wrap gap-2">
-                                <div>
-                                    <strong>
-                                        ⏳ Awaiting payment
-                                        from organizer.
-                                    </strong>
-                                    <div class="small mt-1">
-                                        Ask organizer to transfer
-                                        ₹${commissionInvoice.totalAmount}
-                                        and reference invoice
-                                        ${commissionInvoice.invoiceNumber}.
-                                        Once received, enter the
-                                        UTR/UPI reference below.
-                                    </div>
-                                </div>
-                                <div class="d-flex gap-2">
+                            <div class="alert
+                                                                    ${not empty commissionInvoice.submittedPaymentReference
+                                                                        ? 'alert-info' : 'alert-warning'}
+                                                                    d-flex
+                                                                    justify-content-between
+                                                                    align-items-start
+                                                                    flex-wrap gap-2">
+                                                            <div>
+                                                                <c:choose>
+                                                                    <%--
+                                                                        Organizer has submitted a
+                                                                        reference — admin just needs
+                                                                        to verify against the bank
+                                                                        statement and confirm.
+                                                                    --%>
+                                                                    <c:when test="${not empty commissionInvoice.submittedPaymentReference}">
+                                                                        <strong>
+                                                                            💬 Organizer submitted
+                                                                            a payment reference.
+                                                                        </strong>
+                                                                        <div class="small mt-1">
+                                                                            Reference:
+                                                                            <code class="fw-bold">
+                                                                                ${commissionInvoice.submittedPaymentReference}
+                                                                            </code>
+                                                                            &nbsp;·&nbsp;
+                                                                            Submitted on
+                                                                            ${fn:substringBefore(
+                                                                                commissionInvoice.submittedAt
+                                                                                    .toString(), 'T')}
+                                                                            <br/>
+                                                                            Please verify against your
+                                                                            bank/UPI statement before
+                                                                            confirming.
+                                                                        </div>
+                                                                    </c:when>
+                                                                    <c:otherwise>
+                                                                        <strong>
+                                                                            ⏳ Awaiting payment
+                                                                            from organizer.
+                                                                        </strong>
+                                                                        <div class="small mt-1">
+                                                                            Ask organizer to transfer
+                                                                            ₹${commissionInvoice.totalAmount}
+                                                                            and reference invoice
+                                                                            ${commissionInvoice.invoiceNumber}.
+                                                                            Once received, enter the
+                                                                            UTR/UPI reference below.
+                                                                        </div>
+                                                                    </c:otherwise>
+                                                                </c:choose>
+                                                            </div>
+                                                            <div class="d-flex gap-2">
 
                                     <%-- Mark Paid --%>
                                     <button class="btn btn-success
@@ -484,14 +517,21 @@
                                                     </span>
                                                 </label>
                                                 <input type="text"
-                                                       name="paymentReference"
-                                                       class="form-control"
-                                                       placeholder="e.g. UTR123456789012"
-                                                       required/>
-                                                <div class="form-text text-muted">
-                                                    This reference will be stored
-                                                    for reconciliation.
-                                                </div>
+                                                                                                       name="paymentReference"
+                                                                                                       class="form-control"
+                                                                                                       placeholder="e.g. UTR123456789012"
+                                                                                                       value="${commissionInvoice.submittedPaymentReference}"
+                                                                                                       required/>
+                                                                                                <div class="form-text text-muted">
+                                                                                                    <c:if test="${not empty commissionInvoice.submittedPaymentReference}">
+                                                                                                        Pre-filled with the
+                                                                                                        organizer's submission —
+                                                                                                        verify and edit if needed.
+                                                                                                        <br/>
+                                                                                                    </c:if>
+                                                                                                    This reference will be stored
+                                                                                                    for reconciliation.
+                                                                                                </div>
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button"
