@@ -93,4 +93,31 @@ public interface PaymentService {
 
     Optional<Payment> findByConferenceAndUser(
             Long conferenceId, Long userId);
+
+    /*
+     * Creates a Razorpay order via REST API.
+     * Returns the order JSON so the controller can
+     * send order_id + amount to the JSP/JS frontend.
+     * Amount is in PAISE (multiply rupees × 100).
+     */
+    org.json.JSONObject createRazorpayOrder(
+            Long conferenceId, String delegateEmail)
+            throws Exception;
+
+    /*
+     * Verifies Razorpay signature server-side using
+     * HMAC-SHA256(order_id + "|" + payment_id, key_secret).
+     * If valid, saves the payment IDs, marks COMPLETED,
+     * and triggers the existing registration flow:
+     * QR generation, ticket email, notifications.
+     * Returns the Registration so controller can redirect.
+     */
+    com.nexmeet.platform.entity.Registration
+    verifyAndCompleteRazorpayPayment(
+            Long conferenceId,
+            String delegateEmail,
+            String razorpayOrderId,
+            String razorpayPaymentId,
+            String razorpaySignature)
+            throws Exception;
 }
