@@ -278,13 +278,18 @@
       <version>1.10.0</version>
     </dependency>
 
-    <!-- Lombok — replaces manual getters, setters, no-arg constructors -->
-    <!-- scope=provided: compile-time only, not in final WAR -->
+    <!-- ===================================================
+          ORG.JSON — lightweight JSON for Razorpay API calls
+          We call Razorpay REST API manually (HttpURLConnection)
+          instead of using the official Java SDK, because the
+          SDK requires Java 15+ and our project targets Java 8.
+          org.json is already a transitive dep of many libs
+          but declared explicitly for clarity.
+     =================================================== -->
     <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-      <version>1.18.30</version>
-      <scope>provided</scope>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+      <version>20231013</version>
     </dependency>
 
   </dependencies>
