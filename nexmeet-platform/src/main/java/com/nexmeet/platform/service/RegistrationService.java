@@ -28,4 +28,24 @@ public interface RegistrationService {
 
     Optional<Registration> findByConferenceAndUserEmail(
             Long conferenceId, String userEmail);
+
+    /*
+     * Register a delegate for a conference when payment
+     * has already been confirmed externally (Razorpay).
+     * Identical to registerForConference() but SKIPS
+     * internal payment creation — the RAZORPAY payment
+     * row is already saved and COMPLETED before this is
+     * called. Calling createRegistrationPayment() here
+     * would create a duplicate SIMULATED row and violate
+     * the unique constraint on transaction_ref.
+     *
+     * Returns the Registration entity (not a String status
+     * code) so PaymentService can return it to the
+     * controller for redirect logic.
+     *
+     * Throws RuntimeException on any failure — caller
+     * (PaymentServiceImpl) handles it.
+     */
+    Registration registerDelegatePostPayment(
+            Long conferenceId, String delegateEmail);
 }
