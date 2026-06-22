@@ -3,139 +3,112 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:task="http://www.springframework.org/schema/task"
        xsi:schemaLocation="
            http://www.springframework.org/schema/beans
            http://www.springframework.org/schema/beans/spring-beans.xsd
            http://www.springframework.org/schema/context
            http://www.springframework.org/schema/context/spring-context.xsd
            http://www.springframework.org/schema/tx
-           http://www.springframework.org/schema/tx/spring-tx.xsd">
+           http://www.springframework.org/schema/tx/spring-tx.xsd
+           http://www.springframework.org/schema/task
+           http://www.springframework.org/schema/task/spring-task.xsd">
+
+    <!--
+        PROPERTY PLACEHOLDER
+        Loads src/main/resources/application.properties
+        at startup. Every ${key} reference in this file
+        is replaced with the value from that file.
+
+        This file is in .gitignore — secrets never reach
+        GitHub. On production (Railway/Render/EC2), set
+        the same keys as environment variables instead.
+
+        ignore-unresolvable=false means startup FAILS
+        with a clear error if any key is missing — better
+        than silently connecting with a null password.
+    -->
+    <context:property-placeholder
+            location="classpath:application.properties"
+            ignore-unresolvable="false"/>
 
     <!--
         COMPONENT SCAN FOR SERVICE AND DAO LAYERS
-        Scans for @Service and @Repository annotated classes.
-        These are the business logic and database access classes.
-        Kept separate from MVC scan so root context and
-        web context don't overlap.
     -->
     <context:component-scan base-package="com.nexmeet.platform.service,
                                       com.nexmeet.platform.service.impl,
-                                      com.nexmeet.platform.dao" />
+                                      com.nexmeet.platform.dao,
+                                      com.nexmeet.platform.scheduler"/>
 
     <!--
         DATABASE CONNECTION POOL (HikariCP)
-        Instead of opening a new connection for every request
-        (very slow — takes ~100ms each time), HikariCP maintains
-        a "pool" of ready-to-use connections.
-
-        minimumIdle   = always keep at least 5 connections open
-        maximumPoolSize = never open more than 20 connections
-        connectionTimeout = wait max 30 seconds for a connection
+        Credentials loaded from application.properties.
+        Never hardcoded here.
     -->
-    <bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource"
+    <bean id="dataSource"
+          class="com.zaxxer.hikari.HikariDataSource"
           destroy-method="close">
-        <property name="driverClassName" value="com.mysql.cj.jdbc.Driver" />
+        <property name="driverClassName"
+                  value="com.mysql.cj.jdbc.Driver"/>
         <property name="jdbcUrl"
-                  value="jdbc:mysql://localhost:3306/nexmeet_db?useSSL=false&amp;serverTimezone=Asia/Kolkata&amp;allowPublicKeyRetrieval=true" />
-        <property name="username" value="root" />
-        <property name="password" value="0000" />
-        <property name="minimumIdle"     value="5" />
-        <property name="maximumPoolSize" value="20" />
-        <property name="connectionTimeout" value="30000" />
-        <property name="idleTimeout"     value="600000" />
-        <property name="maxLifetime"     value="1800000" />
+                  value="${db.url}"/>
+        <property name="username"
+                  value="${db.username}"/>
+        <property name="password"
+                  value="${db.password}"/>
+        <property name="minimumIdle"     value="5"/>
+        <property name="maximumPoolSize" value="20"/>
+        <property name="connectionTimeout" value="30000"/>
+        <property name="idleTimeout"     value="600000"/>
+        <property name="maxLifetime"     value="1800000"/>
     </bean>
 
     <!--
         HIBERNATE SESSION FACTORY
-        SessionFactory is the main Hibernate object.
-        It reads all Entity classes and creates a "factory"
-        that produces Session objects for database operations.
-        Creating a SessionFactory is expensive — so we create
-        it ONCE when the app starts and reuse it.
-
-        hibernateProperties tells Hibernate:
-        - which SQL dialect to use (MySQL 5 syntax)
-        - whether to print SQL to console (useful for debugging)
-        - whether to format that SQL nicely
-        - NOT to auto-create/drop tables (we created them manually)
     -->
     <bean id="sessionFactory"
           class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
-        <property name="dataSource" ref="dataSource" />
-
-        <!--
-            Tell Hibernate to scan this package for Entity classes.
-            Any class annotated with @Entity in this package will
-            be automatically mapped to its database table.
-        -->
-        <property name="packagesToScan" value="com.nexmeet.platform.entity" />
-
+        <property name="dataSource" ref="dataSource"/>
+        <property name="packagesToScan"
+                  value="com.nexmeet.platform.entity"/>
         <property name="hibernateProperties">
             <props>
-                <!-- MySQL 5 compatible SQL syntax -->
                 <prop key="hibernate.dialect">
                     org.hibernate.dialect.MySQL5InnoDBDialect
                 </prop>
-
-                <!-- Print generated SQL to console — helps you learn and debug -->
                 <prop key="hibernate.show_sql">true</prop>
-
-                <!-- Format the printed SQL so it's readable -->
                 <prop key="hibernate.format_sql">true</prop>
-
-                <!-- validate = check that entities match tables, don't change anything -->
                 <prop key="hibernate.hbm2ddl.auto">validate</prop>
-
-                <!-- Improves performance by loading collections lazily by default -->
                 <prop key="hibernate.enable_lazy_load_no_trans">true</prop>
-
-                <!-- Disable Hibernate's automatic Bean Validation integration.
-     We will handle validation manually in the Service layer
-     which gives us more control. This prevents the EL
-     dependency conflict with embedded Tomcat. -->
                 <prop key="javax.persistence.validation.mode">none</prop>
-
             </props>
         </property>
     </bean>
 
     <!--
         TRANSACTION MANAGER
-        Wraps Hibernate's transaction with Spring's transaction
-        management. This lets us use @Transactional annotation
-        on Service methods — Spring automatically begins a
-        transaction before the method and commits after,
-        or rolls back if an exception occurs.
     -->
     <bean id="transactionManager"
           class="org.springframework.orm.hibernate5.HibernateTransactionManager">
-        <property name="sessionFactory" ref="sessionFactory" />
+        <property name="sessionFactory" ref="sessionFactory"/>
     </bean>
 
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+    <task:annotation-driven/>
+
     <!--
-        ENABLE @Transactional ANNOTATION
-        Without this, @Transactional on service methods does nothing.
-        This tells Spring to look for that annotation and apply
-        transaction management automatically.
+        MAIL SENDER
+        Credentials loaded from application.properties.
+        Switch to real SMTP for production by changing
+        mail.host, mail.port, mail.username, mail.password
+        in application.properties — no code changes needed.
     -->
-    <tx:annotation-driven transaction-manager="transactionManager" />
-
-
-    <!--
-    JAVA MAIL SENDER
-    Uses Gmail SMTP to send transactional emails.
-    Replace the username/password with your Gmail credentials.
-    For Gmail: enable 2FA and create an App Password at:
-    https://myaccount.google.com/apppasswords
-    Use the App Password here, NOT your Gmail password.
--->
     <bean id="mailSender"
           class="org.springframework.mail.javamail.JavaMailSenderImpl">
-        <property name="host" value="smtp.gmail.com"/>
-        <property name="port" value="587"/>
-        <property name="username" value="preethampreetham560@gmail.com"/>
-        <property name="password" value="ztoysviazqemtwhz"/>
+        <property name="host"     value="${mail.host}"/>
+        <property name="port"     value="${mail.port}"/>
+        <property name="username" value="${mail.username}"/>
+        <property name="password" value="${mail.password}"/>
         <property name="javaMailProperties">
             <props>
                 <prop key="mail.smtp.auth">true</prop>
