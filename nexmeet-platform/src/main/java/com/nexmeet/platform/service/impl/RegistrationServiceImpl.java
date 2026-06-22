@@ -319,4 +319,192 @@ public class RegistrationServiceImpl implements RegistrationService {
                         .findByConferenceAndUser(
                                 conferenceId, u.getId()));
     }
+
+
+    @Override
+    @Transactional
+    public Registration registerDelegatePostPayment(
+            Long conferenceId, String delegateEmail) {
+
+        /*
+         * Load user and conference — same as
+         * registerForConference() step 1.
+         */
+        User user = userDao.findByEmail(delegateEmail)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "User not found: "
+                                        + delegateEmail));
+
+        Conference conference = conferenceDao
+                .findById(conferenceId)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Conference not found: "
+                                        + conferenceId));
+
+        /*
+         * Duplicate check — idempotency.
+         * If Razorpay calls back twice (rare but possible),
+         * we must not create two registrations.
+         * Throw so PaymentService can detect and skip.
+         */
+        if (registrationDao.existsByConferenceAndUser(
+                conferenceId, user.getId())) {
+            throw new RuntimeException(
+                    "ALREADY_REGISTERED");
+        }
+
+        /*
+         * Profile check — same guard as normal flow.
+         * Delegate must have completed profile setup.
+         */
+        if (!delegateDao.existsByUserEmail(
+                delegateEmail)) {
+            throw new RuntimeException(
+                    "PROFILE_INCOMPLETE");
+        }
+
+        /*
+         * Capacity check — seats may have filled up
+         * between order creation and payment completion
+         * (race condition in high-traffic scenarios).
+         */
+        if (!conferenceDao.isRegistrationOpen(
+                conferenceId)) {
+            throw new RuntimeException(
+                    "REGISTRATION_CLOSED");
+        }
+
+        /*
+         * Build Registration entity.
+         * Identical to registerForConference() step 4.
+         */
+        Registration reg = new Registration();
+        reg.setConference(conference);
+        reg.setUser(user);
+        reg.setRegistrationNumber(
+                "NM-" + UUID.randomUUID()
+                        .toString()
+                        .substring(0, 8)
+                        .toUpperCase());
+        reg.setStatus(RegistrationStatus.CONFIRMED);
+        reg.setRegistrationType(RegistrationType.INDIVIDUAL);
+        registrationDao.save(reg);
+
+        /*
+         * NO paymentService.createRegistrationPayment() here.
+         * The RAZORPAY payment row was already created
+         * (status=INITIATED) in createRazorpayOrder() and
+         * updated to COMPLETED in verifyAndCompleteRazorpayPayment()
+         * before this method is called. Calling it here
+         * would create a second SIMULATED payment row and
+         * throw a unique constraint violation on transaction_ref.
+         */
+
+        // Increment registered count
+        conference.setRegisteredCount(
+                conference.getRegisteredCount() + 1);
+        conferenceDao.update(conference);
+
+        // Generate QR code
+        QrCode qr = new QrCode();
+        qr.setRegistration(reg);
+        qr.setQrToken(reg.getRegistrationNumber());
+        qr.setQrImageBase64(
+                qrCodeService.generateQrCodeBase64(
+                        reg.getRegistrationNumber()));
+        qrCodeDao.save(qr);
+
+        /*
+         * Send ticket PDF email.
+         * Must come after QR generation so PDF
+         * contains the actual QR image.
+         * Failure here must NOT roll back the registration —
+         * delegate has already paid.
+         */
+        try {
+            String qrBase64 = qr.getQrImageBase64();
+            ByteArrayOutputStream ticketPdf =
+                    certificateService.generateTicket(
+                            reg, qrBase64);
+
+            String venueOrMode =
+                    conference.getVenueName() != null
+                            && !conference.getVenueName().isEmpty()
+                            ? conference.getVenueName()
+                            : conference.getMode().name();
+
+            emailService.sendTicketEmail(
+                    user.getEmail(),
+                    user.getFullName(),
+                    conference.getTitle(),
+                    reg.getRegistrationNumber(),
+                    conference.getStartDate()
+                            .toString()
+                            .substring(0, 10),
+                    venueOrMode,
+                    ticketPdf.toByteArray());
+
+        } catch (Exception e) {
+            System.err.println(
+                    "[Razorpay] Ticket email failed for "
+                            + user.getEmail()
+                            + ": " + e.getMessage());
+        }
+
+        /*
+         * Send plain confirmation email as backup.
+         * Provides text fallback if PDF generation fails.
+         */
+        try {
+            emailService.sendRegistrationConfirmation(
+                    user.getEmail(),
+                    user.getFullName(),
+                    conference.getTitle(),
+                    reg.getRegistrationNumber(),
+                    conference.getStartDate()
+                            .toString()
+                            .substring(0, 10),
+                    conference.getVenueName() != null
+                            && !conference.getVenueName()
+                            .isEmpty()
+                            ? conference.getVenueName()
+                            : conference.getMode().name());
+        } catch (Exception e) {
+            // Never break registration for email failure
+        }
+
+        // In-app notification to delegate
+        notificationService.createNotification(
+                delegateEmail,
+                "Registration Confirmed",
+                "Payment received! You are registered for: "
+                        + conference.getTitle()
+                        + ". Your registration number is "
+                        + reg.getRegistrationNumber(),
+                "IN_APP");
+
+        // In-app notification to organizer
+        notificationService.createNotification(
+                conference.getOrganizer()
+                        .getUser().getEmail(),
+                "New Registration",
+                user.getFullName()
+                        + " has registered for your conference: "
+                        + conference.getTitle(),
+                "IN_APP");
+
+        try {
+            auditLogService.log(
+                    delegateEmail,
+                    "DELEGATE_REGISTERED",
+                    "Conference",
+                    conferenceId,
+                    "Reg#: " + reg.getRegistrationNumber()
+                            + " | Via: RAZORPAY");
+        } catch (Exception ignored) {}
+
+        return reg;
+    }
 }
