@@ -21,18 +21,14 @@ import java.util.UUID;
 public class PaymentServiceImpl
         implements PaymentService {
 
+
     /*
-     * Razorpay Test Mode API credentials.
-     * key_id   = rzp_test_XXXXXXXXXXXXXXXX  (safe to expose to frontend)
-     * key_secret = secret kept server-side ONLY, never sent to browser.
-     *
-     * In production: move these to a properties file or
-     * environment variables, never hardcode in source.
+     * Reads razorpay.key.id and razorpay.key.secret
+     * from application.properties at runtime.
+     * That file is gitignored — keys never reach GitHub.
      */
-    private static final String RAZORPAY_KEY_ID =
-            "rzp_test_REPLACE_WITH_YOUR_KEY_ID";
-    private static final String RAZORPAY_KEY_SECRET =
-            "REPLACE_WITH_YOUR_KEY_SECRET";
+    @Autowired
+    private org.springframework.core.env.Environment env;
 
     @Autowired
     private PaymentDao paymentDao;
@@ -294,13 +290,27 @@ public class PaymentServiceImpl
                 "CONF-" + conferenceId
                         + "-USR-" + delegate.getId());
 
-        /*
-         * POST to Razorpay orders API using
-         * Basic Auth (key_id:key_secret Base64).
-         * No SDK — pure HttpURLConnection for Java 8.
-         */
+        String razorpayKeyId =
+                env.getProperty("razorpay.key.id");
+        String razorpayKeySecret =
+                env.getProperty("razorpay.key.secret");
+
+        if (razorpayKeyId == null
+                || razorpayKeyId.startsWith(
+                "rzp_test_REPLACE")
+                || razorpayKeySecret == null
+                || razorpayKeySecret.equals(
+                "REPLACE_WITH_YOUR_KEY_SECRET")) {
+            throw new RuntimeException(
+                    "Razorpay keys not configured. " +
+                            "Set razorpay.key.id and " +
+                            "razorpay.key.secret in " +
+                            "application.properties.");
+        }
+
         String credentials =
-                RAZORPAY_KEY_ID + ":" + RAZORPAY_KEY_SECRET;
+                razorpayKeyId + ":" + razorpayKeySecret;
+
         String encoded = java.util.Base64.getEncoder()
                 .encodeToString(
                         credentials.getBytes("UTF-8"));
@@ -392,7 +402,7 @@ public class PaymentServiceImpl
                 orderResponse.getString("id"));
         result.put("amount", amountInPaise);
         result.put("currency", "INR");
-        result.put("keyId", RAZORPAY_KEY_ID);
+        result.put("keyId", razorpayKeyId);
         result.put("conferenceName", conf.getTitle());
         result.put("delegateName",
                 delegate.getFullName());
@@ -422,9 +432,19 @@ public class PaymentServiceImpl
         String data = rzpOrderId + "|" + rzpPaymentId;
         javax.crypto.Mac mac = javax.crypto.Mac
                 .getInstance("HmacSHA256");
+        String razorpayKeySecret =
+                env.getProperty("razorpay.key.secret");
+
+        if (razorpayKeySecret == null
+                || razorpayKeySecret.equals(
+                "REPLACE_WITH_YOUR_KEY_SECRET")) {
+            throw new RuntimeException(
+                    "Razorpay key.secret not configured.");
+        }
+
         javax.crypto.spec.SecretKeySpec secretKey =
                 new javax.crypto.spec.SecretKeySpec(
-                        RAZORPAY_KEY_SECRET
+                        razorpayKeySecret
                                 .getBytes("UTF-8"),
                         "HmacSHA256");
         mac.init(secretKey);
