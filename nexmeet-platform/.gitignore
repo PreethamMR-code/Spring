@@ -1,38 +1,59 @@
+# =====================================================
+# NexMeet Platform — .gitignore
+# =====================================================
+
+# ── SECRETS — NEVER COMMIT ───────────────────────────
+# This is the most important section.
+# application.properties holds DB password, Mailtrap
+# credentials, and Razorpay keys. One commit with this
+# file visible means rotating ALL credentials.
+src/main/resources/application.properties
+application.properties
+
+# ── Maven build output ────────────────────────────────
+# The target/ folder is generated on every build.
+# Committing it bloats the repo by ~50MB+ and causes
+# merge conflicts. Always regenerate with mvn package.
 target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+*.war
+*.jar
 
-### IntelliJ IDEA ###
-.idea/modules.xml
-.idea/jarRepositories.xml
-.idea/compiler.xml
-.idea/libraries/
-*.iws
+# ── IntelliJ IDEA ────────────────────────────────────
+# Project files are machine-specific. Another developer
+# cloning this repo should generate their own via
+# File → New → Project from Existing Sources.
+.idea/
 *.iml
+*.iws
 *.ipr
+out/
 
-### Eclipse ###
-.apt_generated
+# ── Eclipse ───────────────────────────────────────────
 .classpath
-.factorypath
 .project
-.settings
-.springBeans
-.sts4-cache
+.settings/
+bin/
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-### VS Code ###
+# ── VS Code ───────────────────────────────────────────
 .vscode/
 
-### Mac OS ###
+# ── OS junk files ─────────────────────────────────────
+# Windows
+Thumbs.db
+Desktop.ini
+# macOS
 .DS_Store
+.AppleDouble
+.LSOverride
+# Linux
+*~
+
+# ── Maven wrapper (optional — uncomment if not using) ─
+# .mvn/wrapper/maven-wrapper.jar
+
+# ── Logs ──────────────────────────────────────────────
+*.log
+logs/
+
+# ── Uploaded files (if stored locally during dev) ─────
+uploads/
