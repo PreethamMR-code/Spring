@@ -292,6 +292,7 @@
       <version>20231013</version>
     </dependency>
 
+
   </dependencies>
   <build>
     <finalName>nexmeet-platform</finalName>
