@@ -9,18 +9,32 @@ import com.nexmeet.platform.entity.User;
 import com.nexmeet.platform.enums.ConferenceStatus;
 import com.nexmeet.platform.enums.RegistrationStatus;
 import com.nexmeet.platform.service.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 @Service
-@org.springframework.transaction.annotation.Transactional
-public class ConferenceServiceImpl implements ConferenceService {
+@Transactional
+public class ConferenceServiceImpl
+        implements ConferenceService {
+
+    /*
+     * SLF4J logger backed by Logback (already on classpath).
+     * Replaces all System.out.println and System.err.println.
+     * Log levels used:
+     *   INFO  — normal flow events (scheduler ran, conf completed)
+     *   WARN  — recoverable issues (notification failed)
+     *   ERROR — failures that need investigation (cert failed)
+     */
+    private static final Logger log =
+            LoggerFactory.getLogger(
+                    ConferenceServiceImpl.class);
 
     @Autowired
     private ConferenceDao conferenceDao;
@@ -43,38 +57,47 @@ public class ConferenceServiceImpl implements ConferenceService {
     @Autowired
     private AttendanceService attendanceService;
 
-
     @Override
-    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    @Transactional(readOnly = true)
     public Optional<Conference> findById(Long id) {
         return conferenceDao.findById(id);
     }
 
     @Override
-    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    @Transactional(readOnly = true)
     public List<Conference> getApprovedConferences() {
         return conferenceDao.findAllApproved();
     }
 
     @Override
-    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    @Transactional(readOnly = true)
     public List<Conference> getPendingConferences() {
-        return conferenceDao.findByStatus(ConferenceStatus.SUBMITTED);
+        return conferenceDao
+                .findByStatus(ConferenceStatus.SUBMITTED);
     }
 
     @Override
-    @org.springframework.transaction.annotation.Transactional(readOnly = true)
-    public List<Conference> getConferencesByOrganizer(Long organizerId) {
-        return conferenceDao.findByOrganizerId(organizerId);
+    @Transactional(readOnly = true)
+    public List<Conference> getConferencesByOrganizer(
+            Long organizerId) {
+        return conferenceDao
+                .findByOrganizerId(organizerId);
     }
 
     @Override
-    public void approveConference(Long conferenceId, String adminEmail) {
-        Conference conference = conferenceDao.findById(conferenceId)
-                .orElseThrow(() -> new IllegalArgumentException("Conference not found"));
+    public void approveConference(
+            Long conferenceId, String adminEmail) {
+
+        Conference conference = conferenceDao
+                .findById(conferenceId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Conference not found"));
 
         User admin = userDao.findByEmail(adminEmail)
-                .orElseThrow(() -> new IllegalArgumentException("Admin not found"));
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Admin not found"));
 
         conference.setStatus(ConferenceStatus.APPROVED);
         conference.setApprovedBy(admin);
@@ -82,45 +105,56 @@ public class ConferenceServiceImpl implements ConferenceService {
         conference.setRejectionReason(null);
 
         notificationService.createNotification(
-                conference.getOrganizer().getUser().getEmail(),
+                conference.getOrganizer()
+                        .getUser().getEmail(),
                 "Conference Approved",
-                "Your conference \"" + conference.getTitle() +
-                        "\" has been approved and is now live!",
-                "IN_APP"
-        );
-
+                "Your conference \""
+                        + conference.getTitle()
+                        + "\" has been approved and is now live!",
+                "IN_APP");
 
         emailService.sendConferenceApproved(
-                conference.getOrganizer().getUser().getEmail(),
-                conference.getOrganizer().getUser().getFullName(),
-                conference.getTitle()
-        );
+                conference.getOrganizer()
+                        .getUser().getEmail(),
+                conference.getOrganizer()
+                        .getUser().getFullName(),
+                conference.getTitle());
 
         conferenceDao.update(conference);
     }
 
     @Override
-    public void rejectConference(Long conferenceId, Long adminUserId, String reason) {
-        Conference conference = conferenceDao.findById(conferenceId)
-                .orElseThrow(() -> new IllegalArgumentException("Conference not found: " + conferenceId));
+    public void rejectConference(
+            Long conferenceId,
+            Long adminUserId,
+            String reason) {
+
+        Conference conference = conferenceDao
+                .findById(conferenceId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Conference not found: "
+                                        + conferenceId));
 
         conference.setStatus(ConferenceStatus.REJECTED);
         conference.setRejectionReason(reason);
 
         notificationService.createNotification(
-                conference.getOrganizer().getUser().getEmail(),
+                conference.getOrganizer()
+                        .getUser().getEmail(),
                 "Conference Rejected",
-                "Your conference \"" + conference.getTitle() +
-                        "\" was rejected. Reason: " + reason,
-                "IN_APP"
-        );
+                "Your conference \""
+                        + conference.getTitle()
+                        + "\" was rejected. Reason: " + reason,
+                "IN_APP");
 
         emailService.sendConferenceRejected(
-                conference.getOrganizer().getUser().getEmail(),
-                conference.getOrganizer().getUser().getFullName(),
+                conference.getOrganizer()
+                        .getUser().getEmail(),
+                conference.getOrganizer()
+                        .getUser().getFullName(),
                 conference.getTitle(),
-                reason
-        );
+                reason);
 
         conferenceDao.update(conference);
     }
@@ -139,8 +173,11 @@ public class ConferenceServiceImpl implements ConferenceService {
 
     @Override
     @Transactional(readOnly = true)
-    public long countByOrganizerAndStatus(Long organizerId, ConferenceStatus status) {
-        return conferenceDao.countByOrganizerAndStatus(organizerId, status);
+    public long countByOrganizerAndStatus(
+            Long organizerId, ConferenceStatus status) {
+        return conferenceDao
+                .countByOrganizerAndStatus(
+                        organizerId, status);
     }
 
     @Override
@@ -156,7 +193,8 @@ public class ConferenceServiceImpl implements ConferenceService {
     }
 
     @Override
-    public List<Conference> findByStatus(ConferenceStatus conferenceStatus) {
+    public List<Conference> findByStatus(
+            ConferenceStatus conferenceStatus) {
         return conferenceDao.findByStatus(conferenceStatus);
     }
 
@@ -167,8 +205,9 @@ public class ConferenceServiceImpl implements ConferenceService {
     }
 
     @Override
-    public void markAsCompleted(Long conferenceId,
-                                String userEmail) {
+    public void markAsCompleted(
+            Long conferenceId, String userEmail) {
+
         Conference conf = conferenceDao
                 .findById(conferenceId)
                 .orElseThrow(() ->
@@ -194,29 +233,39 @@ public class ConferenceServiceImpl implements ConferenceService {
     public void autoCompleteExpiredConferences() {
         /*
          * Find all APPROVED conferences whose end date
-         * has already passed and run the full completion
-         * logic for each — including certificate issuance
-         * and email notifications.
+         * has already passed. Each is completed in its
+         * own try-catch so one failure doesn't abort
+         * the rest of the batch.
          *
-         * WHY NOT just call markAsCompleted() internally:
-         * Internal calls bypass the Spring proxy, and if
-         * one conference's Hibernate session gets marked
-         * rollback-only, it can poison the whole batch.
-         * We handle each conference independently with
-         * its own try-catch to isolate failures.
+         * Called by:
+         *   1. ConferenceAutoCompletionScheduler — hourly
+         *   2. Admin/organizer dashboard load — on demand
          */
-        List<Conference> expired = conferenceDao
-                .findExpiredApproved();
+        List<Conference> expired =
+                conferenceDao.findExpiredApproved();
+
+        if (expired.isEmpty()) {
+            log.info("[AutoComplete] No expired " +
+                    "conferences to process");
+            return;
+        }
+
+        log.info("[AutoComplete] Found {} expired " +
+                        "conference(s) to complete",
+                expired.size());
 
         for (Conference conf : expired) {
             try {
                 runCompletion(conf);
+                log.info("[AutoComplete] Completed " +
+                                "conference {} ({})",
+                        conf.getId(), conf.getTitle());
             } catch (Exception e) {
-                System.err.println(
-                        "[AutoComplete] Failed for conf "
-                                + conf.getId() + " ("
-                                + conf.getTitle() + "): "
-                                + e.getMessage());
+                log.error("[AutoComplete] Failed for " +
+                                "conference {} ({}): {}",
+                        conf.getId(),
+                        conf.getTitle(),
+                        e.getMessage());
             }
         }
     }
@@ -226,11 +275,16 @@ public class ConferenceServiceImpl implements ConferenceService {
      * for one conference. Called by both
      * autoCompleteExpiredConferences() and
      * markAsCompleted() to avoid duplicating logic.
+     *
+     * Completion flow per confirmed registration:
+     *   1. In-app notification
+     *   2. Certificate issuance (if enabled + attended)
+     *   3. Completion email (if certificates not enabled)
      */
     private void runCompletion(Conference conf) {
         conf.setStatus(ConferenceStatus.COMPLETED);
-        conferenceDao.update(conf);
         conf.setUpdatedAt(LocalDateTime.now());
+        conferenceDao.update(conf);
 
         List<Registration> registrations =
                 registrationDao.findByConferenceId(
@@ -242,7 +296,7 @@ public class ConferenceServiceImpl implements ConferenceService {
                 continue;
             }
 
-            // In-app notification
+            // In-app notification to each delegate
             try {
                 notificationService.createNotification(
                         reg.getUser().getEmail(),
@@ -255,15 +309,15 @@ public class ConferenceServiceImpl implements ConferenceService {
                                 + "by email."
                                 : "You can now submit "
                                 + "feedback."),
-                        "IN_APP"
-                );
+                        "IN_APP");
             } catch (Exception e) {
-                System.err.println(
-                        "[AutoComplete] Notification "
-                                + "failed: " + e.getMessage());
+                log.warn("[AutoComplete] Notification " +
+                                "failed for {}: {}",
+                        reg.getUser().getEmail(),
+                        e.getMessage());
             }
 
-            // Certificate — only for attended delegates
+            // Certificate issuance for attended delegates
             if (conf.isCertificateEnabled()
                     && attendanceService
                     .hasAttended(reg.getId())) {
@@ -276,11 +330,10 @@ public class ConferenceServiceImpl implements ConferenceService {
                      * send separately here.
                      */
                 } catch (Exception e) {
-                    System.err.println(
-                            "[AutoComplete] Certificate "
-                                    + "failed for "
-                                    + reg.getUser().getEmail()
-                                    + ": " + e.getMessage());
+                    log.error("[AutoComplete] Certificate " +
+                                    "failed for {}: {}",
+                            reg.getUser().getEmail(),
+                            e.getMessage());
                 }
             } else if (!conf.isCertificateEnabled()) {
                 // No certs — send completion email only
@@ -288,61 +341,71 @@ public class ConferenceServiceImpl implements ConferenceService {
                     emailService.sendConferenceCompleted(
                             reg.getUser().getEmail(),
                             reg.getUser().getFullName(),
-                            conf.getTitle()
-                    );
+                            conf.getTitle());
                 } catch (Exception e) {
-                    System.err.println(
-                            "[AutoComplete] Completion "
-                                    + "email failed: "
-                                    + e.getMessage());
+                    log.warn("[AutoComplete] Completion " +
+                                    "email failed for {}: {}",
+                            reg.getUser().getEmail(),
+                            e.getMessage());
                 }
             }
         }
     }
 
     @Override
-    public void cancelConference(Long conferenceId,
-                                 String organizerEmail,
-                                 String reason) {
-        Conference conf = conferenceDao.findById(conferenceId)
-                .orElseThrow(() ->
-                        new RuntimeException("Conference not found"));
+    public void cancelConference(
+            Long conferenceId,
+            String organizerEmail,
+            String reason) {
 
-        if (conf.getStatus() != ConferenceStatus.APPROVED &&
-                conf.getStatus() != ConferenceStatus.SUBMITTED) {
+        Conference conf = conferenceDao
+                .findById(conferenceId)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Conference not found"));
+
+        if (conf.getStatus() != ConferenceStatus.APPROVED
+                && conf.getStatus()
+                != ConferenceStatus.SUBMITTED) {
             throw new RuntimeException(
-                    "Only APPROVED or SUBMITTED conferences " +
-                            "can be cancelled.");
+                    "Only APPROVED or SUBMITTED " +
+                            "conferences can be cancelled.");
         }
 
         conf.setStatus(ConferenceStatus.CANCELLED);
         conferenceDao.update(conf);
 
         List<Registration> registrations =
-                registrationDao.findByConferenceId(conferenceId);
+                registrationDao.findByConferenceId(
+                        conferenceId);
 
         for (Registration reg : registrations) {
-            if (reg.getStatus() == RegistrationStatus.CONFIRMED) {
-                reg.setStatus(RegistrationStatus.CANCELLED);
-                reg.setCancelledAt(java.time.LocalDateTime.now());
+            if (reg.getStatus()
+                    == RegistrationStatus.CONFIRMED) {
+
+                reg.setStatus(
+                        RegistrationStatus.CANCELLED);
+                reg.setCancelledAt(LocalDateTime.now());
                 registrationDao.update(reg);
 
                 notificationService.createNotification(
                         reg.getUser().getEmail(),
                         "Conference Cancelled",
-                        "Unfortunately, \"" + conf.getTitle() +
-                                "\" has been cancelled by the organizer." +
-                                (reason != null && !reason.trim().isEmpty()
-                                        ? " Reason: " + reason : ""),
-                        "IN_APP"
-                );
-                // FIX: was registration.getUser() and conference.getTitle()
+                        "Unfortunately, \""
+                                + conf.getTitle()
+                                + "\" has been cancelled by "
+                                + "the organizer."
+                                + (reason != null
+                                && !reason.trim().isEmpty()
+                                ? " Reason: " + reason
+                                : ""),
+                        "IN_APP");
+
                 emailService.sendConferenceCancelled(
                         reg.getUser().getEmail(),
                         reg.getUser().getFullName(),
                         conf.getTitle(),
-                        reason
-                );
+                        reason);
             }
         }
 
@@ -352,20 +415,16 @@ public class ConferenceServiceImpl implements ConferenceService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Conference> getUpcomingConferences(int limit) {
-        /*
-         * Upcoming = APPROVED status + startDate in future.
-         * Ordered by startDate ASC — soonest conference first.
-         * Limit prevents loading all conferences on home page.
-         */
+    public List<Conference> getUpcomingConferences(
+            int limit) {
         return conferenceDao.findUpcoming(limit);
     }
-
 
     @Override
     @Transactional
     public void reissueMissingCertificates(
             Long conferenceId) {
+
         Conference conf = conferenceDao
                 .findById(conferenceId)
                 .orElseThrow(() ->
@@ -374,8 +433,8 @@ public class ConferenceServiceImpl implements ConferenceService {
 
         if (!conf.isCertificateEnabled()) {
             throw new RuntimeException(
-                    "Certificate not enabled "
-                            + "for this conference.");
+                    "Certificate not enabled " +
+                            "for this conference.");
         }
 
         List<Registration> registrations =
@@ -392,10 +451,12 @@ public class ConferenceServiceImpl implements ConferenceService {
             }
             if (!attendanceService
                     .hasAttended(reg.getId())) {
-                continue; // didn't attend
+                continue;
             }
-            // issueCertificate() is idempotent —
-            // returns existing cert if already issued
+            /*
+             * issueCertificate() is idempotent —
+             * returns existing cert if already issued.
+             */
             try {
                 com.nexmeet.platform.entity.Certificate
                         cert = certificateService
@@ -403,16 +464,14 @@ public class ConferenceServiceImpl implements ConferenceService {
                 if (cert != null) issued++;
             } catch (Exception e) {
                 skipped++;
-                System.err.println(
-                        "[Reissue] Failed for "
-                                + reg.getUser().getEmail()
-                                + ": " + e.getMessage());
+                log.error("[Reissue] Failed for {}: {}",
+                        reg.getUser().getEmail(),
+                        e.getMessage());
             }
         }
 
-        System.out.println(
-                "[Reissue] Conf " + conferenceId
-                        + ": " + issued + " issued, "
-                        + skipped + " failed.");
+        log.info("[Reissue] Conference {}: {} issued, " +
+                        "{} failed",
+                conferenceId, issued, skipped);
     }
 }
