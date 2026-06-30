@@ -23,16 +23,6 @@ import java.util.UUID;
 @Service
 public class RegistrationServiceImpl implements RegistrationService {
 
-    /*
-     * SLF4J logger for this class.
-     * Logback is the implementation (already on classpath
-     * via logback-classic in pom.xml).
-     * Replaces System.err.println — log entries are:
-     *   - timestamped
-     *   - level-tagged (ERROR, WARN, INFO, DEBUG)
-     *   - filterable without code changes
-     *   - writable to file via logback.xml if needed
-     */
     private static final Logger log =
             LoggerFactory.getLogger(
                     RegistrationServiceImpl.class);
@@ -67,11 +57,6 @@ public class RegistrationServiceImpl implements RegistrationService {
     @Autowired
     private AuditLogService auditLogService;
 
-    /*
-     * Needed to generate the ticket PDF with QR code
-     * embedded, so the email attachment matches exactly
-     * what the delegate would download from the dashboard.
-     */
     @Autowired
     private CertificateService certificateService;
 
@@ -80,7 +65,6 @@ public class RegistrationServiceImpl implements RegistrationService {
     public String registerForConference(
             Long conferenceId, String userEmail) {
 
-        // 1. Load user and conference
         User user = userDao.findByEmail(userEmail)
                 .orElseThrow(() ->
                         new RuntimeException("User not found"));
@@ -90,27 +74,19 @@ public class RegistrationServiceImpl implements RegistrationService {
                 .orElseThrow(() ->
                         new RuntimeException("Conference not found"));
 
-        // 2. Prevent duplicate registration
         if (registrationDao.existsByConferenceAndUser(
                 conferenceId, user.getId())) {
             return "ALREADY_REGISTERED";
         }
 
-        /*
-         * Profile must be complete before delegate can
-         * register for any conference. Delegates who
-         * skipped profile setup are blocked here.
-         */
         if (!delegateDao.existsByUserEmail(userEmail)) {
             return "PROFILE_INCOMPLETE";
         }
 
-        // 3. Check if registration is open
         if (!conferenceDao.isRegistrationOpen(conferenceId)) {
             return "REGISTRATION_CLOSED";
         }
 
-        // 4. Create registration
         Registration reg = new Registration();
         reg.setConference(conference);
         reg.setUser(user);
@@ -123,7 +99,6 @@ public class RegistrationServiceImpl implements RegistrationService {
         reg.setRegistrationType(RegistrationType.INDIVIDUAL);
         registrationDao.save(reg);
 
-        // Send confirmation email
         try {
             emailService.sendRegistrationConfirmation(
                     user.getEmail(),
@@ -143,22 +118,15 @@ public class RegistrationServiceImpl implements RegistrationService {
             paymentService.createRegistrationPayment(
                     reg, user, conference);
         } catch (Exception e) {
-            /*
-             * Payment failure never rolls back registration.
-             * Logged at ERROR so it appears in logs/console
-             * but does not surface to the delegate as a 500.
-             */
             log.error("[Payment] Failed to create payment " +
                             "for user {} conference {}: {}",
                     userEmail, conferenceId, e.getMessage());
         }
 
-        // 5. Increment registered count
         conference.setRegisteredCount(
                 conference.getRegisteredCount() + 1);
         conferenceDao.update(conference);
 
-        // Generate QR Code
         QrCode qr = new QrCode();
         qr.setRegistration(reg);
         qr.setQrToken(reg.getRegistrationNumber());
@@ -167,11 +135,6 @@ public class RegistrationServiceImpl implements RegistrationService {
                         reg.getRegistrationNumber()));
         qrCodeDao.save(qr);
 
-        /*
-         * Generate ticket PDF with QR code embedded and
-         * email as attachment. Must come AFTER QR generation.
-         * Failure here must never roll back registration.
-         */
         try {
             String qrBase64 = qr.getQrImageBase64();
             ByteArrayOutputStream ticketPdf =
@@ -200,7 +163,6 @@ public class RegistrationServiceImpl implements RegistrationService {
                     user.getEmail(), e.getMessage());
         }
 
-        // Notify delegate
         notificationService.createNotification(
                 userEmail,
                 "Registration Confirmed",
@@ -210,7 +172,6 @@ public class RegistrationServiceImpl implements RegistrationService {
                         + reg.getRegistrationNumber(),
                 "IN_APP");
 
-        // Notify organizer
         notificationService.createNotification(
                 conference.getOrganizer()
                         .getUser().getEmail(),
@@ -292,6 +253,31 @@ public class RegistrationServiceImpl implements RegistrationService {
             conferenceDao.update(conf);
         }
 
+        /*
+         * Refund via Razorpay if the original payment was
+         * made through the gateway. Wrapped in try-catch as
+         * a safety net — initiateRazorpayRefund() already
+         * handles its own failures internally and never
+         * throws, but this guards against any unexpected
+         * exception still reaching here. A refund failure
+         * must NEVER prevent the cancellation itself from
+         * succeeding — the delegate's seat is already freed
+         * and registration already cancelled above. Refund
+         * is a best-effort follow-up action.
+         */
+        try {
+            paymentService.initiateRazorpayRefund(
+                    conf.getId(), reg.getUser().getId());
+        } catch (Exception e) {
+            log.error("[Cancellation] Refund attempt threw " +
+                            "an unexpected exception for registration " +
+                            "{} (conference {}, user {}): {}. " +
+                            "Cancellation still succeeded — manual " +
+                            "refund check required.",
+                    registrationId, conf.getId(),
+                    reg.getUser().getId(), e.getMessage());
+        }
+
         return afterDeadline ? "CANCELLED_LATE" : "CANCELLED";
     }
 
@@ -348,11 +334,6 @@ public class RegistrationServiceImpl implements RegistrationService {
                                 "Conference not found: "
                                         + conferenceId));
 
-        /*
-         * Duplicate check — idempotency.
-         * If Razorpay calls back twice (rare but possible),
-         * we must not create two registrations.
-         */
         if (registrationDao.existsByConferenceAndUser(
                 conferenceId, user.getId())) {
             throw new RuntimeException("ALREADY_REGISTERED");
@@ -365,11 +346,27 @@ public class RegistrationServiceImpl implements RegistrationService {
         /*
          * Capacity check — seats may have filled between
          * order creation and payment completion.
-         * Known limitation: if this throws, payment is
-         * already COMPLETED and no refund is issued.
-         * TODO: add Razorpay refund call here.
+         * If this throws, payment is already COMPLETED on
+         * Razorpay's side. We immediately refund it here
+         * rather than leaving an orphaned charge with no
+         * registration — this closes the gap noted as a
+         * TODO previously.
          */
         if (!conferenceDao.isRegistrationOpen(conferenceId)) {
+            log.error("[Razorpay] Registration closed after " +
+                            "payment completed for conference {} " +
+                            "user {} — issuing automatic refund.",
+                    conferenceId, user.getId());
+            try {
+                paymentService.initiateRazorpayRefund(
+                        conferenceId, user.getId());
+            } catch (Exception e) {
+                log.error("[Razorpay] Auto-refund after " +
+                                "REGISTRATION_CLOSED failed for " +
+                                "conference {} user {}: {}",
+                        conferenceId, user.getId(),
+                        e.getMessage());
+            }
             throw new RuntimeException("REGISTRATION_CLOSED");
         }
 
@@ -385,22 +382,10 @@ public class RegistrationServiceImpl implements RegistrationService {
         reg.setRegistrationType(RegistrationType.INDIVIDUAL);
         registrationDao.save(reg);
 
-        /*
-         * NO paymentService.createRegistrationPayment() here.
-         * The RAZORPAY payment row was already created
-         * (status=INITIATED) in createRazorpayOrder() and
-         * updated to COMPLETED in verifyAndCompleteRazorpayPayment()
-         * before this method is called. Calling it here
-         * would create a second SIMULATED payment row and
-         * throw a unique constraint violation on transaction_ref.
-         */
-
-        // Increment registered count
         conference.setRegisteredCount(
                 conference.getRegisteredCount() + 1);
         conferenceDao.update(conference);
 
-        // Generate QR code
         QrCode qr = new QrCode();
         qr.setRegistration(reg);
         qr.setQrToken(reg.getRegistrationNumber());
@@ -409,10 +394,6 @@ public class RegistrationServiceImpl implements RegistrationService {
                         reg.getRegistrationNumber()));
         qrCodeDao.save(qr);
 
-        /*
-         * Send ticket PDF. Must come after QR generation.
-         * Failure must NOT roll back — delegate already paid.
-         */
         try {
             String qrBase64 = qr.getQrImageBase64();
             ByteArrayOutputStream ticketPdf =
@@ -441,7 +422,6 @@ public class RegistrationServiceImpl implements RegistrationService {
                     user.getEmail(), e.getMessage());
         }
 
-        // Backup text confirmation email
         try {
             emailService.sendRegistrationConfirmation(
                     user.getEmail(),
@@ -458,7 +438,6 @@ public class RegistrationServiceImpl implements RegistrationService {
             // Never break registration for email failure
         }
 
-        // In-app notification to delegate
         notificationService.createNotification(
                 delegateEmail,
                 "Registration Confirmed",
@@ -468,7 +447,6 @@ public class RegistrationServiceImpl implements RegistrationService {
                         + reg.getRegistrationNumber(),
                 "IN_APP");
 
-        // In-app notification to organizer
         notificationService.createNotification(
                 conference.getOrganizer()
                         .getUser().getEmail(),
