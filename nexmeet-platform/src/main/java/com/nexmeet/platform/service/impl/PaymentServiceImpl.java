@@ -6,6 +6,8 @@ import com.nexmeet.platform.entity.Payment;
 import com.nexmeet.platform.entity.Registration;
 import com.nexmeet.platform.entity.User;
 import com.nexmeet.platform.service.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +23,8 @@ import java.util.UUID;
 public class PaymentServiceImpl
         implements PaymentService {
 
+    private static final Logger log =
+            LoggerFactory.getLogger(PaymentServiceImpl.class);
 
     /*
      * Reads razorpay.key.id and razorpay.key.secret
@@ -51,10 +55,6 @@ public class PaymentServiceImpl
             User payer,
             Conference conf) {
 
-        /*
-         * Skip payment creation for free conferences.
-         * No money changes hands — nothing to record.
-         */
         if (conf.isFree()
                 || conf.getDelegateFee() == null
                 || conf.getDelegateFee()
@@ -65,21 +65,12 @@ public class PaymentServiceImpl
         BigDecimal delegateFee = conf.getDelegateFee();
         String confType = conf.getConferenceType().name();
 
-        /*
-         * Platform takes perDelegateFee per registration.
-         * Capped at delegateFee — can't take more than
-         * what delegate paid.
-         */
         BigDecimal perDelegate =
                 commissionService.getPerDelegateFee(
                         confType);
         BigDecimal platformCut =
                 perDelegate.min(delegateFee);
 
-        /*
-         * Organizer keeps the rest.
-         * Never goes negative.
-         */
         BigDecimal organizerCut =
                 delegateFee.subtract(platformCut);
         if (organizerCut.compareTo(
@@ -87,16 +78,10 @@ public class PaymentServiceImpl
             organizerCut = BigDecimal.ZERO;
         }
 
-        /*
-         * Determine payment_for label.
-         * BULK_REGISTRATION = came from CSV/Excel upload
-         * REGISTRATION      = individual self-registration
-         */
         String paymentFor = "REGISTRATION";
         if (reg.getRegistrationType() != null
                 && "BULK".equals(
-                reg.getRegistrationType()
-                        .name())) {
+                reg.getRegistrationType().name())) {
             paymentFor = "BULK_REGISTRATION";
         }
 
@@ -108,24 +93,11 @@ public class PaymentServiceImpl
         payment.setPlatformCommission(platformCut);
         payment.setOrganizerAmount(organizerCut);
         payment.setPaymentMethod("SIMULATED");
-
-        /*
-         * Unique transaction reference.
-         * Format: SIM-XXXX-XXXX-XXXX
-         * In production: Razorpay/Stripe order ID here.
-         */
         payment.setTransactionRef(
-                "SIM-" +
-                        UUID.randomUUID()
-                                .toString()
-                                .substring(0, 8)
-                                .toUpperCase());
-
-        /*
-         * Simulated payment = COMPLETED immediately.
-         * Real payment gateway = stays INITIATED until
-         * webhook callback updates status.
-         */
+                "SIM-" + UUID.randomUUID()
+                        .toString()
+                        .substring(0, 8)
+                        .toUpperCase());
         payment.setStatus("COMPLETED");
         payment.setCompletedAt(LocalDateTime.now());
 
@@ -143,8 +115,7 @@ public class PaymentServiceImpl
 
     @Override
     @Transactional(readOnly = true)
-    public List<Payment> getPaymentsByUser(
-            Long userId) {
+    public List<Payment> getPaymentsByUser(Long userId) {
         return paymentDao.findByUserId(userId);
     }
 
@@ -195,10 +166,6 @@ public class PaymentServiceImpl
             String paymentReference,
             String organizerEmail) {
 
-        /*
-         * paymentMethod must be VENUE_CASH or VENUE_UPI.
-         * Reject anything else to prevent data corruption.
-         */
         if (!"VENUE_CASH".equals(paymentMethod)
                 && !"VENUE_UPI".equals(paymentMethod)) {
             throw new IllegalArgumentException(
@@ -214,20 +181,15 @@ public class PaymentServiceImpl
                                 "No payment record found for " +
                                         "this delegate and conference."));
 
-        /*
-         * Idempotency: if already confirmed,
-         * don't overwrite with same data.
-         */
         if ("VENUE_CASH".equals(payment.getPaymentMethod())
                 || "VENUE_UPI".equals(
                 payment.getPaymentMethod())) {
-            return; // already marked, skip silently
+            return;
         }
 
         payment.setPaymentMethod(paymentMethod);
         payment.setStatus("COMPLETED");
-        payment.setCompletedAt(
-                java.time.LocalDateTime.now());
+        payment.setCompletedAt(LocalDateTime.now());
 
         if (paymentReference != null
                 && !paymentReference.trim().isEmpty()) {
@@ -269,19 +231,10 @@ public class PaymentServiceImpl
                         new RuntimeException(
                                 "User not found"));
 
-        /*
-         * Amount in paise (Razorpay requires lowest
-         * currency unit). ₹1 = 100 paise.
-         * BigDecimal → multiply by 100 → intValue.
-         */
         int amountInPaise = conf.getDelegateFee()
                 .multiply(new BigDecimal("100"))
                 .intValue();
 
-        /*
-         * Build request JSON for POST /v1/orders.
-         * receipt = our internal reference for mapping.
-         */
         org.json.JSONObject orderRequest =
                 new org.json.JSONObject();
         orderRequest.put("amount", amountInPaise);
@@ -310,7 +263,6 @@ public class PaymentServiceImpl
 
         String credentials =
                 razorpayKeyId + ":" + razorpayKeySecret;
-
         String encoded = java.util.Base64.getEncoder()
                 .encodeToString(
                         credentials.getBytes("UTF-8"));
@@ -361,13 +313,6 @@ public class PaymentServiceImpl
         org.json.JSONObject orderResponse =
                 new org.json.JSONObject(sb.toString());
 
-        /*
-         * Create a PENDING payment record NOW so we have
-         * a DB row to update when Razorpay calls back.
-         * Status = INITIATED (not COMPLETED yet).
-         * razorpayOrderId is set here so we can look it
-         * up during verification.
-         */
         Payment pending = new Payment();
         pending.setPayerUser(delegate);
         pending.setConference(conf);
@@ -391,11 +336,6 @@ public class PaymentServiceImpl
                 orderResponse.getString("id"));
         paymentDao.save(pending);
 
-        /*
-         * Return order details to the controller.
-         * Controller sends order_id + amount + key_id
-         * to JSP for the Checkout.js popup.
-         */
         org.json.JSONObject result =
                 new org.json.JSONObject();
         result.put("orderId",
@@ -422,13 +362,6 @@ public class PaymentServiceImpl
             String rzpSignature)
             throws Exception {
 
-        /*
-         * STEP 1: Verify signature.
-         * Razorpay signs: orderId + "|" + paymentId
-         * using key_secret as HMAC-SHA256 key.
-         * If our computed hash ≠ received signature →
-         * payment is tampered → reject immediately.
-         */
         String data = rzpOrderId + "|" + rzpPaymentId;
         javax.crypto.Mac mac = javax.crypto.Mac
                 .getInstance("HmacSHA256");
@@ -451,7 +384,6 @@ public class PaymentServiceImpl
         byte[] hash = mac.doFinal(
                 data.getBytes("UTF-8"));
 
-        // Convert to hex string for comparison
         StringBuilder hex = new StringBuilder();
         for (byte b : hash) {
             hex.append(String.format("%02x", b));
@@ -465,10 +397,6 @@ public class PaymentServiceImpl
                             "Do not proceed.");
         }
 
-        /*
-         * STEP 2: Update the PENDING payment record
-         * we created during createRazorpayOrder().
-         */
         Payment payment = paymentDao
                 .findByRazorpayOrderId(rzpOrderId)
                 .orElseThrow(() ->
@@ -482,18 +410,6 @@ public class PaymentServiceImpl
         payment.setCompletedAt(LocalDateTime.now());
         paymentDao.update(payment);
 
-        /*
-         * STEP 3: Complete the registration.
-         * IMPORTANT: We call registerDelegatePostPayment()
-         * NOT registerForConference(). The difference:
-         * registerDelegatePostPayment() skips the internal
-         * createRegistrationPayment() call because the
-         * RAZORPAY payment row is already COMPLETED above.
-         * Calling registerForConference() would trigger a
-         * second SIMULATED payment row → unique constraint
-         * violation on transaction_ref → 500 error despite
-         * the payment being genuinely confirmed by Razorpay.
-         */
         com.nexmeet.platform.entity.Registration reg =
                 registrationService
                         .registerDelegatePostPayment(
@@ -501,5 +417,204 @@ public class PaymentServiceImpl
                                 delegateEmail);
 
         return reg;
+    }
+
+    @Override
+    @Transactional
+    public void initiateRazorpayRefund(
+            Long conferenceId, Long userId) {
+
+        /*
+         * Look up the payment for this conference+user.
+         * If none exists (free conference) — nothing to do.
+         */
+        Optional<Payment> paymentOpt =
+                paymentDao.findByConferenceAndUser(
+                        conferenceId, userId);
+
+        if (!paymentOpt.isPresent()) {
+            log.info("[Refund] No payment record for " +
+                            "conference {} user {} — nothing to " +
+                            "refund (likely a free conference)",
+                    conferenceId, userId);
+            return;
+        }
+
+        Payment payment = paymentOpt.get();
+
+        /*
+         * Only RAZORPAY payments go through the gateway
+         * refund API. SIMULATED and VENUE_CASH/VENUE_UPI
+         * payments never charged real money via Razorpay —
+         * nothing to refund through the API for those.
+         */
+        if (!"RAZORPAY".equals(payment.getPaymentMethod())) {
+            log.info("[Refund] Payment method is {} " +
+                            "(not RAZORPAY) for conference {} " +
+                            "user {} — skipping gateway refund",
+                    payment.getPaymentMethod(),
+                    conferenceId, userId);
+            return;
+        }
+
+        /*
+         * Only refund COMPLETED payments. A REFUNDED
+         * payment being cancelled again, or an INITIATED
+         * payment that never actually completed, should
+         * not attempt a second/invalid refund call.
+         */
+        if (!"COMPLETED".equals(payment.getStatus())) {
+            log.info("[Refund] Payment status is {} " +
+                            "(not COMPLETED) for conference {} " +
+                            "user {} — skipping gateway refund",
+                    payment.getStatus(),
+                    conferenceId, userId);
+            return;
+        }
+
+        if (payment.getRazorpayPaymentId() == null
+                || payment.getRazorpayPaymentId()
+                .trim().isEmpty()) {
+            log.error("[Refund] Payment {} marked RAZORPAY " +
+                            "COMPLETED but has no razorpay_payment_id " +
+                            "— cannot issue refund. Manual " +
+                            "investigation required.",
+                    payment.getId());
+            return;
+        }
+
+        String razorpayKeyId =
+                env.getProperty("razorpay.key.id");
+        String razorpayKeySecret =
+                env.getProperty("razorpay.key.secret");
+
+        if (razorpayKeyId == null
+                || razorpayKeySecret == null
+                || razorpayKeySecret.equals(
+                "REPLACE_WITH_YOUR_KEY_SECRET")) {
+            log.error("[Refund] Razorpay keys not " +
+                    "configured — cannot refund payment {}. " +
+                    "Manual refund required via Razorpay " +
+                    "Dashboard.", payment.getId());
+            return;
+        }
+
+        try {
+            /*
+             * POST /v1/payments/{payment_id}/refund
+             * No "amount" field in body = full refund of
+             * the original charge. Same Basic Auth pattern
+             * as order creation.
+             */
+            String credentials =
+                    razorpayKeyId + ":" + razorpayKeySecret;
+            String encoded = java.util.Base64.getEncoder()
+                    .encodeToString(
+                            credentials.getBytes("UTF-8"));
+
+            String refundUrl =
+                    "https://api.razorpay.com/v1/payments/"
+                            + payment.getRazorpayPaymentId()
+                            + "/refund";
+
+            java.net.URL url = new java.net.URL(refundUrl);
+            java.net.HttpURLConnection conn =
+                    (java.net.HttpURLConnection)
+                            url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Authorization",
+                    "Basic " + encoded);
+            conn.setRequestProperty("Content-Type",
+                    "application/json");
+            conn.setDoOutput(true);
+            conn.setConnectTimeout(10000);
+            conn.setReadTimeout(10000);
+
+            /*
+             * Empty JSON body — full refund, no partial
+             * amount specified. notes field optional but
+             * helps with reconciliation in Razorpay Dashboard.
+             */
+            org.json.JSONObject refundRequest =
+                    new org.json.JSONObject();
+            org.json.JSONObject notes =
+                    new org.json.JSONObject();
+            notes.put("reason", "Delegate cancelled " +
+                    "registration");
+            notes.put("conference_id",
+                    conferenceId.toString());
+            notes.put("user_id", userId.toString());
+            refundRequest.put("notes", notes);
+
+            try (java.io.OutputStream os =
+                         conn.getOutputStream()) {
+                os.write(refundRequest.toString()
+                        .getBytes("UTF-8"));
+            }
+
+            int responseCode = conn.getResponseCode();
+            java.io.InputStream is =
+                    responseCode == 200
+                            ? conn.getInputStream()
+                            : conn.getErrorStream();
+
+            StringBuilder sb = new StringBuilder();
+            try (java.io.BufferedReader br =
+                         new java.io.BufferedReader(
+                                 new java.io.InputStreamReader(
+                                         is, "UTF-8"))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    sb.append(line);
+                }
+            }
+
+            if (responseCode != 200) {
+                /*
+                 * Refund failed at Razorpay's end.
+                 * Logged at ERROR for manual follow-up.
+                 * Does NOT throw — cancellation must still
+                 * proceed even if the refund call fails.
+                 * Common causes: payment already refunded,
+                 * payment too old, insufficient gateway
+                 * balance in test mode.
+                 */
+                log.error("[Refund] Razorpay refund failed " +
+                                "for payment {} (razorpay_payment_id={}): " +
+                                "HTTP {} — {}",
+                        payment.getId(),
+                        payment.getRazorpayPaymentId(),
+                        responseCode, sb.toString());
+                return;
+            }
+
+            /*
+             * Success — mark payment as REFUNDED.
+             * Razorpay response includes the refund id,
+             * but we don't currently have a column for it.
+             * status=REFUNDED is sufficient for our tracking.
+             */
+            payment.setStatus("REFUNDED");
+            paymentDao.update(payment);
+
+            log.info("[Refund] Successfully refunded " +
+                            "payment {} (₹{}) for conference {} " +
+                            "user {}",
+                    payment.getId(), payment.getAmount(),
+                    conferenceId, userId);
+
+        } catch (Exception e) {
+            /*
+             * Network failure, malformed response, etc.
+             * Logged but never thrown — refund failure
+             * must not block the delegate's cancellation.
+             * This needs manual follow-up via Razorpay
+             * Dashboard or a retry job.
+             */
+            log.error("[Refund] Exception while refunding " +
+                            "payment {} for conference {} user {}: {}",
+                    payment.getId(), conferenceId, userId,
+                    e.getMessage());
+        }
     }
 }
