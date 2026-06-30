@@ -11,73 +11,29 @@ import java.util.Optional;
 
 public interface PaymentService {
 
-    /*
-     * Creates a SIMULATED payment for a conference
-     * registration. Called automatically after
-     * each successful registration (individual or bulk).
-     *
-     * Returns null if the conference is free — no
-     * payment record is created for free events.
-     *
-     * The payment is immediately marked COMPLETED
-     * to simulate instant payment processing.
-     * In production: stay INITIATED until gateway
-     * callback confirms.
-     */
     Payment createRegistrationPayment(
             Registration reg,
             User payer,
             Conference conf);
 
-    /*
-     * All payments for a conference.
-     * Used by organizer to see who paid.
-     */
     List<Payment> getPaymentsByConference(
             Long conferenceId);
 
-    /*
-     * All payments made by a specific user.
-     * Used on delegate dashboard.
-     */
     List<Payment> getPaymentsByUser(Long userId);
 
-    /*
-     * Total delegate fees collected for a conference.
-     */
     BigDecimal getTotalRevenueByConference(
             Long conferenceId);
 
-    /*
-     * Platform's share from a conference.
-     */
     BigDecimal getPlatformShareByConference(
             Long conferenceId);
 
-    /*
-     * Organizer's actual payout from a conference.
-     */
     BigDecimal getOrganizerShareByConference(
             Long conferenceId);
 
-    /*
-     * Total platform commission across all conferences.
-     * Used on admin dashboard.
-     */
     BigDecimal getTotalPlatformRevenue();
 
-    /*
-     * All payments — admin view.
-     */
     List<Payment> getAllPayments();
 
-    /*
-     * Organizer confirms delegate paid at venue.
-     * Updates payment method from SIMULATED to
-     * VENUE_CASH or VENUE_UPI.
-     * paymentReference = optional UPI transaction ID
-     * or cash receipt note.
-     */
     void markVenuePaymentReceived(
             Long conferenceId,
             Long delegateUserId,
@@ -85,33 +41,13 @@ public interface PaymentService {
             String paymentReference,
             String organizerEmail);
 
-    /*
-     * Find a specific payment by conference + payer user.
-     * Used by organizer delegate list to show per-delegate
-     * payment status.
-     */
-
     Optional<Payment> findByConferenceAndUser(
             Long conferenceId, Long userId);
 
-    /*
-     * Creates a Razorpay order via REST API.
-     * Returns the order JSON so the controller can
-     * send order_id + amount to the JSP/JS frontend.
-     * Amount is in PAISE (multiply rupees × 100).
-     */
     org.json.JSONObject createRazorpayOrder(
             Long conferenceId, String delegateEmail)
             throws Exception;
 
-    /*
-     * Verifies Razorpay signature server-side using
-     * HMAC-SHA256(order_id + "|" + payment_id, key_secret).
-     * If valid, saves the payment IDs, marks COMPLETED,
-     * and triggers the existing registration flow:
-     * QR generation, ticket email, notifications.
-     * Returns the Registration so controller can redirect.
-     */
     com.nexmeet.platform.entity.Registration
     verifyAndCompleteRazorpayPayment(
             Long conferenceId,
@@ -120,4 +56,25 @@ public interface PaymentService {
             String razorpayPaymentId,
             String razorpaySignature)
             throws Exception;
+
+    /*
+     * Initiates a full refund to the delegate via Razorpay.
+     * Called inside cancelRegistration() when the payment
+     * method is RAZORPAY and status is COMPLETED.
+     *
+     * Uses POST /v1/payments/{razorpay_payment_id}/refund.
+     * No amount param = full refund of the original charge.
+     *
+     * On success: payment status updated to REFUNDED.
+     * On failure: logs the error but does NOT block
+     * cancellation — the registration is cancelled
+     * regardless. Refund failure is an operational issue
+     * to be handled manually, not a reason to prevent
+     * the delegate from cancelling.
+     *
+     * SIMULATED and VENUE_* payments: no-op (no real
+     * money was charged via gateway).
+     */
+    void initiateRazorpayRefund(
+            Long conferenceId, Long userId);
 }
