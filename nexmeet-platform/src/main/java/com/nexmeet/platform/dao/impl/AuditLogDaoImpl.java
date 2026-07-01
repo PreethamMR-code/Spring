@@ -25,20 +25,21 @@ public class AuditLogDaoImpl
 
     @Override
     @Transactional(readOnly = true)
-    public List<AuditLog> findRecent(int limit) {
+    public List<AuditLog> findRecent(int page, int size) {
         return sessionFactory.getCurrentSession()
                 .createQuery(
                         "FROM AuditLog a " +
                                 "ORDER BY a.performedAt DESC",
                         AuditLog.class)
-                .setMaxResults(limit)
+                .setFirstResult((page - 1) * size)
+                .setMaxResults(size)
                 .getResultList();
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<AuditLog> findByAction(
-            String action, int limit) {
+            String action, int page, int size) {
         return sessionFactory.getCurrentSession()
                 .createQuery(
                         "FROM AuditLog a " +
@@ -46,8 +47,21 @@ public class AuditLogDaoImpl
                                 "ORDER BY a.performedAt DESC",
                         AuditLog.class)
                 .setParameter("action", action)
-                .setMaxResults(limit)
+                .setFirstResult((page - 1) * size)
+                .setMaxResults(size)
                 .getResultList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countByAction(String action) {
+        Long count = (Long) sessionFactory.getCurrentSession()
+                .createQuery(
+                        "SELECT COUNT(a.id) FROM AuditLog a " +
+                                "WHERE a.action = :action")
+                .setParameter("action", action)
+                .uniqueResult();
+        return count != null ? count : 0L;
     }
 
     @Override
