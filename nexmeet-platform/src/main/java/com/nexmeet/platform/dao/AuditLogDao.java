@@ -7,19 +7,13 @@ public interface AuditLogDao {
 
     void save(AuditLog log);
 
-    /*
-     * All logs — newest first.
-     * Paginated: limit controls how many rows
-     * to return so admin page doesn't load 10,000 rows.
-     */
-    List<AuditLog> findRecent(int limit);
+    List<AuditLog> findRecent(int page, int size);
 
-    /*
-     * Filter by action type.
-     * e.g. "CONFERENCE_APPROVED"
-     */
+
     List<AuditLog> findByAction(
-            String action, int limit);
+            String action, int page, int size);
+
+    long countByAction(String action);
 
     /*
      * Filter by who did the action.
