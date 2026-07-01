@@ -78,16 +78,22 @@ public class AuditLogServiceImpl
 
     @Override
     @Transactional(readOnly = true)
-    public List<AuditLog> getRecent(int limit) {
-        return auditLogDao.findRecent(limit);
+    public List<AuditLog> getRecent(int page, int size) {
+        return auditLogDao.findRecent(page, size);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<AuditLog> filterByAction(
-            String action, int limit) {
+            String action, int page, int size) {
         return auditLogDao.findByAction(
-                action, limit);
+                action, page, size);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countByAction(String action) {
+        return auditLogDao.countByAction(action);
     }
 
     @Override
