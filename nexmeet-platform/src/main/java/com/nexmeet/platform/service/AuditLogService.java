@@ -61,10 +61,12 @@ public interface AuditLogService {
             String details
     );
 
-    List<AuditLog> getRecent(int limit);
+    List<AuditLog> getRecent(int page, int size);
 
     List<AuditLog> filterByAction(
-            String action, int limit);
+            String action, int page, int size);
+
+    long countByAction(String action);
 
     long getTotalCount();
 }
